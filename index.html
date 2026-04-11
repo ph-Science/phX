@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>phX</title>
+<link rel="icon" href="https://elections.harrisx.com/favicon.ico">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script type="module">
@@ -11,30 +12,25 @@
   import { getDatabase, ref, set, get, push, onValue, remove, runTransaction }
     from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js';
 
-                                                                                                                                                                                                                                                                        const firebaseConfig = {
-                                                                                                                                                                                                                                                                          apiKey: "AIzaSyDhqMq7W3sWNgnl-iLl4NhXtGI5ZZgGe3k",
-                                                                                                                                                                                                                                                                          authDomain: "phx-site.firebaseapp.com",
-                                                                                                                                                                                                                                                                          databaseURL: "https://phx-site-default-rtdb.firebaseio.com",
-                                                                                                                                                                                                                                                                          projectId: "phx-site",
-                                                                                                                                                                                                                                                                          storageBucket: "phx-site.firebasestorage.app",
-                                                                                                                                                                                                                                                                          messagingSenderId: "570143967768",
-                                                                                                                                                                                                                                                                          appId: "1:570143967768:web:ff792855663ad38a85916d",
-                                                                                                                                                                                                                                                                          measurementId: "G-VWB296B787"
-                                                                                                                                                                                                                                                                        };
+  const firebaseConfig = {
+    apiKey: "AIzaSyDhqMq7W3sWNgnl-iLl4NhXtGI5ZZgGe3k",
+    authDomain: "phx-site.firebaseapp.com",
+    databaseURL: "https://phx-site-default-rtdb.firebaseio.com",
+    projectId: "phx-site",
+    storageBucket: "phx-site.firebasestorage.app",
+    messagingSenderId: "570143967768",
+    appId: "1:570143967768:web:ff792855663ad38a85916d",
+    measurementId: "G-VWB296B787"
+  };
 
   let db = null;
   let firebaseOk = false;
-
   try {
     const app = initializeApp(firebaseConfig);
     db = getDatabase(app);
     firebaseOk = true;
-    console.log('%c🔥 Firebase connected', 'color:#c084fc;font-weight:bold');
-  } catch(e) {
-    console.warn('Firebase not configured – falling back to localStorage', e);
-  }
+  } catch(e) { /* silent */ }
 
-  // Expose to global scope
   window.__FB = { db, ok: firebaseOk, ref, set, get, push, onValue, remove, runTransaction };
 </script>
 <style>
@@ -68,23 +64,38 @@
   --gold:#fbbf24;
   --goldbg:rgba(251,191,36,0.12);
   --glow:0 0 40px rgba(192,132,252,0.12);
-  --sid:252px;
-  --rad:12px;
+  --sid:260px;
+  --rad:14px;
 }
 html,body{height:100%;overflow:hidden}
 body{background:var(--bg);color:var(--t1);font-family:'Instrument Sans',sans-serif;font-size:13px;display:flex;-webkit-font-smoothing:antialiased;cursor:default}
 ::-webkit-scrollbar{width:3px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--s5);border-radius:3px}
 
-/* ═══ NOISE OVERLAY ═══ */
+/* ═══ NOISE ═══ */
 body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");background-size:256px;opacity:.018;pointer-events:none;z-index:9999;animation:nshift 8s steps(4) infinite}
 @keyframes nshift{0%{background-position:0 0}25%{background-position:128px 64px}50%{background-position:256px 128px}75%{background-position:64px 256px}}
+
+/* ═══ BAN SCREEN ═══ */
+.ban-screen{position:fixed;inset:0;z-index:9999999;background:#000;display:none;align-items:center;justify-content:center;padding:20px;flex-direction:column}
+.ban-screen.active{display:flex}
+.ban-inner{max-width:560px;width:100%;text-align:center}
+.ban-stripe{height:6px;background:repeating-linear-gradient(90deg,#f00 0,#f00 20px,#000 20px,#000 40px);margin-bottom:32px;border-radius:3px}
+.ban-icon{font-size:64px;margin-bottom:16px;display:block;filter:drop-shadow(0 0 24px rgba(248,113,113,.6))}
+.ban-title{font-family:'Syne',sans-serif;font-size:28px;font-weight:800;color:#f87171;letter-spacing:-1px;margin-bottom:8px}
+.ban-sub{font-size:13px;color:#999;margin-bottom:24px;line-height:1.7}
+.ban-reason{background:rgba(248,113,113,.08);border:1px solid rgba(248,113,113,.3);border-radius:12px;padding:16px 20px;margin-bottom:24px;font-family:'JetBrains Mono',monospace;font-size:11px;color:#f87171;text-align:left;line-height:1.7}
+.ban-timer{font-family:'JetBrains Mono',monospace;font-size:32px;font-weight:700;color:#fff;margin-bottom:8px;letter-spacing:2px}
+.ban-timer-label{font-size:11px;color:#555;text-transform:uppercase;letter-spacing:.15em;font-family:'JetBrains Mono',monospace;margin-bottom:28px}
+.ban-link{display:inline-flex;align-items:center;gap:8px;background:rgba(248,113,113,.1);border:1px solid rgba(248,113,113,.3);color:#f87171;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.08em;padding:10px 18px;border-radius:8px;text-decoration:none;transition:all .15s}
+.ban-link:hover{background:rgba(248,113,113,.2)}
+.ban-stripe-b{height:6px;background:repeating-linear-gradient(90deg,#f00 0,#f00 20px,#000 20px,#000 40px);margin-top:32px;border-radius:3px}
 
 /* ═══ AGE GATE ═══ */
 .age-gate{position:fixed;inset:0;z-index:99999;background:rgba(4,4,8,0.98);backdrop-filter:blur(32px);display:flex;align-items:center;justify-content:center;padding:20px}
 .age-gate.gone{display:none}
 .age-box{background:linear-gradient(160deg,var(--s1),var(--s0));border:1px solid var(--b2);border-radius:24px;width:100%;max-width:400px;padding:48px 40px 40px;text-align:center;box-shadow:0 60px 120px rgba(0,0,0,.9),var(--glow);animation:gateIn .5s cubic-bezier(.34,1.56,.64,1)}
 @keyframes gateIn{from{opacity:0;transform:scale(.9) translateY(20px)}to{opacity:1;transform:none}}
-.gate-logo{font-family:'Syne',sans-serif;font-size:38px;font-weight:800;color:var(--t0);letter-spacing:-2px;margin-bottom:6px}
+.gate-logo{font-family:'Syne',sans-serif;font-size:42px;font-weight:800;color:var(--t0);letter-spacing:-2px;margin-bottom:6px}
 .gate-logo em{font-style:normal;background:linear-gradient(135deg,var(--acc),var(--acc2),var(--acc3));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
 .gate-badge{display:inline-flex;align-items:center;gap:5px;background:var(--accbg);border:1px solid var(--accborder);color:var(--acc);font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:500;letter-spacing:.18em;text-transform:uppercase;padding:4px 12px;border-radius:999px;margin-bottom:24px}
 .gate-dot{width:5px;height:5px;border-radius:50%;background:var(--acc);animation:blink 1.4s ease-in-out infinite}
@@ -105,21 +116,21 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 .sidebar{width:var(--sid);flex-shrink:0;background:var(--s0);border-right:1px solid var(--b0);display:flex;flex-direction:column;height:100vh;z-index:200;position:relative}
 .sidebar::after{content:'';position:absolute;top:0;right:0;width:1px;height:100%;background:linear-gradient(to bottom,transparent,var(--acc) 30%,var(--acc2) 70%,transparent);opacity:.12;pointer-events:none}
 .sb-logo{padding:22px 20px 18px;display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--b0);flex-shrink:0}
-.sb-logo-mark{width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,var(--acc),var(--acc2));display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 4px 20px rgba(192,132,252,.4)}
-.sb-logo-mark svg{width:14px;height:14px;color:#fff}
-.sb-wordmark{font-family:'Syne',sans-serif;font-size:20px;font-weight:800;color:var(--t0);letter-spacing:-1px}
+.sb-logo-mark{width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,var(--acc),var(--acc2));display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 4px 20px rgba(192,132,252,.45)}
+.sb-logo-mark svg{width:15px;height:15px;color:#fff}
+.sb-wordmark{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;color:var(--t0);letter-spacing:-1.2px}
 .sb-wordmark em{font-style:normal;background:linear-gradient(135deg,var(--acc),var(--acc3));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-.sb-user{padding:10px 10px 8px;border-bottom:1px solid var(--b0);flex-shrink:0;position:relative}
+.sb-user{padding:10px 10px 8px;border-bottom:1px solid var(--b0);flex-shrink:0}
 .sb-user-card{display:flex;align-items:center;gap:10px;padding:9px 12px;background:var(--s2);border:1px solid var(--b1);border-radius:11px;cursor:pointer;transition:all .15s}
 .sb-user-card:hover{background:var(--s3);border-color:var(--b2)}
-.sb-avatar{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,var(--acc),var(--acc3));display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;flex-shrink:0;font-family:'Syne',sans-serif}
+.sb-avatar{width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,var(--acc),var(--acc3));display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;flex-shrink:0;font-family:'Syne',sans-serif}
 .sb-uname{font-size:12.5px;font-weight:600;color:var(--t1);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;letter-spacing:-.1px}
 .sb-status{width:6px;height:6px;border-radius:50%;background:var(--green);flex-shrink:0;box-shadow:0 0 8px rgba(74,222,128,.7)}
 .sb-search{padding:10px 10px 6px;flex-shrink:0}
 .sb-search-wrap{display:flex;align-items:center;gap:8px;background:var(--s2);border:1px solid var(--b1);border-radius:10px;padding:0 12px;transition:all .18s}
 .sb-search-wrap:focus-within{border-color:var(--accborder);background:var(--s3);box-shadow:0 0 0 3px var(--accdim)}
 .sb-search-wrap svg{width:13px;height:13px;color:var(--t4);flex-shrink:0}
-.sb-search-wrap input{flex:1;background:transparent;border:none;outline:none;font-family:'Instrument Sans',sans-serif;font-size:12.5px;color:var(--t1);padding:8.5px 0}
+.sb-search-wrap input{flex:1;background:transparent;border:none;outline:none;font-family:'Instrument Sans',sans-serif;font-size:12.5px;color:var(--t1);padding:9px 0}
 .sb-search-wrap input::placeholder{color:var(--t4)}
 .sb-sec{font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:500;color:var(--t4);letter-spacing:.18em;text-transform:uppercase;padding:16px 20px 6px;flex-shrink:0}
 .sb-scroll{flex:1;overflow-y:auto;padding:2px 8px 8px}
@@ -138,13 +149,13 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 .sb-pip{width:4px;height:4px;border-radius:50%;background:var(--s5);flex-shrink:0;transition:background .12s}
 .sb-tag-item.active .sb-pip{background:var(--acc);box-shadow:0 0 6px var(--acc)}
 .sb-foot{padding:10px;border-top:1px solid var(--b0);flex-shrink:0;display:flex;gap:6px}
-.sb-foot-btn{flex:1;padding:8.5px;border-radius:10px;font-family:'Syne',sans-serif;font-size:12.5px;font-weight:700;cursor:pointer;transition:all .15s;border:none;letter-spacing:-.1px}
+.sb-foot-btn{flex:1;padding:9px;border-radius:10px;font-family:'Syne',sans-serif;font-size:12.5px;font-weight:700;cursor:pointer;transition:all .15s;border:none;letter-spacing:-.1px}
 .btn-ghost{background:var(--s3);color:var(--t2);border:1px solid var(--b1)}.btn-ghost:hover{background:var(--s4);color:var(--t1)}
 .btn-acc{background:linear-gradient(135deg,var(--acc),var(--acc2));color:#fff;box-shadow:0 4px 16px rgba(192,132,252,.3)}.btn-acc:hover{filter:brightness(1.08);transform:translateY(-1px)}
 
 /* ═══ MAIN ═══ */
 .main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0}
-.topbar{height:54px;flex-shrink:0;display:flex;align-items:center;gap:10px;padding:0 20px;background:var(--s0);border-bottom:1px solid var(--b0);position:relative;z-index:100}
+.topbar{height:56px;flex-shrink:0;display:flex;align-items:center;gap:10px;padding:0 20px;background:var(--s0);border-bottom:1px solid var(--b0);position:relative;z-index:100}
 .topbar::after{content:'';position:absolute;bottom:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--acc),var(--acc2),transparent);opacity:.15}
 .tb-heading{font-family:'Syne',sans-serif;font-size:15px;font-weight:700;color:var(--t0);letter-spacing:-.4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:200px}
 .tb-count{font-size:11px;font-family:'JetBrains Mono',monospace;color:var(--t4);white-space:nowrap}
@@ -153,13 +164,10 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 .tb-tab{padding:4px 13px;border-radius:8px;font-size:11.5px;font-weight:600;color:var(--t3);cursor:pointer;transition:all .13s;user-select:none;font-family:'Syne',sans-serif;letter-spacing:-.1px}
 .tb-tab:hover{color:var(--t2)}.tb-tab.active{background:var(--s4);color:var(--t0);box-shadow:0 1px 4px rgba(0,0,0,.3)}
 .spacer{flex:1}
-.tb-proxy{display:inline-flex;align-items:center;gap:5px;font-size:10px;font-family:'JetBrains Mono',monospace;padding:4px 10px;border-radius:7px;background:var(--s2);border:1px solid var(--b1);color:var(--t4);white-space:nowrap}
-.tb-proxy.ok{border-color:rgba(74,222,128,.25);color:var(--green)}.tb-proxy.fail{border-color:var(--accborder);color:var(--acc)}
-.tb-proxy-dot{width:5px;height:5px;border-radius:50%;background:currentColor;flex-shrink:0}
 .tb-sort{display:flex;background:var(--s2);border:1px solid var(--b1);border-radius:10px;padding:3px;gap:2px}
 .tb-sort-btn{padding:4px 12px;border-radius:8px;font-size:11.5px;font-weight:600;color:var(--t3);background:transparent;border:none;font-family:'Syne',sans-serif;cursor:pointer;transition:all .13s;white-space:nowrap;letter-spacing:-.1px}
 .tb-sort-btn:hover{color:var(--t2)}.tb-sort-btn.active{background:var(--s4);color:var(--t0)}
-.tb-icon{width:34px;height:34px;border-radius:10px;background:var(--s2);border:1px solid var(--b1);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .15s;flex-shrink:0;position:relative}
+.tb-icon{width:36px;height:36px;border-radius:10px;background:var(--s2);border:1px solid var(--b1);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .15s;flex-shrink:0;position:relative}
 .tb-icon:hover{background:var(--s3);border-color:var(--b2)}
 .tb-icon svg{width:14px;height:14px;color:var(--t2)}
 .tb-icon.authed{border-color:var(--accborder);background:var(--accbg)}
@@ -167,19 +175,17 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 .tb-icon.authed::after{content:'';position:absolute;top:6px;right:6px;width:6px;height:6px;border-radius:50%;background:var(--green);border:1.5px solid var(--s0);box-shadow:0 0 6px rgba(74,222,128,.8)}
 
 .content{flex:1;overflow-y:auto;overflow-x:hidden;background:var(--bg)}
-.grid-wrap{padding:10px}
+.grid-wrap{padding:12px}
 .masonry{columns:var(--cols,5);column-gap:8px}
 
 /* ═══ CARDS ═══ */
 .card{break-inside:avoid;margin-bottom:8px;border-radius:var(--rad);overflow:hidden;background:var(--s1);cursor:pointer;position:relative;display:block;transition:transform .25s cubic-bezier(.34,1.4,.64,1),box-shadow .25s,border-color .2s;border:1px solid var(--b0)}
-.card:hover{transform:translateY(-4px) scale(1.01);box-shadow:0 16px 48px rgba(0,0,0,.7),0 0 0 1px var(--accborder);border-color:var(--accborder)}
+.card:hover{transform:translateY(-4px) scale(1.01);box-shadow:0 20px 52px rgba(0,0,0,.75),0 0 0 1px var(--accborder);border-color:var(--accborder)}
 .card img,.card video{width:100%;display:block;transition:transform .55s cubic-bezier(.25,.46,.45,.94)}
 .card:hover img,.card:hover video{transform:scale(1.06)}
 .card img.blurred,.card video.blurred{filter:blur(22px);transform:scale(1.1)!important}
-/* Auto-reveal: no blur when enabled */
 body.auto-reveal .card img.blurred,body.auto-reveal .card video.blurred{filter:none!important;transform:none!important}
 body.auto-reveal .card .shield{display:none!important}
-body.auto-reveal .card{pointer-events:auto}
 body.auto-reveal .card .card-glass{pointer-events:all}
 
 .shield{position:absolute;inset:0;z-index:20;display:flex;align-items:center;justify-content:center;background:rgba(6,6,8,.5);backdrop-filter:blur(2px);opacity:0;pointer-events:none;transition:opacity .2s;border-radius:var(--rad)}
@@ -235,7 +241,7 @@ body.auto-reveal .card:hover .card-glass{pointer-events:all;opacity:1}
 .v-arr{width:42px;height:42px;border-radius:50%;background:rgba(6,6,8,.8);backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,.12);display:flex;align-items:center;justify-content:center;cursor:pointer;pointer-events:all;transition:all .18s;opacity:.35}
 .v-arr:hover{opacity:1;transform:scale(1.08);background:rgba(192,132,252,.2);border-color:var(--accborder)}
 .v-arr svg{width:18px;height:18px;color:#fff}
-.v-panel{width:310px;flex-shrink:0;border-left:1px solid var(--b0);display:flex;flex-direction:column;background:var(--s0)}
+.v-panel{width:300px;flex-shrink:0;border-left:1px solid var(--b0);display:flex;flex-direction:column;background:var(--s0)}
 .v-panel-head{padding:16px 16px 14px;border-bottom:1px solid var(--b0);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
 .v-panel-id{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--t4);letter-spacing:.06em}
 .v-close-btn{width:30px;height:30px;border-radius:8px;background:var(--s2);border:1px solid var(--b1);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--t3);transition:all .13s}
@@ -271,30 +277,8 @@ body.auto-reveal .card:hover .card-glass{pointer-events:all;opacity:1}
 .v-tab.active .v-tab-badge{background:var(--s5)}
 .v-body{flex:1;overflow-y:auto;padding:10px 14px 14px}
 .v-tags{display:flex;flex-wrap:wrap;gap:5px;padding-top:4px}
-.v-tag{padding:4px 10px;background:var(--s2);border:1px solid var(--b1);border-radius:999px;font-size:11px;color:var(--t3);cursor:pointer;transition:all .13px;white-space:nowrap;transition:all .13s}
+.v-tag{padding:4px 10px;background:var(--s2);border:1px solid var(--b1);border-radius:999px;font-size:11px;color:var(--t3);cursor:pointer;transition:all .13s;white-space:nowrap}
 .v-tag:hover{background:var(--accbg);color:var(--acc);border-color:var(--accborder)}
-.cmts{display:flex;flex-direction:column;gap:8px;padding-top:4px}
-.cmt-compose{display:flex;flex-direction:column;gap:6px;margin-bottom:4px}
-.cmt-input{background:var(--s2);border:1px solid var(--b1);border-radius:10px;padding:9px 11px;color:var(--t1);font-family:'Instrument Sans',sans-serif;font-size:12.5px;resize:none;outline:none;transition:all .15s;min-height:60px;width:100%}
-.cmt-input:focus{border-color:var(--accborder);background:var(--s3);box-shadow:0 0 0 3px var(--accdim)}
-.cmt-input::placeholder{color:var(--t4)}
-.cmt-row{display:flex;align-items:center;justify-content:space-between;gap:8px}
-.cmt-char{font-size:10px;color:var(--t4);font-family:'JetBrains Mono',monospace}
-.cmt-post{padding:5px 14px;border-radius:8px;background:linear-gradient(135deg,var(--acc),var(--acc2));border:none;color:#fff;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;cursor:pointer;transition:all .13s;letter-spacing:-.1px}
-.cmt-post:hover{filter:brightness(1.08)}.cmt-post:disabled{opacity:.35;cursor:not-allowed}
-.cmt-divider{height:1px;background:var(--b0);margin:4px 0 8px}
-.cmt-item{padding:9px 11px;background:var(--s2);border:1px solid var(--b1);border-radius:10px;transition:background .13s}
-.cmt-item:hover{background:var(--s3)}
-.cmt-header{display:flex;align-items:center;gap:7px;margin-bottom:5px}
-.cmt-avatar{width:22px;height:22px;border-radius:50%;background:linear-gradient(135deg,var(--acc),var(--acc3));display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;flex-shrink:0;font-family:'Syne',sans-serif}
-.cmt-uname{font-size:12px;font-weight:600;color:var(--t1);letter-spacing:-.1px}
-.cmt-time{font-size:10px;color:var(--t4);margin-left:auto;font-family:'JetBrains Mono',monospace}
-.cmt-text{font-size:12px;color:var(--t2);line-height:1.6}
-.cmt-del{background:none;border:none;color:var(--t4);font-size:10px;cursor:pointer;padding:2px 6px;border-radius:5px;transition:all .12s;font-family:'Instrument Sans',sans-serif}
-.cmt-del:hover{color:var(--acc);background:var(--accbg)}
-.no-cmts{text-align:center;padding:30px 0;color:var(--t4);font-size:12px}
-.cmt-login-prompt{text-align:center;padding:12px;background:var(--s2);border:1px solid var(--b1);border-radius:10px;font-size:12px;color:var(--t3);cursor:pointer;transition:all .13s}
-.cmt-login-prompt:hover{background:var(--s3);color:var(--t2)}
 .v-foot{padding:8px 14px;border-top:1px solid var(--b0);font-size:10px;font-family:'JetBrains Mono',monospace;color:var(--t4);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
 .v-bar{flex:1;height:2px;background:var(--s4);border-radius:1px;margin:0 10px;overflow:hidden}
 .v-bar-fill{height:100%;background:linear-gradient(90deg,var(--acc),var(--acc2));border-radius:1px;transition:width .2s}
@@ -325,7 +309,7 @@ body.auto-reveal .card:hover .card-glass{pointer-events:all;opacity:1}
 .modal-err.show{display:block}
 
 /* ═══ SETTINGS PANEL ═══ */
-.settings-overlay{position:fixed;inset:0;z-index:88888;background:rgba(0,0,0,.6);backdrop-filter:blur(8px);display:none;align-items:flex-start;justify-content:flex-end;padding:60px 16px 0}
+.settings-overlay{position:fixed;inset:0;z-index:88888;background:rgba(0,0,0,.6);backdrop-filter:blur(8px);display:none;align-items:flex-start;justify-content:flex-end;padding:64px 16px 0}
 .settings-overlay.open{display:flex}
 .settings-panel{width:340px;max-height:calc(100vh - 80px);background:linear-gradient(160deg,var(--s1),var(--s0));border:1px solid var(--b2);border-radius:20px;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 32px 80px rgba(0,0,0,.9),var(--glow);animation:panelIn .28s cubic-bezier(.16,1,.3,1)}
 @keyframes panelIn{from{opacity:0;transform:translateY(-12px) scale(.97)}to{opacity:1;transform:none}}
@@ -339,18 +323,12 @@ body.auto-reveal .card:hover .card-glass{pointer-events:all;opacity:1}
 .sp-close:hover{background:var(--s4);color:var(--t1)}
 .sp-close svg{width:12px;height:12px}
 .sp-body{overflow-y:auto;padding:12px 16px 20px;display:flex;flex-direction:column;gap:6px}
-
-/* Account info card inside settings */
 .sp-user-card{background:var(--s2);border:1px solid var(--b1);border-radius:14px;padding:14px 16px;display:flex;align-items:center;gap:12px;margin-bottom:6px}
 .sp-user-avatar{width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,var(--acc),var(--acc3));display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:#fff;font-family:'Syne',sans-serif;flex-shrink:0}
 .sp-user-info{flex:1;min-width:0}
 .sp-user-name{font-family:'Syne',sans-serif;font-size:14px;font-weight:700;color:var(--t0);letter-spacing:-.3px}
 .sp-user-badge{display:inline-flex;align-items:center;gap:4px;background:var(--accbg);border:1px solid var(--accborder);color:var(--acc);font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.1em;text-transform:uppercase;padding:2px 8px;border-radius:999px;margin-top:3px}
-
-/* Section headers in settings */
 .sp-section{font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:500;color:var(--t4);text-transform:uppercase;letter-spacing:.18em;padding:10px 4px 4px}
-
-/* Setting row */
 .sp-row{display:flex;align-items:center;gap:12px;padding:12px 14px;background:var(--s2);border:1px solid var(--b1);border-radius:12px;transition:all .14s;margin-bottom:2px}
 .sp-row:hover{background:var(--s3);border-color:var(--b2)}
 .sp-row-icon{width:32px;height:32px;border-radius:9px;background:var(--s3);border:1px solid var(--b1);display:flex;align-items:center;justify-content:center;flex-shrink:0}
@@ -360,15 +338,12 @@ body.auto-reveal .card:hover .card-glass{pointer-events:all;opacity:1}
 .sp-row-text{flex:1;min-width:0}
 .sp-row-label{font-size:13px;font-weight:600;color:var(--t1);letter-spacing:-.1px}
 .sp-row-desc{font-size:11px;color:var(--t4);margin-top:2px;line-height:1.4}
-/* Toggle switch */
 .sp-toggle{position:relative;width:42px;height:24px;flex-shrink:0}
 .sp-toggle input{opacity:0;width:0;height:0;position:absolute}
 .sp-toggle-track{position:absolute;inset:0;border-radius:99px;background:var(--s4);border:1px solid var(--b2);cursor:pointer;transition:all .2s}
 .sp-toggle input:checked + .sp-toggle-track{background:var(--acc);border-color:var(--acc);box-shadow:0 0 12px rgba(192,132,252,.4)}
 .sp-toggle-thumb{position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:50%;background:#fff;transition:all .2s;pointer-events:none;box-shadow:0 1px 4px rgba(0,0,0,.4)}
 .sp-toggle input:checked ~ .sp-toggle-thumb{left:21px}
-
-/* Danger zone */
 .sp-danger-row{display:flex;align-items:center;gap:12px;padding:12px 14px;background:rgba(248,113,113,.05);border:1px solid rgba(248,113,113,.15);border-radius:12px;cursor:pointer;transition:all .14s;margin-bottom:2px}
 .sp-danger-row:hover{background:rgba(248,113,113,.1);border-color:rgba(248,113,113,.3)}
 .sp-danger-row .sp-row-icon{background:rgba(248,113,113,.1);border-color:rgba(248,113,113,.2)}
@@ -376,12 +351,7 @@ body.auto-reveal .card:hover .card-glass{pointer-events:all;opacity:1}
 .sp-danger-row .sp-row-label{color:var(--red)}
 .sp-danger-row .sp-row-desc{color:rgba(248,113,113,.5)}
 
-/* Firebase badge in settings */
-.sp-firebase-badge{display:flex;align-items:center;gap:8px;padding:9px 14px;background:rgba(251,191,36,.04);border:1px solid rgba(251,191,36,.12);border-radius:10px;font-size:11px;font-family:'JetBrains Mono',monospace;color:rgba(251,191,36,.6);margin-bottom:2px}
-.sp-firebase-badge.connected{background:rgba(74,222,128,.04);border-color:rgba(74,222,128,.12);color:rgba(74,222,128,.7)}
-.sp-firebase-dot{width:5px;height:5px;border-radius:50%;background:currentColor;flex-shrink:0}
-
-/* ═══ AUTO-REVEAL CONFIRM MODAL ═══ */
+/* ═══ AUTO-REVEAL CONFIRM ═══ */
 .ar-modal-wrap{position:fixed;inset:0;z-index:999999;background:rgba(0,0,0,.92);backdrop-filter:blur(20px);display:none;align-items:center;justify-content:center;padding:20px}
 .ar-modal-wrap.open{display:flex}
 .ar-box{background:linear-gradient(160deg,var(--s1),var(--s0));border:1px solid var(--b2);border-radius:20px;width:100%;max-width:360px;padding:36px 32px 28px;text-align:center;box-shadow:0 40px 100px rgba(0,0,0,.9),var(--glow);animation:gateIn .35s cubic-bezier(.34,1.56,.64,1)}
@@ -393,8 +363,7 @@ body.auto-reveal .card:hover .card-glass{pointer-events:all;opacity:1}
 .ar-btn-yes{padding:13px;border-radius:13px;border:none;font-family:'Syne',sans-serif;font-size:14px;font-weight:700;cursor:pointer;letter-spacing:-.2px;position:relative;overflow:hidden;transition:all .2s}
 .ar-btn-yes::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,var(--acc),var(--acc2));z-index:0}
 .ar-btn-yes span{position:relative;z-index:1;color:#fff}
-.ar-btn-yes:hover::before{filter:brightness(1.1)}
-.ar-btn-no{padding:11px;border-radius:12px;background:transparent;border:1px solid var(--b1);color:var(--t3);font-family:'Instrument Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer;transition:all .15s}
+.ar-btn-no{padding:11px;border-radius:12px;background:transparent;border:1px solid var(--b1);color:var(--t3);font-family:'Instrument Sans',sans-serif;font-size:13px;cursor:pointer;transition:all .15s}
 .ar-btn-no:hover{background:var(--s3);color:var(--t2)}
 .ar-warn{margin-top:16px;font-size:10px;color:var(--t4);font-family:'JetBrains Mono',monospace;line-height:1.6}
 
@@ -412,9 +381,34 @@ body.auto-reveal .card:hover .card-glass{pointer-events:all;opacity:1}
 @media(max-width:760px){body{--cols:2};.v-panel{display:none};.tb-sort{display:none};.topbar{padding:0 12px;gap:7px}}
 @media(min-width:1700px){body{--cols:6}}
 @media(min-width:2100px){body{--cols:7}}
+
+/* hide scores when off */
+body.hide-scores .score-chip{display:none}
 </style>
 </head>
 <body>
+
+<!-- BAN SCREEN -->
+<div class="ban-screen" id="banScreen">
+  <div class="ban-inner">
+    <div class="ban-stripe"></div>
+    <span class="ban-icon">🚫</span>
+    <div class="ban-title">Access Denied</div>
+    <div class="ban-sub">Your access to phX has been suspended.</div>
+    <div class="ban-reason">
+      <strong style="color:#f87171">Reason:</strong> Searching up Banned Material<br><br>
+      Searching for content involving minors is illegal and violates our Terms of Service.<br>
+      This incident has been logged. You may report CSAM to the FBI below.
+    </div>
+    <div class="ban-timer" id="banTimer">00:00:00</div>
+    <div class="ban-timer-label">Time remaining</div>
+    <a class="ban-link" href="https://www.fbi.gov/how-we-can-help-you/victim-services/cenp" target="_blank" rel="noopener noreferrer">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+      Report to FBI — CSAM / Online Exploitation
+    </a>
+    <div class="ban-stripe-b"></div>
+  </div>
+</div>
 
 <!-- AGE GATE -->
 <div class="age-gate" id="ageGate">
@@ -437,7 +431,7 @@ body.auto-reveal .card:hover .card-glass{pointer-events:all;opacity:1}
     </div>
     <span class="sb-wordmark">ph<em>X</em></span>
   </div>
-  <div class="sb-user" id="sbUserWrap">
+  <div class="sb-user">
     <div class="sb-user-card" id="sbCard" onclick="handleUserCard()">
       <div class="sb-avatar" id="sbAvatar">?</div>
       <span class="sb-uname" id="sbUname">Sign in</span>
@@ -495,12 +489,10 @@ body.auto-reveal .card:hover .card-glass{pointer-events:all;opacity:1}
       <div class="tb-tab" onclick="setMediaFilter('video',this)">Video</div>
     </div>
     <div class="spacer"></div>
-    <div class="tb-proxy" id="proxyBadge"><div class="tb-proxy-dot"></div><span id="proxyTxt">checking…</span></div>
     <div class="tb-sort">
       <button class="tb-sort-btn active" onclick="setSort('id',this)">Latest</button>
       <button class="tb-sort-btn" onclick="setSort('score',this)">Score</button>
     </div>
-    <!-- Account button — opens settings when logged in, auth when not -->
     <div class="tb-icon" id="tbAcctBtn" onclick="handleTopbarAcct()" title="Account">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
     </div>
@@ -552,7 +544,6 @@ body.auto-reveal .card:hover .card-glass{pointer-events:all;opacity:1}
       </div>
       <div class="v-tabs">
         <button class="v-tab active" onclick="vTab('tags',this)">Tags <span class="v-tab-badge" id="vTagCt">0</span></button>
-        <button class="v-tab" onclick="vTab('comments',this)">Comments <span class="v-tab-badge" id="vComCt">0</span></button>
       </div>
       <div class="v-body" id="vBody"></div>
       <div class="v-foot">
@@ -589,7 +580,7 @@ body.auto-reveal .card:hover .card-glass{pointer-events:all;opacity:1}
   <div class="settings-panel" id="settingsPanel">
     <div class="sp-head">
       <div class="sp-head-icon">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07M8.46 8.46a5 5 0 0 0 0 7.07"/></svg>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>
       </div>
       <div class="sp-head-text">
         <div class="sp-head-title">Settings</div>
@@ -600,34 +591,22 @@ body.auto-reveal .card:hover .card-glass{pointer-events:all;opacity:1}
       </div>
     </div>
     <div class="sp-body">
-      <!-- User card -->
       <div class="sp-user-card">
         <div class="sp-user-avatar" id="spAvatar">?</div>
         <div class="sp-user-info">
           <div class="sp-user-name" id="spUserName">—</div>
-          <div class="sp-user-badge">
-            <div class="gate-dot" style="width:4px;height:4px"></div>
-            Member
-          </div>
+          <div class="sp-user-badge"><div class="gate-dot" style="width:4px;height:4px"></div>Member</div>
         </div>
       </div>
 
-      <!-- Firebase status -->
-      <div class="sp-firebase-badge" id="spFirebaseBadge">
-        <div class="sp-firebase-dot"></div>
-        <span id="spFirebaseTxt">Firebase: not configured</span>
-      </div>
-
-      <!-- Content settings -->
       <div class="sp-section">Content</div>
-
       <div class="sp-row" id="arRow">
         <div class="sp-row-icon">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
         </div>
         <div class="sp-row-text">
           <div class="sp-row-label">Auto-Reveal</div>
-          <div class="sp-row-desc">Automatically show adult content without blur or tap-to-reveal</div>
+          <div class="sp-row-desc">Automatically show content without blur</div>
         </div>
         <label class="sp-toggle">
           <input type="checkbox" id="arToggle" onchange="handleAutoRevealToggle(this)">
@@ -636,16 +615,14 @@ body.auto-reveal .card:hover .card-glass{pointer-events:all;opacity:1}
         </label>
       </div>
 
-      <!-- Display settings -->
       <div class="sp-section">Display</div>
-
       <div class="sp-row">
         <div class="sp-row-icon">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
         </div>
         <div class="sp-row-text">
           <div class="sp-row-label">Compact Grid</div>
-          <div class="sp-row-desc">Increase columns for a denser grid layout</div>
+          <div class="sp-row-desc">Denser layout with more columns</div>
         </div>
         <label class="sp-toggle">
           <input type="checkbox" id="compactToggle" onchange="handleCompactToggle(this)">
@@ -660,7 +637,7 @@ body.auto-reveal .card:hover .card-glass{pointer-events:all;opacity:1}
         </div>
         <div class="sp-row-text">
           <div class="sp-row-label">Show Scores on Cards</div>
-          <div class="sp-row-desc">Display post score overlay on the grid</div>
+          <div class="sp-row-desc">Display post score on the grid</div>
         </div>
         <label class="sp-toggle">
           <input type="checkbox" id="scoresToggle" checked onchange="handleScoresToggle(this)">
@@ -669,10 +646,8 @@ body.auto-reveal .card:hover .card-glass{pointer-events:all;opacity:1}
         </label>
       </div>
 
-      <!-- Account section -->
       <div class="sp-section">Account</div>
-
-      <div class="sp-row" style="cursor:pointer" onclick="closeSettings()">
+      <div class="sp-row" style="cursor:pointer">
         <div class="sp-row-icon">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
         </div>
@@ -684,14 +659,13 @@ body.auto-reveal .card:hover .card-glass{pointer-events:all;opacity:1}
       </div>
 
       <div class="sp-section">Danger Zone</div>
-
       <div class="sp-danger-row" onclick="clearFavorites()">
         <div class="sp-row-icon">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
         </div>
         <div class="sp-row-text">
           <div class="sp-row-label">Clear Saved Posts</div>
-          <div class="sp-row-desc">Remove all saved / favorited posts</div>
+          <div class="sp-row-desc">Remove all saved posts</div>
         </div>
       </div>
 
@@ -704,7 +678,6 @@ body.auto-reveal .card:hover .card-glass{pointer-events:all;opacity:1}
           <div class="sp-row-desc">Log out of your account</div>
         </div>
       </div>
-
     </div>
   </div>
 </div>
@@ -714,24 +687,157 @@ body.auto-reveal .card:hover .card-glass{pointer-events:all;opacity:1}
   <div class="ar-box">
     <span class="ar-emoji">🔞</span>
     <div class="ar-title">Heads up!</div>
-    <div class="ar-sub">
-      Auto-Reveal will <b>immediately show all adult content</b> without any blur or confirmation step.<br><br>
-      Are you sure you're <b>18+</b> and cool with this?
-    </div>
+    <div class="ar-sub">Auto-Reveal will <b>immediately show all content</b> without any blur or confirmation step.<br><br>Are you sure you're <b>18+</b> and okay with this?</div>
     <div class="ar-btns">
-      <button class="ar-btn-yes" onclick="confirmAutoReveal()"><span>Yeah I'm sure, enable it 🔥</span></button>
-      <button class="ar-btn-no" onclick="cancelAutoReveal()">Nah, keep it off</button>
+      <button class="ar-btn-yes" onclick="confirmAutoReveal()"><span>Yeah, enable it 🔥</span></button>
+      <button class="ar-btn-no" onclick="cancelAutoReveal()">Keep it off</button>
     </div>
-    <div class="ar-warn">This setting is saved to your browser. You can turn it off anytime in Settings.</div>
+    <div class="ar-warn">This is saved to your browser. Disable anytime in Settings.</div>
   </div>
 </div>
 
 <div class="toasts" id="toasts"></div>
 
 <script>
-// ════════════════════════════════════════════════
+// ═══════════════════════════════════════════════
+//  BAN SYSTEM
+// ═══════════════════════════════════════════════
+const BAN_DURATION_MS = 3 * 24 * 60 * 60 * 1000; // 3 days
+
+// Banned search terms — anything minor-related
+const BANNED_TERMS = [
+  'child','children','minor','minors','kid','kids','underage','under_age',
+  'teen','teens','teenager','teenagers','loli','lolicon','shota','shotacon',
+  'juvenile','preteen','pre-teen','prepubescent','pedo','pedophile',
+  'toddler','infant','baby','young_girl','young_boy','school_girl','schoolgirl',
+  'school_kid','little_girl','little_boy','jailbait','13','14','15','16','17',
+  'age_play','ageplay','age-play'
+];
+
+// Generate a device fingerprint (best-effort, not cryptographic)
+function getDeviceId() {
+  let id = localStorage.getItem('phx_did');
+  if (!id) {
+    const parts = [
+      navigator.userAgent,
+      navigator.language,
+      screen.width + 'x' + screen.height,
+      new Date().getTimezoneOffset(),
+      navigator.hardwareConcurrency || '',
+      navigator.platform || ''
+    ];
+    id = btoa(parts.join('|')).replace(/=/g,'').substring(0, 32);
+    localStorage.setItem('phx_did', id);
+  }
+  return id;
+}
+
+const DEVICE_ID = getDeviceId();
+
+function getBanInfo() {
+  // Try localStorage first
+  const local = localStorage.getItem('phx_ban');
+  if (local) {
+    try { return JSON.parse(local); } catch {}
+  }
+  return null;
+}
+
+function setBan(reason) {
+  const until = Date.now() + BAN_DURATION_MS;
+  const banData = { until, reason, device: DEVICE_ID, ts: Date.now() };
+  localStorage.setItem('phx_ban', JSON.stringify(banData));
+  sessionStorage.setItem('phx_ban', JSON.stringify(banData));
+  // Also push to Firebase for cross-device enforcement
+  window.addEventListener('load', () => {
+    setTimeout(() => {
+      if (window.__FB?.ok) {
+        const { ref, set, db } = window.__FB;
+        set(ref(db, `bans/${DEVICE_ID}`), banData).catch(() => {});
+      }
+    }, 1000);
+  });
+  showBanScreen(banData);
+}
+
+function showBanScreen(banData) {
+  document.getElementById('ageGate').classList.add('gone');
+  document.getElementById('banScreen').classList.add('active');
+  updateBanTimer(banData.until);
+  const iv = setInterval(() => {
+    if (!updateBanTimer(banData.until)) {
+      clearInterval(iv);
+      // Unban
+      localStorage.removeItem('phx_ban');
+      sessionStorage.removeItem('phx_ban');
+      document.getElementById('banScreen').classList.remove('active');
+      location.reload();
+    }
+  }, 1000);
+}
+
+function updateBanTimer(until) {
+  const rem = until - Date.now();
+  if (rem <= 0) return false;
+  const h = Math.floor(rem / 3600000);
+  const m = Math.floor((rem % 3600000) / 60000);
+  const s = Math.floor((rem % 60000) / 1000);
+  const pad = n => String(n).padStart(2, '0');
+  const d = Math.floor(h / 24);
+  const hh = h % 24;
+  document.getElementById('banTimer').textContent =
+    d > 0 ? `${d}d ${pad(hh)}h ${pad(m)}m ${pad(s)}s` : `${pad(hh)}:${pad(m)}:${pad(s)}`;
+  return true;
+}
+
+async function checkBanOnLoad() {
+  // Check localStorage
+  const local = getBanInfo();
+  if (local && local.until > Date.now()) {
+    showBanScreen(local);
+    return true;
+  }
+
+  // Check Firebase for cross-browser ban
+  await new Promise(r => setTimeout(r, 900)); // wait for FB init
+  if (window.__FB?.ok) {
+    try {
+      const { ref, get, db } = window.__FB;
+      const snap = await get(ref(db, `bans/${DEVICE_ID}`));
+      if (snap.exists()) {
+        const banData = snap.val();
+        if (banData.until > Date.now()) {
+          // Sync to localStorage so offline check works
+          localStorage.setItem('phx_ban', JSON.stringify(banData));
+          showBanScreen(banData);
+          return true;
+        } else {
+          // Expired — remove from Firebase
+          const { remove } = window.__FB;
+          remove(ref(db, `bans/${DEVICE_ID}`)).catch(() => {});
+        }
+      }
+    } catch {}
+  }
+
+  // Special: if username is "ricky", allow unban by checking Firebase flag
+  // (handled in submitAuth)
+  return false;
+}
+
+function containsBannedTerm(query) {
+  const q = query.toLowerCase().replace(/[^a-z0-9_\-]/g, ' ');
+  const words = q.split(/[\s_\-]+/);
+  for (const term of BANNED_TERMS) {
+    const t = term.toLowerCase();
+    if (words.includes(t) || q.includes(t)) return true;
+  }
+  return false;
+}
+
+// ═══════════════════════════════════════════════
 //  CONFIG
-// ════════════════════════════════════════════════
+// ═══════════════════════════════════════════════
 const PROXY    = '/api/proxy?url=';
 const API      = 'https://api.rule34.xxx/index.php?page=dapi&s=post&q=index&json=1';
 const R34_KEY  = '7088fd909e8ffedca36a0be2e5a11655eabd8f42cd07be62d91617cfb853e4132d309ae15a752be201c4c2415414f049d968eb5d6ec3fcc3274d365b0d3f399b';
@@ -747,101 +853,48 @@ function fetchT(url) {
   return fetch(url, { signal: c.signal }).finally(() => clearTimeout(t));
 }
 
-// ════════════════════════════════════════════════
+// ═══════════════════════════════════════════════
 //  STATE
-// ════════════════════════════════════════════════
+// ═══════════════════════════════════════════════
 let ST = { tags:'rating:explicit',page:0,sort:'id',mediaFilter:'all',posts:[],loading:false,done:false,vIdx:-1,vTab:'tags' };
-let user        = null;
-let favs        = JSON.parse(localStorage.getItem('phx_favs') || '[]');
-let settings    = JSON.parse(localStorage.getItem('phx_settings') || '{"autoReveal":false,"compact":false,"showScores":true}');
-let ageOk       = localStorage.getItem('phx_age') === '1';
+let user     = null;
+let favs     = JSON.parse(localStorage.getItem('phx_favs') || '[]');
+let settings = JSON.parse(localStorage.getItem('phx_settings') || '{"autoReveal":false,"compact":false,"showScores":true}');
+let ageOk    = localStorage.getItem('phx_age') === '1';
 
-// Firebase helpers (set after module loads)
 let FB = null;
 window.addEventListener('load', () => {
-  setTimeout(() => {
-    FB = window.__FB || null;
-    if (FB?.ok) {
-      document.getElementById('spFirebaseBadge').className = 'sp-firebase-badge connected';
-      document.getElementById('spFirebaseTxt').textContent = 'Firebase: connected 🔥';
-    }
-  }, 800);
+  setTimeout(() => { FB = window.__FB || null; }, 800);
 });
 
-// ════════════════════════════════════════════════
-//  FIREBASE HELPERS
-// ════════════════════════════════════════════════
-async function fbGetRatings(postId) {
-  if (!FB?.ok) return null;
-  try {
-    const snap = await FB.get(FB.ref(FB.db, `ratings/${postId}`));
-    return snap.exists() ? snap.val() : null;
-  } catch { return null; }
-}
-
+// ═══════════════════════════════════════════════
+//  FIREBASE RATINGS
+// ═══════════════════════════════════════════════
 async function fbSetRating(postId, username, stars) {
   if (!FB?.ok) return false;
-  try {
-    await FB.set(FB.ref(FB.db, `ratings/${postId}/${username}`), stars);
-    return true;
-  } catch { return false; }
+  try { await FB.set(FB.ref(FB.db, `ratings/${postId}/${username}`), stars); return true; } catch { return false; }
 }
-
 function fbListenRatings(postId, cb) {
   if (!FB?.ok) return () => {};
   const r = FB.ref(FB.db, `ratings/${postId}`);
-  const unsub = FB.onValue(r, snap => cb(snap.exists() ? snap.val() : {}));
-  return unsub;
+  return FB.onValue(r, snap => cb(snap.exists() ? snap.val() : {}));
 }
 
-async function fbGetComments(postId) {
-  if (!FB?.ok) return null;
-  try {
-    const snap = await FB.get(FB.ref(FB.db, `comments/${postId}`));
-    return snap.exists() ? Object.values(snap.val()) : [];
-  } catch { return null; }
-}
-
-async function fbPostComment(postId, cmt) {
-  if (!FB?.ok) return false;
-  try {
-    const newRef = FB.push(FB.ref(FB.db, `comments/${postId}`));
-    await FB.set(newRef, { ...cmt, fbId: newRef.key });
-    return true;
-  } catch { return false; }
-}
-
-async function fbDeleteComment(postId, fbId) {
-  if (!FB?.ok) return false;
-  try {
-    await FB.remove(FB.ref(FB.db, `comments/${postId}/${fbId}`));
-    return true;
-  } catch { return false; }
-}
-
-// ════════════════════════════════════════════════
+// ═══════════════════════════════════════════════
 //  SETTINGS
-// ════════════════════════════════════════════════
+// ═══════════════════════════════════════════════
 function saveSettings() { localStorage.setItem('phx_settings', JSON.stringify(settings)); }
 
 function applySettings() {
-  // Auto-reveal
   document.body.classList.toggle('auto-reveal', !!settings.autoReveal);
   const arToggle = document.getElementById('arToggle');
   if (arToggle) arToggle.checked = !!settings.autoReveal;
   const arRow = document.getElementById('arRow');
   if (arRow) arRow.classList.toggle('active-setting', !!settings.autoReveal);
-
-  // Compact grid
   const compactToggle = document.getElementById('compactToggle');
   if (compactToggle) compactToggle.checked = !!settings.compact;
-  if (settings.compact) {
-    document.documentElement.style.setProperty('--cols', '6');
-  } else {
-    document.documentElement.style.removeProperty('--cols');
-  }
-
-  // Scores
+  document.documentElement.style.setProperty('--cols', settings.compact ? '6' : '');
+  if (!settings.compact) document.documentElement.style.removeProperty('--cols');
   const scoresToggle = document.getElementById('scoresToggle');
   if (scoresToggle) scoresToggle.checked = settings.showScores !== false;
   document.body.classList.toggle('hide-scores', settings.showScores === false);
@@ -849,7 +902,6 @@ function applySettings() {
 
 function openSettings() {
   if (!user) { openAuth('login'); return; }
-  // Populate panel
   document.getElementById('spAvatar').textContent = user.username[0].toUpperCase();
   document.getElementById('spUserName').textContent = user.username;
   document.getElementById('spUserSub').textContent = user.username;
@@ -858,97 +910,63 @@ function openSettings() {
   document.getElementById('settingsOverlay').classList.add('open');
 }
 
-function closeSettings() {
-  document.getElementById('settingsOverlay').classList.remove('open');
-}
-
-function handleSettingsOverlayClick(e) {
-  if (e.target === document.getElementById('settingsOverlay')) closeSettings();
-}
-
-function signOutFromSettings() {
-  closeSettings();
-  signOut();
-}
+function closeSettings() { document.getElementById('settingsOverlay').classList.remove('open'); }
+function handleSettingsOverlayClick(e) { if (e.target === document.getElementById('settingsOverlay')) closeSettings(); }
+function signOutFromSettings() { closeSettings(); signOut(); }
 
 function clearFavorites() {
-  if (!confirm('Clear all saved posts? This cannot be undone.')) return;
+  if (!confirm('Clear all saved posts?')) return;
   favs = [];
   localStorage.setItem('phx_favs', JSON.stringify(favs));
   document.getElementById('spFavCount').textContent = '0 saved posts';
   toast('Saved posts cleared');
 }
 
-// Compact toggle
-function handleCompactToggle(el) {
-  settings.compact = el.checked;
-  saveSettings();
-  applySettings();
-  toast(el.checked ? 'Compact grid on' : 'Compact grid off');
-}
+function handleCompactToggle(el) { settings.compact = el.checked; saveSettings(); applySettings(); }
+function handleScoresToggle(el) { settings.showScores = el.checked; saveSettings(); applySettings(); }
 
-// Scores toggle
-function handleScoresToggle(el) {
-  settings.showScores = el.checked;
-  saveSettings();
-  applySettings();
-}
-
-// ════════════════════════════════════════════════
+// ═══════════════════════════════════════════════
 //  AUTO-REVEAL
-// ════════════════════════════════════════════════
+// ═══════════════════════════════════════════════
 function handleAutoRevealToggle(el) {
-  if (el.checked) {
-    // Uncheck immediately — will re-check after confirmation
-    el.checked = false;
-    document.getElementById('arModal').classList.add('open');
-  } else {
-    settings.autoReveal = false;
-    saveSettings();
-    applySettings();
-    toast('Auto-Reveal disabled');
-  }
+  if (el.checked) { el.checked = false; document.getElementById('arModal').classList.add('open'); }
+  else { settings.autoReveal = false; saveSettings(); applySettings(); toast('Auto-Reveal disabled'); }
 }
-
 function confirmAutoReveal() {
   document.getElementById('arModal').classList.remove('open');
-  settings.autoReveal = true;
-  saveSettings();
-  applySettings();
-  toast('Auto-Reveal enabled 🔞', 'green');
+  settings.autoReveal = true; saveSettings(); applySettings(); toast('Auto-Reveal enabled 🔞', 'green');
 }
-
 function cancelAutoReveal() {
   document.getElementById('arModal').classList.remove('open');
-  // Keep toggle off
   document.getElementById('arToggle').checked = false;
 }
 
-// ════════════════════════════════════════════════
-//  AGE GATE
-// ════════════════════════════════════════════════
+// ═══════════════════════════════════════════════
+//  STARTUP
+// ═══════════════════════════════════════════════
+async function startup() {
+  const banned = await checkBanOnLoad();
+  if (banned) return;
+
+  if (ageOk) {
+    document.getElementById('ageGate').classList.add('gone');
+    applySettings();
+    loadMore();
+  }
+}
+startup();
+
 function ageConfirm() {
   localStorage.setItem('phx_age','1');
   ageOk = true;
   document.getElementById('ageGate').classList.add('gone');
   applySettings();
-  initProxy().then(() => loadMore());
-}
-if (ageOk) {
-  document.getElementById('ageGate').classList.add('gone');
-  applySettings();
-  initProxy().then(() => loadMore());
+  loadMore();
 }
 
-function initProxy() {
-  document.getElementById('proxyBadge').className = 'tb-proxy ok';
-  document.getElementById('proxyTxt').textContent = 'proxy ✓';
-  return Promise.resolve(true);
-}
-
-// ════════════════════════════════════════════════
+// ═══════════════════════════════════════════════
 //  MEDIA
-// ════════════════════════════════════════════════
+// ═══════════════════════════════════════════════
 function attachMedia(el, raw) {
   if (!raw) return;
   el.onerror = () => {
@@ -961,9 +979,9 @@ function attachMedia(el, raw) {
   el.src = proxy(raw);
 }
 
-// ════════════════════════════════════════════════
+// ═══════════════════════════════════════════════
 //  SIDEBAR TAGS
-// ════════════════════════════════════════════════
+// ═══════════════════════════════════════════════
 (function() {
   const el = document.getElementById('sbTags');
   POPULAR_TAGS.forEach(tag => {
@@ -979,9 +997,9 @@ function attachMedia(el, raw) {
   });
 })();
 
-// ════════════════════════════════════════════════
+// ═══════════════════════════════════════════════
 //  NAV
-// ════════════════════════════════════════════════
+// ═══════════════════════════════════════════════
 function navItem(el) {
   document.querySelectorAll('.sb-item').forEach(i => i.classList.remove('active'));
   el.classList.add('active');
@@ -997,10 +1015,16 @@ function setTags(tags) {
 }
 
 function doSearch() {
-  const q = document.getElementById('searchInput').value.trim();
-  if (!q) return;
-  document.getElementById('tbHeading').textContent = q;
-  setTags(q + ' rating:explicit');
+  const raw = document.getElementById('searchInput').value.trim();
+  if (!raw) return;
+  // ── CHILD SAFETY CHECK ──
+  if (containsBannedTerm(raw)) {
+    document.getElementById('searchInput').value = '';
+    setBan('Searching up Banned Material');
+    return;
+  }
+  document.getElementById('tbHeading').textContent = raw;
+  setTags(raw + ' rating:explicit');
 }
 
 function setSort(s, el) {
@@ -1017,9 +1041,9 @@ function setMediaFilter(f, el) {
   renderGrid();
 }
 
-// ════════════════════════════════════════════════
+// ═══════════════════════════════════════════════
 //  FETCH
-// ════════════════════════════════════════════════
+// ═══════════════════════════════════════════════
 async function loadMore() {
   if (ST.loading || ST.done) return;
   ST.loading = true;
@@ -1060,9 +1084,9 @@ function hideSentinel() {
   document.getElementById('sentinel').innerHTML = '<span style="font-size:11px;font-family:JetBrains Mono,monospace;color:var(--t4)">— end of results —</span>';
 }
 
-// ════════════════════════════════════════════════
+// ═══════════════════════════════════════════════
 //  RENDER
-// ════════════════════════════════════════════════
+// ═══════════════════════════════════════════════
 function renderGrid() {
   const grid = document.getElementById('grid');
   const existing = grid.children.length;
@@ -1149,11 +1173,10 @@ new IntersectionObserver(entries => {
   if (entries[0].isIntersecting && ageOk) loadMore();
 }, { rootMargin: '320px' }).observe(document.getElementById('sentinel'));
 
-// ════════════════════════════════════════════════
+// ═══════════════════════════════════════════════
 //  VIEWER
-// ════════════════════════════════════════════════
+// ═══════════════════════════════════════════════
 let ratingUnsub = null;
-let commentUnsub = null;
 
 function openViewer(idx) {
   ST.vIdx = idx; ST.vTab = 'tags';
@@ -1198,8 +1221,7 @@ function renderViewer() {
     attachMedia(v, post.file_url);
     vm.prepend(v);
   } else {
-    const img = document.createElement('img');
-    img.alt = '';
+    const img = document.createElement('img'); img.alt = '';
     attachMedia(img, post.file_url || post.sample_url);
     vm.prepend(img);
   }
@@ -1210,17 +1232,12 @@ function renderViewer() {
     <div class="v-stat"><div class="v-stat-num">${fmtSize(post.file_size)}</div><div class="v-stat-lbl">Size</div></div>
     <div class="v-stat"><div class="v-stat-num">${post.width||'?'}×${post.height||'?'}</div><div class="v-stat-lbl">Res</div></div>`;
 
-  // Live rating listener
   if (typeof ratingUnsub === 'function') { ratingUnsub(); ratingUnsub = null; }
   if (FB?.ok) {
-    ratingUnsub = fbListenRatings(post.id, ratingsObj => {
-      renderRatingFromObj(post.id, ratingsObj);
-    });
+    ratingUnsub = fbListenRatings(post.id, obj => renderRatingFromObj(post.id, obj));
   } else {
-    // fallback localStorage
-    const localRatings = JSON.parse(localStorage.getItem('phx_ratings') || '{}');
-    const arr = localRatings[post.id] || {};
-    renderRatingFromObj(post.id, arr);
+    const lr = JSON.parse(localStorage.getItem('phx_ratings') || '{}');
+    renderRatingFromObj(post.id, lr[post.id] || {});
   }
 
   const pos = ST.vIdx + 1, tot = f.length;
@@ -1232,13 +1249,11 @@ function renderViewer() {
 }
 
 function renderRatingFromObj(postId, ratingsObj) {
-  // ratingsObj: { username: stars, ... }
   const vals = Object.values(ratingsObj || {}).map(Number).filter(v => v >= 1 && v <= 5);
-  const myKey = user ? user.username : null;
+  const myKey = user?.username;
   const myR = myKey && ratingsObj[myKey] ? Number(ratingsObj[myKey]) : 0;
   const avg = vals.length ? (vals.reduce((a,b) => a+b, 0) / vals.length).toFixed(1) : '—';
   const pct = vals.length ? (parseFloat(avg)/5)*100 : 0;
-
   const starsEl = document.getElementById('vStars');
   if (!starsEl) return;
   starsEl.innerHTML = '';
@@ -1266,112 +1281,25 @@ async function ratePost(postId, stars) {
   if (FB?.ok) {
     await fbSetRating(postId, user.username, stars);
   } else {
-    // localStorage fallback
-    let localRatings = JSON.parse(localStorage.getItem('phx_ratings') || '{}');
-    if (!localRatings[postId]) localRatings[postId] = {};
-    localRatings[postId][user.username] = stars;
-    localStorage.setItem('phx_ratings', JSON.stringify(localRatings));
-    renderRatingFromObj(postId, localRatings[postId]);
+    let lr = JSON.parse(localStorage.getItem('phx_ratings') || '{}');
+    if (!lr[postId]) lr[postId] = {};
+    lr[postId][user.username] = stars;
+    localStorage.setItem('phx_ratings', JSON.stringify(lr));
+    renderRatingFromObj(postId, lr[postId]);
   }
   toast(`Rated ${stars}★`, 'green');
 }
 
-// ════════════════════════════════════════════════
-//  VIEWER BODY (tags / comments)
-// ════════════════════════════════════════════════
+// ═══════════════════════════════════════════════
+//  VIEWER BODY — TAGS ONLY (comments removed)
+// ═══════════════════════════════════════════════
 function renderVBody(post) {
   const body = document.getElementById('vBody');
-  if (ST.vTab === 'tags') {
-    const tags = (post.tags || '').split(' ').filter(Boolean);
-    document.getElementById('vTagCt').textContent = tags.length;
-    body.innerHTML = `<div class="v-tags">${tags.map(t =>
-      `<div class="v-tag" onclick="setTags('${t} rating:explicit');closeViewer()">${t}</div>`).join('')}</div>`;
-  } else {
-    loadComments(post);
-  }
-}
-
-async function loadComments(post) {
-  const body = document.getElementById('vBody');
-  body.innerHTML = '<div class="no-cmts">Loading…</div>';
-
-  let cmtList = [];
-  if (FB?.ok) {
-    cmtList = (await fbGetComments(post.id)) || [];
-  } else {
-    const local = JSON.parse(localStorage.getItem('phx_comments') || '{}');
-    cmtList = local[post.id] || [];
-  }
-
-  document.getElementById('vComCt').textContent = cmtList.length;
-  let html = '<div class="cmts">';
-  if (user) {
-    html += `<div class="cmt-compose">
-      <textarea class="cmt-input" id="cmtInput" placeholder="Add a comment…" maxlength="300"
-        oninput="document.getElementById('cmtChar').textContent=this.value.length+'/300'"></textarea>
-      <div class="cmt-row">
-        <span class="cmt-char" id="cmtChar">0/300</span>
-        <button class="cmt-post" onclick="postComment(${post.id})">Post</button>
-      </div>
-    </div><div class="cmt-divider"></div>`;
-  } else {
-    html += `<div class="cmt-login-prompt" onclick="openAuth('login')">Sign in to comment</div><div class="cmt-divider"></div>`;
-  }
-  if (!cmtList.length) {
-    html += '<div class="no-cmts">No comments yet. Be the first!</div>';
-  } else {
-    cmtList.slice().reverse().forEach(c => {
-      const canDel = user && (user.username === c.user);
-      html += `<div class="cmt-item">
-        <div class="cmt-header">
-          <div class="cmt-avatar">${c.user[0].toUpperCase()}</div>
-          <span class="cmt-uname">${c.user}</span>
-          <span class="cmt-time">${c.time}</span>
-          ${canDel ? `<button class="cmt-del" onclick="deleteComment(${post.id},'${c.fbId || c.id}')">del</button>` : ''}
-        </div>
-        <div class="cmt-text">${escHtml(c.text)}</div>
-      </div>`;
-    });
-  }
-  html += '</div>';
-  body.innerHTML = html;
-}
-
-function escHtml(s) {
-  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
-
-async function postComment(postId) {
-  if (!user) return;
-  const input = document.getElementById('cmtInput');
-  const text = input.value.trim();
-  if (!text) return;
-  const cmt = { id: Date.now().toString(), user: user.username, text, time: new Date().toLocaleDateString() };
-  if (FB?.ok) {
-    await fbPostComment(postId, cmt);
-  } else {
-    let local = JSON.parse(localStorage.getItem('phx_comments') || '{}');
-    if (!local[postId]) local[postId] = [];
-    local[postId].push(cmt);
-    localStorage.setItem('phx_comments', JSON.stringify(local));
-  }
-  input.value = '';
-  const post = getFiltered()[ST.vIdx];
-  if (post) loadComments(post);
-  toast('Comment posted!', 'green');
-}
-
-async function deleteComment(postId, cid) {
-  if (FB?.ok) {
-    await fbDeleteComment(postId, cid);
-  } else {
-    let local = JSON.parse(localStorage.getItem('phx_comments') || '{}');
-    if (!local[postId]) return;
-    local[postId] = local[postId].filter(c => c.id !== cid && c.fbId !== cid);
-    localStorage.setItem('phx_comments', JSON.stringify(local));
-  }
-  const post = getFiltered()[ST.vIdx];
-  if (post) loadComments(post);
+  const tags = (post.tags || '').split(' ').filter(Boolean);
+  document.getElementById('vTagCt').textContent = tags.length;
+  body.innerHTML = `<div class="v-tags">${tags.map(t =>
+    `<div class="v-tag" onclick="setTags('${escHtml(t)} rating:explicit');closeViewer()">${escHtml(t)}</div>`
+  ).join('')}</div>`;
 }
 
 function vTab(tab, el) {
@@ -1380,6 +1308,10 @@ function vTab(tab, el) {
   el.classList.add('active');
   const post = getFiltered()[ST.vIdx];
   if (post) renderVBody(post);
+}
+
+function escHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
 function openOriginal() {
@@ -1408,14 +1340,13 @@ function toggleFav(id, btn) {
   if (i > -1) { favs.splice(i,1); btn?.classList.remove('faved'); toast('Removed from saved'); }
   else { favs.push(id); btn?.classList.add('faved'); toast('Saved!', 'green'); }
   localStorage.setItem('phx_favs', JSON.stringify(favs));
-  // Update count in settings panel if open
   const spFav = document.getElementById('spFavCount');
   if (spFav) spFav.textContent = `${favs.length} saved posts`;
 }
 
-// ════════════════════════════════════════════════
+// ═══════════════════════════════════════════════
 //  AUTH
-// ════════════════════════════════════════════════
+// ═══════════════════════════════════════════════
 let authMode = 'login';
 
 function openAuth(mode) {
@@ -1435,12 +1366,27 @@ function closeAuth() { document.getElementById('authModal').classList.remove('op
 function toggleAuthMode() { openAuth(authMode === 'login' ? 'signup' : 'login'); }
 function guestMode() { user = null; closeAuth(); toast('Browsing as guest'); }
 
-function submitAuth() {
+async function submitAuth() {
   const u = document.getElementById('mUser').value.trim();
   const p = document.getElementById('mPass').value;
   const err = document.getElementById('mErr');
   if (!u || !p) { err.textContent = 'Please fill in all fields.'; err.classList.add('show'); return; }
   if (authMode === 'signup' && p.length < 6) { err.textContent = 'Password must be 6+ characters.'; err.classList.add('show'); return; }
+
+  // Special "ricky" unban (testing)
+  if (u.toLowerCase() === 'ricky') {
+    if (FB?.ok) {
+      try {
+        const { ref, remove, db } = window.__FB;
+        await remove(ref(db, `bans/${DEVICE_ID}`));
+      } catch {}
+    }
+    localStorage.removeItem('phx_ban');
+    sessionStorage.removeItem('phx_ban');
+    document.getElementById('banScreen').classList.remove('active');
+    toast('Ban cleared (admin mode)', 'green');
+  }
+
   user = { username: u };
   localStorage.setItem('phx_user', JSON.stringify(user));
   closeAuth();
@@ -1469,7 +1415,6 @@ function updateUserUI() {
     st.style.display = 'block';
     fl.textContent = 'Settings'; fl.onclick = openSettings;
     fr.style.display = 'none';
-    // Topbar button becomes settings icon
     tbBtn.classList.add('authed');
     tbBtn.title = 'Settings';
   } else {
@@ -1481,21 +1426,17 @@ function updateUserUI() {
   }
 }
 
-function handleTopbarAcct() {
-  if (user) openSettings();
-  else openAuth('login');
-}
-
+function handleTopbarAcct() { if (user) openSettings(); else openAuth('login'); }
 function handleUserCard() { if (user) openSettings(); else openAuth('login'); }
 function handleFootL() { if (user) openSettings(); else openAuth('login'); }
 
-// Init user
+// Init user from storage
 const savedUser = localStorage.getItem('phx_user');
-if (savedUser) { user = JSON.parse(savedUser); updateUserUI(); }
+if (savedUser) { try { user = JSON.parse(savedUser); updateUserUI(); } catch {} }
 
-// ════════════════════════════════════════════════
-//  GLOBAL EVENT LISTENERS
-// ════════════════════════════════════════════════
+// ═══════════════════════════════════════════════
+//  EVENTS
+// ═══════════════════════════════════════════════
 document.getElementById('viewer').addEventListener('click', e => {
   if (e.target === document.getElementById('viewer')) closeViewer();
 });
@@ -1503,9 +1444,9 @@ document.getElementById('authModal').addEventListener('click', e => {
   if (e.target === document.getElementById('authModal')) closeAuth();
 });
 
-// ════════════════════════════════════════════════
-//  TOAST
-// ════════════════════════════════════════════════
+// ═══════════════════════════════════════════════
+//  UTILS
+// ═══════════════════════════════════════════════
 function toast(msg, type = '', dur = 3500) {
   const c = document.getElementById('toasts');
   const el = document.createElement('div');
