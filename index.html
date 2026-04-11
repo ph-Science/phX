@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<!-- phX v3 — embedded JS proxy, no local server required, GitHub-ready -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -445,69 +446,89 @@ firebase.initializeApp({
 });
 const auth=firebase.auth(),db=firebase.database();
 
-/* ─── EMBEDDED CORS PROXIES (tried in order, auto-fallback) ─── */
-const API_BASE='https://api.rule34.xxx/index.php?page=dapi&s=post&q=index&json=1';
-const PROXIES=[
-  url=>`https://corsproxy.io/?${encodeURIComponent(url)}`,
-  url=>`https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
-  url=>`https://thingproxy.freeboard.io/fetch/${url}`,
+/* ─────────────────────────────────────────────────────────────
+   EMBEDDED JS PROXY  —  no local server, no Node, GitHub-ready
+   Tries three public CORS proxies in order; falls back automatically.
+   To add your own: push a function(rawUrl)=>proxyUrl to PROXIES.
+   ───────────────────────────────────────────────────────────── */
+const API_BASE = 'https://api.rule34.xxx/index.php?page=dapi&s=post&q=index&json=1';
+
+const PROXIES = [
+  /* 1. corsproxy.io  — free, fast, no key needed */
+  raw => `https://corsproxy.io/?${encodeURIComponent(raw)}`,
+  /* 2. allorigins    — reliable fallback */
+  raw => `https://api.allorigins.win/raw?url=${encodeURIComponent(raw)}`,
+  /* 3. codetabs      — second fallback */
+  raw => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(raw)}`,
 ];
-let proxyIdx=0,proxyOk=false;
 
-function rawApiUrl(tags,limit,p){
-  return `${API_BASE}&limit=${limit}&tags=${encodeURIComponent(tags)}&pid=${p}`;
+let _proxyIdx = 0;   // index of currently working proxy
+let proxyOk   = false;
+
+/* Build the raw Rule34 API URL (no proxy yet) */
+function rawApiUrl(tags, limit, page) {
+  return `${API_BASE}&limit=${limit}&tags=${encodeURIComponent(tags)}&pid=${page}`;
 }
-function proxied(rawUrl){return PROXIES[proxyIdx](rawUrl)}
 
-async function tryFetch(rawUrl,attempt=0){
-  if(attempt>=PROXIES.length)throw new Error('All proxies failed');
-  proxyIdx=attempt;
-  try{
-    const r=await fetch(proxied(rawUrl),{signal:AbortSignal.timeout(7000)});
-    if(!r.ok)throw new Error('HTTP '+r.status);
-    const ct=r.headers.get('content-type')||'';
-    const text=await r.text();
-    if(text.startsWith('<'))throw new Error('HTML response');
+/* Core proxy fetch — auto-advances through PROXIES on failure */
+async function proxyFetch(rawUrl, attempt = 0) {
+  if (attempt >= PROXIES.length) throw new Error('All proxies exhausted');
+  _proxyIdx = attempt;
+  const proxiedUrl = PROXIES[attempt](rawUrl);
+  let text;
+  try {
+    const res = await fetch(proxiedUrl, { signal: AbortSignal.timeout(8000) });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    text = await res.text();
+    if (!text || text.trimStart().startsWith('<')) throw new Error('HTML response – likely blocked');
     return JSON.parse(text);
-  }catch(e){
-    console.warn(`Proxy ${attempt} failed:`,e.message);
-    return tryFetch(rawUrl,attempt+1);
+  } catch (err) {
+    console.warn(`[phX] proxy[${attempt}] failed:`, err.message);
+    return proxyFetch(rawUrl, attempt + 1);   // try next proxy
   }
 }
 
-async function checkProxy(){
-  setBanner('checking','Finding best proxy…','checking');
-  try{
-    const data=await tryFetch(rawApiUrl('rating:explicit',1,0));
-    if(!Array.isArray(data))throw new Error('Not array');
-    proxyOk=true;
-    const names=['corsproxy.io','allorigins.win','thingproxy'];
-    setBanner('ok',`Connected via ${names[proxyIdx]}  ·  no setup needed`,'ok');
-    setTimeout(()=>document.getElementById('proxyBanner').className='proxy-banner hidden',2800);
-    startLoad('rating:explicit','Home');
-  }catch(e){
-    proxyOk=false;
-    setBanner('err','All proxies unreachable — check your connection','err');
+/* Startup — probe with a tiny request, then kick off the grid */
+async function checkProxy() {
+  setBanner('checking', 'Connecting…', 'wait');
+  try {
+    const test = await proxyFetch(rawApiUrl('rating:explicit', 1, 0));
+    if (!Array.isArray(test)) throw new Error('Unexpected response shape');
+    proxyOk = true;
+    const label = ['corsproxy.io','allorigins.win','codetabs.com'][_proxyIdx] ?? `proxy[${_proxyIdx}]`;
+    setBanner('ok', `Online via ${label}`, 'ok');
+    setTimeout(() => document.getElementById('proxyBanner').className = 'proxy-banner hidden', 2500);
+    startLoad('rating:explicit', 'Home');
+  } catch (e) {
+    proxyOk = false;
+    setBanner('err', 'All proxies failed — check your connection', 'err');
     showErrState();
   }
 }
-function setBanner(s,m,badge){
-  const b=document.getElementById('proxyBanner'),d=document.getElementById('proxyDot');
-  b.className='proxy-banner '+s;
-  document.getElementById('proxyMsg').textContent=m;
-  d.className='proxy-dot '+(s==='checking'?'pulse':s==='ok'?'green':'red');
-  const bg=document.getElementById('proxyBadge');
-  bg.className='proxy-badge '+(s==='ok'?'green':s==='err'?'red':'');
-  bg.textContent=badge;
+
+function setBanner(state, msg, badge) {
+  const b  = document.getElementById('proxyBanner');
+  const d  = document.getElementById('proxyDot');
+  const bg = document.getElementById('proxyBadge');
+  b.className  = `proxy-banner ${state}`;
+  document.getElementById('proxyMsg').textContent = msg;
+  d.className  = `proxy-dot ${ {checking:'pulse', ok:'green', err:'red'}[state] ?? '' }`;
+  bg.className = `proxy-badge ${ {ok:'green', err:'red'}[state] ?? '' }`;
+  bg.textContent = badge;
 }
-function showErrState(){
-  document.getElementById('grid').innerHTML='';
-  document.getElementById('sentinel').innerHTML=`<div class="err-state">
-    <div class="err-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
-    <div class="err-title">Connection failed</div>
-    <div class="err-sub">All proxy services are unreachable. This may be a temporary issue — try again in a moment.</div>
-    <button class="err-retry" onclick="checkProxy()">Try again</button>
-  </div>`;
+
+function showErrState() {
+  document.getElementById('grid').innerHTML = '';
+  document.getElementById('sentinel').innerHTML = `
+    <div class="err-state">
+      <div class="err-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+        <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+      </svg></div>
+      <div class="err-title">Could not connect</div>
+      <div class="err-sub">All three CORS proxies failed. Check your internet connection and try again.</div>
+      <button class="err-retry" onclick="checkProxy()">Retry</button>
+    </div>`;
 }
 
 /* ── STATE ── */
@@ -685,7 +706,7 @@ async function fetch_posts(replace=false){
   try{
     const p=sortMode==='random'?Math.floor(Math.random()*30):pid;
     const raw=rawApiUrl(currentTags,42,p);
-    let items=await tryFetch(raw);
+    let items=await proxyFetch(raw);
     if(!Array.isArray(items))items=[];
     items=items.filter(x=>x.preview_url||x.sample_url);
     if(sortMode==='popular')items.sort((a,b)=>(b.score||0)-(a.score||0));
