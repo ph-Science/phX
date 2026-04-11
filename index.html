@@ -699,22 +699,13 @@ body.hide-scores .score-chip{display:none}
 <div class="toasts" id="toasts"></div>
 
 <script>
-// ═══════════════════════════════════════════════
-//  BAN SYSTEM
-// ═══════════════════════════════════════════════
-const BAN_DURATION_MS = 3 * 24 * 60 * 60 * 1000; // 3 days
+const BAN_DURATION_MS = 3 * 24 * 60 * 60 * 1000;
 
-// Banned search terms — anything minor-related
 const BANNED_TERMS = [
-  'child','children','minor','minors','kid','kids','underage','under_age',
-  'teen','teens','teenager','teenagers','loli','lolicon','shota','shotacon',
-  'juvenile','preteen','pre-teen','prepubescent','pedo','pedophile',
-  'toddler','infant','baby','young_girl','young_boy','school_girl','schoolgirl',
-  'school_kid','little_girl','little_boy','jailbait','13','14','15','16','17',
-  'age_play','ageplay','age-play'
+  'child','children','minor','minors','kid','kids','underage','teen','teens','loli','lolicon',
+  'shota','shotacon','pedo','preteen','jailbait','13','14','15','16','17','ageplay'
 ];
 
-// Generate a device fingerprint (best-effort, not cryptographic)
 function getDeviceId() {
   let id = localStorage.getItem('phx_did');
   if (!id) {
@@ -726,7 +717,7 @@ function getDeviceId() {
       navigator.hardwareConcurrency || '',
       navigator.platform || ''
     ];
-    id = btoa(parts.join('|')).replace(/=/g,'').substring(0, 32);
+    id = btoa(parts.join('|')).replace(/=/g,'').substring(0, 40);
     localStorage.setItem('phx_did', id);
   }
   return id;
@@ -734,156 +725,127 @@ function getDeviceId() {
 
 const DEVICE_ID = getDeviceId();
 
-function getBanInfo() {
-  // Try localStorage first
-  const local = localStorage.getItem('phx_ban');
-  if (local) {
-    try { return JSON.parse(local); } catch {}
-  }
-  return null;
-}
-
 function setBan(reason) {
-  const until = Date.now() + BAN_DURATION_MS;
-  const banData = { until, reason, device: DEVICE_ID, ts: Date.now() };
+  const banData = {
+    until: Date.now() + BAN_DURATION_MS,
+    reason: reason || "Searching up Banned Material",
+    device: DEVICE_ID,
+    ts: Date.now(),
+    active: true,
+    bannedBy: "system"
+  };
   localStorage.setItem('phx_ban', JSON.stringify(banData));
-  sessionStorage.setItem('phx_ban', JSON.stringify(banData));
-  // Also push to Firebase for cross-device enforcement
-  window.addEventListener('load', () => {
-    setTimeout(() => {
-      if (window.__FB?.ok) {
-        const { ref, set, db } = window.__FB;
-        set(ref(db, `bans/${DEVICE_ID}`), banData).catch(() => {});
-      }
-    }, 1000);
-  });
+
+  if (window.__FB?.ok) {
+    const { ref, set, db } = window.__FB;
+    set(ref(db, `bans/${DEVICE_ID}`), banData).catch(() => {});
+  }
   showBanScreen(banData);
 }
 
 function showBanScreen(banData) {
   document.getElementById('ageGate').classList.add('gone');
   document.getElementById('banScreen').classList.add('active');
-  updateBanTimer(banData.until);
+
   const iv = setInterval(() => {
-    if (!updateBanTimer(banData.until)) {
+    const rem = banData.until - Date.now();
+    if (rem <= 0) {
       clearInterval(iv);
-      // Unban
       localStorage.removeItem('phx_ban');
-      sessionStorage.removeItem('phx_ban');
       document.getElementById('banScreen').classList.remove('active');
       location.reload();
+    } else {
+      const h = Math.floor(rem / 3600000);
+      const m = Math.floor((rem % 3600000) / 60000);
+      const s = Math.floor((rem % 60000) / 1000);
+      const pad = n => String(n).padStart(2, '0');
+      document.getElementById('banTimer').textContent = `${pad(h)}:${pad(m)}:${pad(s)}`;
     }
   }, 1000);
 }
 
-function updateBanTimer(until) {
-  const rem = until - Date.now();
-  if (rem <= 0) return false;
-  const h = Math.floor(rem / 3600000);
-  const m = Math.floor((rem % 3600000) / 60000);
-  const s = Math.floor((rem % 60000) / 1000);
-  const pad = n => String(n).padStart(2, '0');
-  const d = Math.floor(h / 24);
-  const hh = h % 24;
-  document.getElementById('banTimer').textContent =
-    d > 0 ? `${d}d ${pad(hh)}h ${pad(m)}m ${pad(s)}s` : `${pad(hh)}:${pad(m)}:${pad(s)}`;
-  return true;
-}
-
 async function checkBanOnLoad() {
-  // Check localStorage
-  const local = getBanInfo();
-  if (local && local.until > Date.now()) {
-    showBanScreen(local);
+  const localBan = JSON.parse(localStorage.getItem('phx_ban') || 'null');
+  if (localBan && localBan.active !== false && localBan.until > Date.now()) {
+    showBanScreen(localBan);
     return true;
   }
 
-  // Check Firebase for cross-browser ban
-  await new Promise(r => setTimeout(r, 900)); // wait for FB init
-  if (window.__FB?.ok) {
-    try {
-      const { ref, get, db } = window.__FB;
-      const snap = await get(ref(db, `bans/${DEVICE_ID}`));
-      if (snap.exists()) {
-        const banData = snap.val();
-        if (banData.until > Date.now()) {
-          // Sync to localStorage so offline check works
-          localStorage.setItem('phx_ban', JSON.stringify(banData));
-          showBanScreen(banData);
-          return true;
-        } else {
-          // Expired — remove from Firebase
-          const { remove } = window.__FB;
-          remove(ref(db, `bans/${DEVICE_ID}`)).catch(() => {});
-        }
-      }
-    } catch {}
-  }
+  if (!window.__FB?.ok) return false;
 
-  // Special: if username is "ricky", allow unban by checking Firebase flag
-  // (handled in submitAuth)
+  try {
+    const { ref, get, db } = window.__FB;
+    const snap = await get(ref(db, `bans/${DEVICE_ID}`));
+    if (snap.exists()) {
+      const banData = snap.val();
+      if (banData.active !== false && banData.until > Date.now()) {
+        localStorage.setItem('phx_ban', JSON.stringify(banData));
+        showBanScreen(banData);
+        return true;
+      }
+    }
+  } catch (e) {}
   return false;
 }
 
 function containsBannedTerm(query) {
   const q = query.toLowerCase().replace(/[^a-z0-9_\-]/g, ' ');
-  const words = q.split(/[\s_\-]+/);
-  for (const term of BANNED_TERMS) {
-    const t = term.toLowerCase();
-    if (words.includes(t) || q.includes(t)) return true;
-  }
-  return false;
+  return BANNED_TERMS.some(term => q.includes(term));
 }
 
-// ═══════════════════════════════════════════════
-//  CONFIG
-// ═══════════════════════════════════════════════
-const PROXY    = '/api/proxy?url=';
-const API      = 'https://api.rule34.xxx/index.php?page=dapi&s=post&q=index&json=1';
-const R34_KEY  = '7088fd909e8ffedca36a0be2e5a11655eabd8f42cd07be62d91617cfb853e4132d309ae15a752be201c4c2415414f049d968eb5d6ec3fcc3274d365b0d3f399b';
+// ==================== CONFIG ====================
+const PROXY = '/api/proxy?url=';
+const API = 'https://api.rule34.xxx/index.php?page=dapi&s=post&q=index&json=1';
+const R34_KEY = '7088fd909e8ffedca36a0be2e5a11655eabd8f42cd07be62d91617cfb853e4132d309ae15a752be201c4c2415414f049d968eb5d6ec3fcc3274d365b0d3f399b';
 const R34_USER = '6090245';
 const PAGE_SIZE = 40;
-const TIMEOUT_MS = 15000;
+
 const POPULAR_TAGS = ['solo','animated','hentai','3d','uncensored','big_breasts','ass','cosplay','duo'];
 
-function proxy(url) { return url ? PROXY + encodeURIComponent(url) : url; }
-function fetchT(url) {
-  const c = new AbortController();
-  const t = setTimeout(() => c.abort(), TIMEOUT_MS);
-  return fetch(url, { signal: c.signal }).finally(() => clearTimeout(t));
-}
+// ==================== STATE ====================
+let ST = { 
+  tags: 'rating:explicit', 
+  page: 0, 
+  sort: 'id', 
+  mediaFilter: 'all', 
+  posts: [], 
+  loading: false, 
+  done: false, 
+  vIdx: -1,
+  vTab: 'tags'
+};
 
-// ═══════════════════════════════════════════════
-//  STATE
-// ═══════════════════════════════════════════════
-let ST = { tags:'rating:explicit',page:0,sort:'id',mediaFilter:'all',posts:[],loading:false,done:false,vIdx:-1,vTab:'tags' };
-let user     = null;
-let favs     = JSON.parse(localStorage.getItem('phx_favs') || '[]');
+let user = null;
+let favs = JSON.parse(localStorage.getItem('phx_favs') || '[]');
 let settings = JSON.parse(localStorage.getItem('phx_settings') || '{"autoReveal":false,"compact":false,"showScores":true}');
-let ageOk    = localStorage.getItem('phx_age') === '1';
-
+let ageOk = localStorage.getItem('phx_age') === '1';
 let FB = null;
+
 window.addEventListener('load', () => {
   setTimeout(() => { FB = window.__FB || null; }, 800);
 });
 
-// ═══════════════════════════════════════════════
-//  FIREBASE RATINGS
-// ═══════════════════════════════════════════════
+// ==================== FIREBASE HELPERS ====================
 async function fbSetRating(postId, username, stars) {
   if (!FB?.ok) return false;
-  try { await FB.set(FB.ref(FB.db, `ratings/${postId}/${username}`), stars); return true; } catch { return false; }
-}
-function fbListenRatings(postId, cb) {
-  if (!FB?.ok) return () => {};
-  const r = FB.ref(FB.db, `ratings/${postId}`);
-  return FB.onValue(r, snap => cb(snap.exists() ? snap.val() : {}));
+  try { 
+    const { ref, set, db } = window.__FB;
+    await set(ref(db, `ratings/${postId}/${username}`), stars); 
+    return true; 
+  } catch { return false; }
 }
 
-// ═══════════════════════════════════════════════
-//  SETTINGS
-// ═══════════════════════════════════════════════
-function saveSettings() { localStorage.setItem('phx_settings', JSON.stringify(settings)); }
+function fbListenRatings(postId, cb) {
+  if (!FB?.ok) return () => {};
+  const { ref, onValue, db } = window.__FB;
+  const r = ref(db, `ratings/${postId}`);
+  return onValue(r, snap => cb(snap.exists() ? snap.val() : {}));
+}
+
+// ==================== SETTINGS ====================
+function saveSettings() { 
+  localStorage.setItem('phx_settings', JSON.stringify(settings)); 
+}
 
 function applySettings() {
   document.body.classList.toggle('auto-reveal', !!settings.autoReveal);
@@ -891,10 +853,12 @@ function applySettings() {
   if (arToggle) arToggle.checked = !!settings.autoReveal;
   const arRow = document.getElementById('arRow');
   if (arRow) arRow.classList.toggle('active-setting', !!settings.autoReveal);
+
   const compactToggle = document.getElementById('compactToggle');
   if (compactToggle) compactToggle.checked = !!settings.compact;
   document.documentElement.style.setProperty('--cols', settings.compact ? '6' : '');
   if (!settings.compact) document.documentElement.style.removeProperty('--cols');
+
   const scoresToggle = document.getElementById('scoresToggle');
   if (scoresToggle) scoresToggle.checked = settings.showScores !== false;
   document.body.classList.toggle('hide-scores', settings.showScores === false);
@@ -910,9 +874,18 @@ function openSettings() {
   document.getElementById('settingsOverlay').classList.add('open');
 }
 
-function closeSettings() { document.getElementById('settingsOverlay').classList.remove('open'); }
-function handleSettingsOverlayClick(e) { if (e.target === document.getElementById('settingsOverlay')) closeSettings(); }
-function signOutFromSettings() { closeSettings(); signOut(); }
+function closeSettings() { 
+  document.getElementById('settingsOverlay').classList.remove('open'); 
+}
+
+function handleSettingsOverlayClick(e) { 
+  if (e.target === document.getElementById('settingsOverlay')) closeSettings(); 
+}
+
+function signOutFromSettings() { 
+  closeSettings(); 
+  signOut(); 
+}
 
 function clearFavorites() {
   if (!confirm('Clear all saved posts?')) return;
@@ -922,55 +895,52 @@ function clearFavorites() {
   toast('Saved posts cleared');
 }
 
-function handleCompactToggle(el) { settings.compact = el.checked; saveSettings(); applySettings(); }
-function handleScoresToggle(el) { settings.showScores = el.checked; saveSettings(); applySettings(); }
-
-// ═══════════════════════════════════════════════
-//  AUTO-REVEAL
-// ═══════════════════════════════════════════════
-function handleAutoRevealToggle(el) {
-  if (el.checked) { el.checked = false; document.getElementById('arModal').classList.add('open'); }
-  else { settings.autoReveal = false; saveSettings(); applySettings(); toast('Auto-Reveal disabled'); }
+function handleCompactToggle(el) { 
+  settings.compact = el.checked; 
+  saveSettings(); 
+  applySettings(); 
 }
+
+function handleScoresToggle(el) { 
+  settings.showScores = el.checked; 
+  saveSettings(); 
+  applySettings(); 
+}
+
+function handleAutoRevealToggle(el) {
+  if (el.checked) { 
+    el.checked = false; 
+    document.getElementById('arModal').classList.add('open'); 
+  } else { 
+    settings.autoReveal = false; 
+    saveSettings(); 
+    applySettings(); 
+    toast('Auto-Reveal disabled'); 
+  }
+}
+
 function confirmAutoReveal() {
   document.getElementById('arModal').classList.remove('open');
-  settings.autoReveal = true; saveSettings(); applySettings(); toast('Auto-Reveal enabled 🔞', 'green');
+  settings.autoReveal = true; 
+  saveSettings(); 
+  applySettings(); 
+  toast('Auto-Reveal enabled 🔞', 'green');
 }
+
 function cancelAutoReveal() {
   document.getElementById('arModal').classList.remove('open');
   document.getElementById('arToggle').checked = false;
 }
 
-// ═══════════════════════════════════════════════
-//  STARTUP
-// ═══════════════════════════════════════════════
-async function startup() {
-  const banned = await checkBanOnLoad();
-  if (banned) return;
-
-  if (ageOk) {
-    document.getElementById('ageGate').classList.add('gone');
-    applySettings();
-    loadMore();
-  }
-}
-startup();
-
-function ageConfirm() {
-  localStorage.setItem('phx_age','1');
-  ageOk = true;
-  document.getElementById('ageGate').classList.add('gone');
-  applySettings();
-  loadMore();
+// ==================== MEDIA & GRID (Fixed Filter) ====================
+function proxy(url) { 
+  return url ? PROXY + encodeURIComponent(url) : url; 
 }
 
-// ═══════════════════════════════════════════════
-//  MEDIA
-// ═══════════════════════════════════════════════
 function attachMedia(el, raw) {
   if (!raw) return;
   el.onerror = () => {
-    el.onerror = null; el.style.display = 'none';
+    el.style.display = 'none';
     const d = document.createElement('div');
     d.className = 'media-err';
     d.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg><div class="media-err-title">Failed to load</div><div class="media-err-sub">Media unavailable</div>';
@@ -979,148 +949,52 @@ function attachMedia(el, raw) {
   el.src = proxy(raw);
 }
 
-// ═══════════════════════════════════════════════
-//  SIDEBAR TAGS
-// ═══════════════════════════════════════════════
-(function() {
-  const el = document.getElementById('sbTags');
-  POPULAR_TAGS.forEach(tag => {
-    const d = document.createElement('div');
-    d.className = 'sb-tag-item';
-    d.innerHTML = `<div class="sb-pip"></div>${tag}`;
-    d.onclick = () => {
-      document.querySelectorAll('.sb-tag-item').forEach(i => i.classList.remove('active'));
-      d.classList.add('active');
-      setTags(tag + ' rating:explicit');
-    };
-    el.appendChild(d);
-  });
-})();
-
-// ═══════════════════════════════════════════════
-//  NAV
-// ═══════════════════════════════════════════════
-function navItem(el) {
-  document.querySelectorAll('.sb-item').forEach(i => i.classList.remove('active'));
-  el.classList.add('active');
-  document.getElementById('tbHeading').textContent = el.textContent.trim().replace(/NEW$/, '').trim();
-  setTags(el.dataset.tags || 'rating:explicit');
-}
-
-function setTags(tags) {
-  ST.tags = tags; ST.page = 0; ST.posts = []; ST.done = false;
-  document.getElementById('grid').innerHTML = '';
-  document.getElementById('tbCount').textContent = '';
-  loadMore();
-}
-
-function doSearch() {
-  const raw = document.getElementById('searchInput').value.trim();
-  if (!raw) return;
-  // ── CHILD SAFETY CHECK ──
-  if (containsBannedTerm(raw)) {
-    document.getElementById('searchInput').value = '';
-    setBan('Searching up Banned Material');
-    return;
-  }
-  document.getElementById('tbHeading').textContent = raw;
-  setTags(raw + ' rating:explicit');
-}
-
-function setSort(s, el) {
-  ST.sort = s;
-  document.querySelectorAll('.tb-sort-btn').forEach(b => b.classList.remove('active'));
-  el.classList.add('active');
-  setTags(ST.tags);
-}
-
 function setMediaFilter(f, el) {
   ST.mediaFilter = f;
   document.querySelectorAll('.tb-tab').forEach(b => b.classList.remove('active'));
   el.classList.add('active');
-  renderGrid();
+  renderGrid();   // Immediate refresh when switching All / Images / Video
 }
 
-// ═══════════════════════════════════════════════
-//  FETCH
-// ═══════════════════════════════════════════════
-async function loadMore() {
-  if (ST.loading || ST.done) return;
-  ST.loading = true;
-  const tags = ST.sort === 'score' ? ST.tags + ' sort:score:desc' : ST.tags;
-  const pid = ST.page * PAGE_SIZE;
-  const apiUrl = `${API}&tags=${encodeURIComponent(tags)}&limit=${PAGE_SIZE}&pid=${pid}&api_key=${R34_KEY}&user_id=${R34_USER}&json=1`;
-  try {
-    const res = await fetchT(proxy(apiUrl));
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const text = await res.text();
-    let data; try { data = JSON.parse(text); } catch { data = []; }
-    const posts = Array.isArray(data) ? data : [];
-    if (!posts.length) { ST.done = true; hideSentinel(); return; }
-    ST.posts.push(...posts);
-    ST.page++;
-    renderGrid();
-    document.getElementById('tbCount').textContent = `${ST.posts.length.toLocaleString()} posts`;
-  } catch(err) {
-    if (ST.posts.length === 0) {
-      showFetchError(err.name === 'AbortError'
-        ? 'Request timed out. Make sure your proxy is configured and running.'
-        : 'Could not load posts. Check your proxy setup and try again.');
-    } else { toast('Failed to load more', 'red'); }
-  } finally { ST.loading = false; }
-}
-
-function showFetchError(msg) {
-  document.getElementById('grid').innerHTML = `
-    <div class="err-state" style="grid-column:1/-1">
-      <div class="err-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div>
-      <div class="err-title">Could not load content</div>
-      <div class="err-sub">${msg}</div>
-      <button class="err-retry" onclick="location.reload()">Reload page</button>
-    </div>`;
-}
-
-function hideSentinel() {
-  document.getElementById('sentinel').innerHTML = '<span style="font-size:11px;font-family:JetBrains Mono,monospace;color:var(--t4)">— end of results —</span>';
-}
-
-// ═══════════════════════════════════════════════
-//  RENDER
-// ═══════════════════════════════════════════════
-function renderGrid() {
-  const grid = document.getElementById('grid');
-  const existing = grid.children.length;
-  const filtered = getFiltered();
-  filtered.slice(existing).forEach((post, i) => {
-    setTimeout(() => grid.appendChild(buildCard(post, existing + i)), i * 8);
-  });
-}
-
-function getFiltered() {
+function getFilteredPosts() {
   return ST.posts.filter(p => {
-    if (ST.mediaFilter === 'image') return !p.file_url?.match(/\.(webm|mp4)$/i);
-    if (ST.mediaFilter === 'video') return !!p.file_url?.match(/\.(webm|mp4|gif)$/i);
+    const isVideo = /\.(webm|mp4)$/i.test(p.file_url || '');
+    if (ST.mediaFilter === 'image') return !isVideo;
+    if (ST.mediaFilter === 'video') return isVideo;
     return true;
   });
+}
+
+function renderGrid() {
+  const grid = document.getElementById('grid');
+  grid.innerHTML = '';
+  const filtered = getFilteredPosts();
+  filtered.forEach((post, i) => grid.appendChild(buildCard(post, i)));
 }
 
 function buildCard(post, idx) {
   const card = document.createElement('div');
   card.className = 'card';
   card.dataset.idx = idx;
-  const isVideo = post.file_url?.match(/\.(webm|mp4)$/i);
-  const isGif   = post.file_url?.match(/\.gif$/i);
+
+  const isVideo = /\.(webm|mp4)$/i.test(post.file_url || '');
+  const isGif = /\.gif$/i.test(post.file_url || '');
   const thumbUrl = post.preview_url || post.sample_url || post.file_url;
-  const isFaved  = favs.includes(post.id);
+  const isFaved = favs.includes(post.id);
 
   if (isVideo) {
     const v = document.createElement('video');
-    v.className = 'blurred'; v.loop = true; v.muted = true; v.autoplay = true; v.playsInline = true;
+    v.className = 'blurred'; 
+    v.loop = true; 
+    v.muted = true; 
+    v.autoplay = true; 
+    v.playsInline = true;
     attachMedia(v, post.file_url);
     card.appendChild(v);
   } else {
     const img = document.createElement('img');
-    img.className = 'blurred'; img.loading = 'lazy'; img.alt = '';
+    img.className = 'blurred'; 
+    img.loading = 'lazy';
     attachMedia(img, thumbUrl);
     card.appendChild(img);
   }
@@ -1152,6 +1026,7 @@ function buildCard(post, idx) {
         </div>
       </div>
     </div>`;
+
   card.appendChild(overlay);
 
   overlay.querySelector('.sh-btn.yes').addEventListener('click', e => {
@@ -1160,26 +1035,106 @@ function buildCard(post, idx) {
     card.classList.add('revealed');
   });
   overlay.querySelector('.sh-btn.no').addEventListener('click', e => e.stopPropagation());
+
   const acts = overlay.querySelectorAll('.card-act');
   acts[0].addEventListener('click', e => { e.stopPropagation(); toggleFav(post.id, acts[0]); });
   acts[1].addEventListener('click', e => { e.stopPropagation(); openViewer(idx); });
+
   card.addEventListener('click', () => {
     if (card.classList.contains('revealed') || settings.autoReveal) openViewer(idx);
   });
+
   return card;
 }
 
-new IntersectionObserver(entries => {
-  if (entries[0].isIntersecting && ageOk) loadMore();
-}, { rootMargin: '320px' }).observe(document.getElementById('sentinel'));
+// ==================== NAV & SEARCH ====================
+function navItem(el) {
+  document.querySelectorAll('.sb-item').forEach(i => i.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('tbHeading').textContent = el.textContent.trim().replace(/NEW$/, '').trim();
+  setTags(el.dataset.tags || 'rating:explicit');
+}
 
-// ═══════════════════════════════════════════════
-//  VIEWER
-// ═══════════════════════════════════════════════
+function setTags(tags) {
+  ST.tags = tags; 
+  ST.page = 0; 
+  ST.posts = []; 
+  ST.done = false;
+  document.getElementById('grid').innerHTML = '';
+  document.getElementById('tbCount').textContent = '';
+  loadMore();
+}
+
+function doSearch() {
+  const raw = document.getElementById('searchInput').value.trim();
+  if (!raw) return;
+  if (containsBannedTerm(raw)) {
+    document.getElementById('searchInput').value = '';
+    setBan('Searching up Banned Material');
+    return;
+  }
+  document.getElementById('tbHeading').textContent = raw;
+  setTags(raw + ' rating:explicit');
+}
+
+function setSort(s, el) {
+  ST.sort = s;
+  document.querySelectorAll('.tb-sort-btn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  setTags(ST.tags);
+}
+
+// ==================== FETCH ====================
+async function loadMore() {
+  if (ST.loading || ST.done) return;
+  ST.loading = true;
+
+  const tags = ST.sort === 'score' ? ST.tags + ' sort:score:desc' : ST.tags;
+  const pid = ST.page * PAGE_SIZE;
+  const apiUrl = `${API}&tags=${encodeURIComponent(tags)}&limit=${PAGE_SIZE}&pid=${pid}&api_key=${R34_KEY}&user_id=${R34_USER}&json=1`;
+
+  try {
+    const res = await fetch(proxy(apiUrl));
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    const posts = Array.isArray(data) ? data : [];
+
+    if (!posts.length) {
+      ST.done = true;
+      document.getElementById('sentinel').innerHTML = '<span style="font-size:11px;font-family:JetBrains Mono,monospace;color:var(--t4)">— end of results —</span>';
+      return;
+    }
+
+    ST.posts.push(...posts);
+    ST.page++;
+    renderGrid();
+    document.getElementById('tbCount').textContent = `${ST.posts.length.toLocaleString()} posts`;
+  } catch(err) {
+    if (ST.posts.length === 0) {
+      showFetchError(err.name === 'AbortError' ? 'Request timed out.' : 'Could not load posts.');
+    } else {
+      toast('Failed to load more', 'red');
+    }
+  } finally { 
+    ST.loading = false; 
+  }
+}
+
+function showFetchError(msg) {
+  document.getElementById('grid').innerHTML = `
+    <div class="err-state" style="grid-column:1/-1">
+      <div class="err-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div>
+      <div class="err-title">Could not load content</div>
+      <div class="err-sub">${msg}</div>
+      <button class="err-retry" onclick="location.reload()">Reload page</button>
+    </div>`;
+}
+
+// ==================== VIEWER ====================
 let ratingUnsub = null;
 
 function openViewer(idx) {
-  ST.vIdx = idx; ST.vTab = 'tags';
+  ST.vIdx = idx;
   renderViewer();
   document.getElementById('viewer').classList.add('open');
   document.addEventListener('keydown', vKey);
@@ -1199,7 +1154,7 @@ function vKey(e) {
 }
 
 function viewerNav(dir) {
-  const f = getFiltered();
+  const f = getFilteredPosts();
   const n = ST.vIdx + dir;
   if (n < 0 || n >= f.length) return;
   if (typeof ratingUnsub === 'function') { ratingUnsub(); ratingUnsub = null; }
@@ -1208,7 +1163,7 @@ function viewerNav(dir) {
 }
 
 function renderViewer() {
-  const f = getFiltered();
+  const f = getFilteredPosts();
   const post = f[ST.vIdx];
   if (!post) return;
 
@@ -1221,7 +1176,8 @@ function renderViewer() {
     attachMedia(v, post.file_url);
     vm.prepend(v);
   } else {
-    const img = document.createElement('img'); img.alt = '';
+    const img = document.createElement('img'); 
+    img.alt = '';
     attachMedia(img, post.file_url || post.sample_url);
     vm.prepend(img);
   }
@@ -1232,7 +1188,7 @@ function renderViewer() {
     <div class="v-stat"><div class="v-stat-num">${fmtSize(post.file_size)}</div><div class="v-stat-lbl">Size</div></div>
     <div class="v-stat"><div class="v-stat-num">${post.width||'?'}×${post.height||'?'}</div><div class="v-stat-lbl">Res</div></div>`;
 
-  if (typeof ratingUnsub === 'function') { ratingUnsub(); ratingUnsub = null; }
+  if (typeof ratingUnsub === 'function') ratingUnsub();
   if (FB?.ok) {
     ratingUnsub = fbListenRatings(post.id, obj => renderRatingFromObj(post.id, obj));
   } else {
@@ -1245,6 +1201,7 @@ function renderViewer() {
   document.getElementById('vPosR').textContent = tot;
   document.getElementById('vBarProg').style.width = `${(pos/tot)*100}%`;
   document.getElementById('vFavBtn').className = 'v-act' + (favs.includes(post.id) ? ' on' : '');
+
   renderVBody(post);
 }
 
@@ -1254,26 +1211,28 @@ function renderRatingFromObj(postId, ratingsObj) {
   const myR = myKey && ratingsObj[myKey] ? Number(ratingsObj[myKey]) : 0;
   const avg = vals.length ? (vals.reduce((a,b) => a+b, 0) / vals.length).toFixed(1) : '—';
   const pct = vals.length ? (parseFloat(avg)/5)*100 : 0;
+
   const starsEl = document.getElementById('vStars');
-  if (!starsEl) return;
   starsEl.innerHTML = '';
   for (let i = 1; i <= 5; i++) {
     const btn = document.createElement('div');
     btn.className = 'star' + (i <= myR ? ' lit' : '');
     btn.innerHTML = `<svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>`;
-    btn.addEventListener('mouseenter', () =>
-      starsEl.querySelectorAll('.star').forEach((b,j) => b.classList.toggle('hlite', j < i)));
-    btn.addEventListener('mouseleave', () =>
-      starsEl.querySelectorAll('.star').forEach(b => b.classList.remove('hlite')));
+    btn.addEventListener('mouseenter', () => starsEl.querySelectorAll('.star').forEach((b,j) => b.classList.toggle('hlite', j < i)));
+    btn.addEventListener('mouseleave', () => starsEl.querySelectorAll('.star').forEach(b => b.classList.remove('hlite')));
     btn.addEventListener('click', () => ratePost(postId, i));
     starsEl.appendChild(btn);
   }
+
   document.getElementById('vAvg').textContent = avg;
   document.getElementById('vBarFill').style.width = pct + '%';
   document.getElementById('vRatCt').textContent = vals.length + ' ratings';
+
   const myEl = document.getElementById('vMyRat');
-  if (myR) { myEl.style.display='block'; document.getElementById('vMyRatVal').textContent = myR; }
-  else myEl.style.display = 'none';
+  if (myR) {
+    myEl.style.display = 'block';
+    document.getElementById('vMyRatVal').textContent = myR;
+  } else myEl.style.display = 'none';
 }
 
 async function ratePost(postId, stars) {
@@ -1290,9 +1249,6 @@ async function ratePost(postId, stars) {
   toast(`Rated ${stars}★`, 'green');
 }
 
-// ═══════════════════════════════════════════════
-//  VIEWER BODY — TAGS ONLY (comments removed)
-// ═══════════════════════════════════════════════
 function renderVBody(post) {
   const body = document.getElementById('vBody');
   const tags = (post.tags || '').split(' ').filter(Boolean);
@@ -1306,7 +1262,7 @@ function vTab(tab, el) {
   ST.vTab = tab;
   document.querySelectorAll('.v-tab').forEach(b => b.classList.remove('active'));
   el.classList.add('active');
-  const post = getFiltered()[ST.vIdx];
+  const post = getFilteredPosts()[ST.vIdx];
   if (post) renderVBody(post);
 }
 
@@ -1315,12 +1271,12 @@ function escHtml(s) {
 }
 
 function openOriginal() {
-  const post = getFiltered()[ST.vIdx];
+  const post = getFilteredPosts()[ST.vIdx];
   if (post?.file_url) window.open(post.file_url, '_blank');
 }
 
 function downloadCurrent() {
-  const post = getFiltered()[ST.vIdx];
+  const post = getFilteredPosts()[ST.vIdx];
   if (!post?.file_url) return;
   const a = document.createElement('a');
   a.href = proxy(post.file_url);
@@ -1329,7 +1285,7 @@ function downloadCurrent() {
 }
 
 function toggleViewerFav() {
-  const post = getFiltered()[ST.vIdx];
+  const post = getFilteredPosts()[ST.vIdx];
   if (!post) return;
   toggleFav(post.id, null);
   renderViewer();
@@ -1337,16 +1293,21 @@ function toggleViewerFav() {
 
 function toggleFav(id, btn) {
   const i = favs.indexOf(id);
-  if (i > -1) { favs.splice(i,1); btn?.classList.remove('faved'); toast('Removed from saved'); }
-  else { favs.push(id); btn?.classList.add('faved'); toast('Saved!', 'green'); }
+  if (i > -1) { 
+    favs.splice(i,1); 
+    if (btn) btn.classList.remove('faved'); 
+    toast('Removed from saved'); 
+  } else { 
+    favs.push(id); 
+    if (btn) btn.classList.add('faved'); 
+    toast('Saved!', 'green'); 
+  }
   localStorage.setItem('phx_favs', JSON.stringify(favs));
   const spFav = document.getElementById('spFavCount');
   if (spFav) spFav.textContent = `${favs.length} saved posts`;
 }
 
-// ═══════════════════════════════════════════════
-//  AUTH
-// ═══════════════════════════════════════════════
+// ==================== AUTH ====================
 let authMode = 'login';
 
 function openAuth(mode) {
@@ -1362,29 +1323,46 @@ function openAuth(mode) {
   document.getElementById('authModal').classList.add('open');
 }
 
-function closeAuth() { document.getElementById('authModal').classList.remove('open'); }
-function toggleAuthMode() { openAuth(authMode === 'login' ? 'signup' : 'login'); }
-function guestMode() { user = null; closeAuth(); toast('Browsing as guest'); }
+function closeAuth() { 
+  document.getElementById('authModal').classList.remove('open'); 
+}
+
+function toggleAuthMode() { 
+  openAuth(authMode === 'login' ? 'signup' : 'login'); 
+}
+
+function guestMode() { 
+  user = null; 
+  closeAuth(); 
+  toast('Browsing as guest'); 
+}
 
 async function submitAuth() {
   const u = document.getElementById('mUser').value.trim();
   const p = document.getElementById('mPass').value;
   const err = document.getElementById('mErr');
-  if (!u || !p) { err.textContent = 'Please fill in all fields.'; err.classList.add('show'); return; }
-  if (authMode === 'signup' && p.length < 6) { err.textContent = 'Password must be 6+ characters.'; err.classList.add('show'); return; }
 
-  // Special "ricky" unban (testing)
-  if (u.toLowerCase() === 'ricky') {
-    if (FB?.ok) {
-      try {
-        const { ref, remove, db } = window.__FB;
-        await remove(ref(db, `bans/${DEVICE_ID}`));
-      } catch {}
-    }
+  if (!u || !p) { 
+    err.textContent = 'Please fill in all fields.'; 
+    err.classList.add('show'); 
+    return; 
+  }
+  if (authMode === 'signup' && p.length < 6) { 
+    err.textContent = 'Password must be 6+ characters.'; 
+    err.classList.add('show'); 
+    return; 
+  }
+
+  // Ricky = Admin (unban + special power)
+  if (u.toLowerCase() === 'ricky' && FB?.ok) {
+    try {
+      const { ref, set, db } = window.__FB;
+      await set(ref(db, `bans/${DEVICE_ID}/active`), false);
+      await set(ref(db, `bans/${DEVICE_ID}/until`), Date.now() - 10000);
+      toast('✅ Ban lifted — Admin mode :3', 'green');
+    } catch(e) {}
     localStorage.removeItem('phx_ban');
-    sessionStorage.removeItem('phx_ban');
     document.getElementById('banScreen').classList.remove('active');
-    toast('Ban cleared (admin mode)', 'green');
   }
 
   user = { username: u };
@@ -1413,53 +1391,97 @@ function updateUserUI() {
     av.textContent = user.username[0].toUpperCase();
     un.textContent = user.username;
     st.style.display = 'block';
-    fl.textContent = 'Settings'; fl.onclick = openSettings;
+    fl.textContent = 'Settings'; 
+    fl.onclick = openSettings;
     fr.style.display = 'none';
     tbBtn.classList.add('authed');
-    tbBtn.title = 'Settings';
   } else {
-    av.textContent = '?'; un.textContent = 'Sign in'; st.style.display = 'none';
-    fl.textContent = 'Sign in'; fl.onclick = () => openAuth('login');
+    av.textContent = '?'; 
+    un.textContent = 'Sign in'; 
+    st.style.display = 'none';
+    fl.textContent = 'Sign in'; 
+    fl.onclick = () => openAuth('login');
     fr.style.display = '';
     tbBtn.classList.remove('authed');
-    tbBtn.title = 'Account';
   }
 }
 
-function handleTopbarAcct() { if (user) openSettings(); else openAuth('login'); }
-function handleUserCard() { if (user) openSettings(); else openAuth('login'); }
-function handleFootL() { if (user) openSettings(); else openAuth('login'); }
+function handleTopbarAcct() { 
+  if (user) openSettings(); 
+  else openAuth('login'); 
+}
 
-// Init user from storage
+function handleUserCard() { 
+  if (user) openSettings(); 
+  else openAuth('login'); 
+}
+
+function handleFootL() { 
+  if (user) openSettings(); 
+  else openAuth('login'); 
+}
+
+// Load saved user
 const savedUser = localStorage.getItem('phx_user');
-if (savedUser) { try { user = JSON.parse(savedUser); updateUserUI(); } catch {} }
+if (savedUser) {
+  try { 
+    user = JSON.parse(savedUser); 
+    updateUserUI(); 
+  } catch(e) {}
+}
 
-// ═══════════════════════════════════════════════
-//  EVENTS
-// ═══════════════════════════════════════════════
-document.getElementById('viewer').addEventListener('click', e => {
-  if (e.target === document.getElementById('viewer')) closeViewer();
-});
-document.getElementById('authModal').addEventListener('click', e => {
-  if (e.target === document.getElementById('authModal')) closeAuth();
-});
+// ==================== STARTUP ====================
+async function startup() {
+  const banned = await checkBanOnLoad();
+  if (banned) return;
 
-// ═══════════════════════════════════════════════
-//  UTILS
-// ═══════════════════════════════════════════════
+  if (ageOk) {
+    document.getElementById('ageGate').classList.add('gone');
+    applySettings();
+    loadMore();
+  }
+}
+
+function ageConfirm() {
+  localStorage.setItem('phx_age','1');
+  ageOk = true;
+  document.getElementById('ageGate').classList.add('gone');
+  applySettings();
+  loadMore();
+}
+
+startup();
+
+// Intersection Observer for infinite scroll
+new IntersectionObserver(entries => {
+  if (entries[0].isIntersecting && ageOk) loadMore();
+}, { rootMargin: '320px' }).observe(document.getElementById('sentinel'));
+
+// ==================== UTILS ====================
 function toast(msg, type = '', dur = 3500) {
   const c = document.getElementById('toasts');
   const el = document.createElement('div');
   el.className = 'toast' + (type ? ` ${type}` : '');
   el.textContent = msg;
   c.appendChild(el);
-  setTimeout(() => { el.classList.add('out'); setTimeout(() => el.remove(), 250); }, dur);
+  setTimeout(() => { 
+    el.classList.add('out'); 
+    setTimeout(() => el.remove(), 250); 
+  }, dur);
 }
 
 function fmtSize(b) {
   if (!b) return '?';
   return b > 1048576 ? (b/1048576).toFixed(1)+'MB' : (b/1024).toFixed(0)+'KB';
 }
+
+// Event listeners
+document.getElementById('viewer').addEventListener('click', e => {
+  if (e.target === document.getElementById('viewer')) closeViewer();
+});
+document.getElementById('authModal').addEventListener('click', e => {
+  if (e.target === document.getElementById('authModal')) closeAuth();
+});
 </script>
 </body>
 </html>
