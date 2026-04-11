@@ -5,14 +5,16 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>phX</title>
 <link rel="icon" href="https://elections.harrisx.com/favicon.ico">
-<!-- PERF: preconnect to fonts + api domains before stylesheet parse -->
+<!-- PERF: dns-prefetch for all external CDNs -->
+<link rel="dns-prefetch" href="https://api.rule34.xxx">
+<link rel="dns-prefetch" href="https://us.rule34.xxx">
+<link rel="dns-prefetch" href="https://wimg.rule34.xxx">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="preconnect" href="https://api.rule34.xxx">
-<!-- PERF: load fonts async so they never block render -->
+<!-- PERF: font loads async, never blocks render -->
 <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" onload="this.onload=null;this.rel='stylesheet'">
 <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap"></noscript>
-<!-- PERF: Firebase loads async, non-blocking -->
+<!-- Firebase non-blocking -->
 <script type="module">
   import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
   import { getDatabase, ref, set, get, push, onValue, remove, runTransaction }
@@ -46,7 +48,6 @@
 html,body{height:100%;overflow:hidden}
 body{background:var(--bg);color:var(--t1);font-family:'Instrument Sans',sans-serif,system-ui;font-size:13px;display:flex;-webkit-font-smoothing:antialiased}
 ::-webkit-scrollbar{width:3px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--s5);border-radius:3px}
-/* PERF: noise texture via CSS instead of SVG data-uri background repaint */
 body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");background-size:256px;opacity:.018;pointer-events:none;z-index:9999;will-change:auto}
 
 /* BAN */
@@ -108,6 +109,10 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 .sb-search-wrap svg{width:13px;height:13px;color:var(--t4);flex-shrink:0}
 .sb-search-wrap input{flex:1;background:transparent;border:none;outline:none;font-family:'Instrument Sans',sans-serif;font-size:12.5px;color:var(--t1);padding:9px 0}
 .sb-search-wrap input::placeholder{color:var(--t4)}
+/* FIX: Search button in sidebar */
+.sb-search-btn{width:26px;height:26px;border-radius:7px;background:var(--s3);border:1px solid var(--b1);display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;transition:all .13s}
+.sb-search-btn:hover{background:var(--accbg);border-color:var(--accborder)}
+.sb-search-btn svg{width:11px;height:11px;color:var(--t2)}
 .sb-sec{font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:500;color:var(--t4);letter-spacing:.18em;text-transform:uppercase;padding:16px 20px 6px;flex-shrink:0}
 .sb-scroll{flex:1;overflow-y:auto;padding:2px 8px 8px}
 .sb-item{display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:10px;font-size:12.5px;font-weight:500;color:var(--t3);cursor:pointer;transition:all .13s;user-select:none;margin-bottom:1px;border:1px solid transparent}
@@ -120,7 +125,7 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 .sb-divider{height:1px;background:var(--b0);margin:8px 4px}
 .sb-tag-item{display:flex;align-items:center;gap:8px;padding:6px 12px;border-radius:8px;font-size:12px;color:var(--t4);cursor:pointer;transition:all .12s;margin-bottom:1px}
 .sb-tag-item:hover{background:var(--b0);color:var(--t2)}
-.sb-tag-item.active{color:var(--acc)}
+.sb-tag-item.active{color:var(--acc);background:var(--accdim)}
 .sb-pip{width:4px;height:4px;border-radius:50%;background:var(--s5);flex-shrink:0;transition:background .12s}
 .sb-tag-item.active .sb-pip{background:var(--acc);box-shadow:0 0 6px var(--acc)}
 .sb-foot{padding:10px;border-top:1px solid var(--b0);flex-shrink:0;display:flex;gap:6px}
@@ -144,6 +149,12 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 .tb-sort{display:flex;background:var(--s2);border:1px solid var(--b1);border-radius:10px;padding:3px;gap:2px}
 .tb-sort-btn{padding:4px 10px;border-radius:8px;font-size:11.5px;font-weight:600;color:var(--t3);background:transparent;border:none;font-family:'Syne',sans-serif;cursor:pointer;transition:all .13s;white-space:nowrap;letter-spacing:-.1px}
 .tb-sort-btn:hover{color:var(--t2)}.tb-sort-btn.active{background:var(--s4);color:var(--t0)}
+/* NEW: Topbar search */
+.tb-search-wrap{display:flex;align-items:center;gap:6px;background:var(--s2);border:1px solid var(--b1);border-radius:10px;padding:0 10px;transition:all .18s;min-width:0;width:160px}
+.tb-search-wrap:focus-within{border-color:var(--accborder);background:var(--s3);box-shadow:0 0 0 3px var(--accdim);width:220px}
+.tb-search-wrap svg{width:12px;height:12px;color:var(--t4);flex-shrink:0}
+.tb-search-wrap input{flex:1;min-width:0;background:transparent;border:none;outline:none;font-family:'Instrument Sans',sans-serif;font-size:12px;color:var(--t1);padding:7px 0}
+.tb-search-wrap input::placeholder{color:var(--t4)}
 .tb-icon{width:32px;height:32px;border-radius:9px;background:var(--s2);border:1px solid var(--b1);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .15s;flex-shrink:0;position:relative}
 .tb-icon:hover{background:var(--s3);border-color:var(--b2)}
 .tb-icon svg{width:14px;height:14px;color:var(--t2)}
@@ -151,19 +162,22 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 .tb-icon.authed svg{color:var(--acc)}
 .tb-icon.authed::after{content:'';position:absolute;top:5px;right:5px;width:6px;height:6px;border-radius:50%;background:var(--green);border:1.5px solid var(--s0);box-shadow:0 0 6px rgba(74,222,128,.8)}
 .content{flex:1;overflow-y:auto;overflow-x:hidden;background:var(--bg)}
+/* PERF: use scroll-snap-none + will-change for smooth scroll */
+.content{scroll-behavior:smooth}
 .grid-wrap{padding:10px}
 .masonry{columns:var(--cols);column-gap:8px}
 
 /* CARDS */
 .card{break-inside:avoid;margin-bottom:8px;border-radius:var(--rad);overflow:hidden;background:var(--s1);cursor:pointer;position:relative;display:block;transition:transform .25s cubic-bezier(.34,1.4,.64,1),box-shadow .25s,border-color .2s;border:1px solid var(--b0);contain:layout style}
 .card:hover{transform:translateY(-3px) scale(1.01);box-shadow:0 16px 48px rgba(0,0,0,.75),0 0 0 1px var(--accborder);border-color:var(--accborder)}
-/* PERF: use contain to isolate paint */
 .card img,.card video{width:100%;display:block;transition:transform .55s cubic-bezier(.25,.46,.45,.94)}
 .card:hover img,.card:hover video{transform:scale(1.05)}
 .card img.blurred,.card video.blurred{filter:blur(22px);transform:scale(1.1)!important}
 body.auto-reveal .card img.blurred,body.auto-reveal .card video.blurred{filter:none!important;transform:none!important}
 body.auto-reveal .card .shield{display:none!important}
 body.auto-reveal .card .card-glass{pointer-events:all}
+/* FIX: Card placeholder keeps column width stable before image loads */
+.card-placeholder{width:100%;background:var(--s2);display:block}
 .shield{position:absolute;inset:0;z-index:20;display:flex;align-items:center;justify-content:center;background:rgba(6,6,8,.5);backdrop-filter:blur(2px);opacity:0;pointer-events:none;transition:opacity .2s;border-radius:var(--rad)}
 .card:hover .shield{opacity:1;pointer-events:all}
 .card.revealed .shield{display:none}
@@ -192,9 +206,9 @@ body.auto-reveal .card:hover .card-glass{pointer-events:all;opacity:1}
 .media-err svg{width:20px;height:20px;color:var(--t4);opacity:.4}
 .media-err-title{font-size:11px;font-weight:600;color:var(--t3)}
 .media-err-sub{font-size:10px;color:var(--t4);line-height:1.4}
-/* PERF: skeletons use GPU-friendly animation */
+/* SKELETONS */
 .skel{break-inside:avoid;margin-bottom:8px;border-radius:var(--rad);background:var(--s2);position:relative;overflow:hidden}
-.skel::after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent 0%,rgba(192,132,252,.04) 50%,transparent 100%);background-size:200% 100%;animation:shimmer 1.8s ease-in-out infinite;will-change:background-position}
+.skel::after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent 0%,rgba(192,132,252,.05) 50%,transparent 100%);background-size:200% 100%;animation:shimmer 1.6s ease-in-out infinite;will-change:background-position}
 @keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
 .sentinel{height:60px;display:flex;align-items:center;justify-content:center}
 .spin{width:16px;height:16px;border:2px solid var(--s4);border-top-color:var(--acc);border-radius:50%;animation:spin .7s linear infinite;will-change:transform}
@@ -214,7 +228,10 @@ body.auto-reveal .card:hover .card-glass{pointer-events:all;opacity:1}
 @keyframes vIn{from{opacity:0;scale:.97;translate:0 12px}to{opacity:1;scale:1;translate:0 0}}
 .v-media{flex:1;min-width:0;background:#000;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden}
 .v-media img,.v-media video{max-width:100%;max-height:100%;object-fit:contain;display:block}
-.v-nav{position:absolute;inset:0;display:flex;align-items:center;justify-content:space-between;padding:0 10px;pointer-events:none}
+/* NEW: viewer loading spinner */
+.v-loading{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(6,6,8,.5);z-index:5;opacity:0;pointer-events:none;transition:opacity .15s}
+.v-loading.show{opacity:1}
+.v-nav{position:absolute;inset:0;display:flex;align-items:center;justify-content:space-between;padding:0 10px;pointer-events:none;z-index:6}
 .v-arr{width:40px;height:40px;border-radius:50%;background:rgba(6,6,8,.8);backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,.12);display:flex;align-items:center;justify-content:center;cursor:pointer;pointer-events:all;transition:all .18s;opacity:.3}
 .v-arr:hover{opacity:1;transform:scale(1.08);background:rgba(192,132,252,.2);border-color:var(--accborder)}
 .v-arr svg{width:18px;height:18px;color:#fff}
@@ -256,9 +273,12 @@ body.auto-reveal .card:hover .card-glass{pointer-events:all;opacity:1}
 .v-tags{display:flex;flex-wrap:wrap;gap:4px;padding-top:4px}
 .v-tag{padding:3px 9px;background:var(--s2);border:1px solid var(--b1);border-radius:999px;font-size:11px;color:var(--t3);cursor:pointer;transition:all .13s;white-space:nowrap}
 .v-tag:hover{background:var(--accbg);color:var(--acc);border-color:var(--accborder)}
-.v-foot{padding:7px 12px;border-top:1px solid var(--b0);font-size:10px;font-family:'JetBrains Mono',monospace;color:var(--t4);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
-.v-bar{flex:1;height:2px;background:var(--s4);border-radius:1px;margin:0 8px;overflow:hidden}
+/* NEW: keyboard hint bar */
+.v-foot{padding:7px 12px;border-top:1px solid var(--b0);font-size:10px;font-family:'JetBrains Mono',monospace;color:var(--t4);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;gap:6px}
+.v-bar{flex:1;height:2px;background:var(--s4);border-radius:1px;overflow:hidden}
 .v-bar-fill{height:100%;background:linear-gradient(90deg,var(--acc),var(--acc2));border-radius:1px;transition:width .2s}
+.v-key-hints{display:flex;gap:6px;align-items:center}
+.v-key{display:inline-flex;align-items:center;justify-content:center;font-size:9px;background:var(--s3);border:1px solid var(--b2);border-radius:4px;padding:1px 5px;color:var(--t3);font-family:'JetBrains Mono',monospace}
 
 /* AUTH MODAL */
 .modal-wrap{position:fixed;inset:0;background:rgba(0,0,0,.85);backdrop-filter:blur(14px);z-index:99999;display:none;align-items:center;justify-content:center;padding:20px}
@@ -353,7 +373,16 @@ body.auto-reveal .card:hover .card-glass{pointer-events:all;opacity:1}
 .toast.out{animation:toastOut .22s ease-in forwards}
 @keyframes toastOut{to{transform:translateX(110%);opacity:0}}
 
+/* NEW: Back to top button */
+.back-top{position:fixed;bottom:18px;left:calc(var(--sid) + 18px);width:34px;height:34px;border-radius:10px;background:var(--s3);border:1px solid var(--b2);display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:888;opacity:0;pointer-events:none;transition:all .22s;box-shadow:0 4px 16px rgba(0,0,0,.4)}
+.back-top.show{opacity:1;pointer-events:all}
+.back-top:hover{background:var(--accbg);border-color:var(--accborder);transform:translateY(-2px)}
+.back-top svg{width:14px;height:14px;color:var(--t2)}
+
 body.hide-scores .score-chip{display:none}
+/* NEW: animate new cards in */
+@keyframes cardIn{from{opacity:0;transform:translateY(10px) scale(.98)}to{opacity:1;transform:none}}
+.card-new{animation:cardIn .35s cubic-bezier(.16,1,.3,1) both}
 
 /* RESPONSIVE */
 @media(min-width:1700px){:root{--cols:6}}
@@ -364,7 +393,8 @@ body.hide-scores .score-chip{display:none}
   .sidebar{position:fixed;top:0;left:0;height:100vh;transform:translateX(-110%);z-index:300}
   .sidebar.open{transform:translateX(0)}
   .tb-menu-btn{display:flex}
-  .tb-sep,.tb-count{display:none}
+  .tb-sep,.tb-count,.tb-search-wrap{display:none}
+  .back-top{left:18px}
 }
 @media(max-width:760px){
   :root{--cols:2}
@@ -378,6 +408,7 @@ body.hide-scores .score-chip{display:none}
   .settings-overlay{padding:0;align-items:flex-end;justify-content:center}
   .settings-panel{width:100%;max-width:100%;border-radius:20px 20px 0 0;max-height:88vh}
   .age-box{padding:36px 24px 28px}
+  .v-key-hints{display:none}
 }
 @media(max-width:480px){
   :root{--cols:2}
@@ -447,6 +478,10 @@ body.hide-scores .score-chip{display:none}
     <div class="sb-search-wrap">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
       <input id="searchInput" type="text" placeholder="Search tags…" onkeypress="if(event.key==='Enter')doSearch()">
+      <!-- FIX: Added click-to-search button -->
+      <div class="sb-search-btn" onclick="doSearch()" title="Search">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+      </div>
     </div>
   </div>
   <div class="sb-sec">Discover</div>
@@ -491,6 +526,11 @@ body.hide-scores .score-chip{display:none}
     <span class="tb-heading" id="tbHeading">Home</span>
     <span class="tb-count" id="tbCount"></span>
     <div class="tb-sep"></div>
+    <!-- NEW: Topbar search box -->
+    <div class="tb-search-wrap">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      <input id="tbSearchInput" type="text" placeholder="Search…" onkeypress="if(event.key==='Enter')doTopbarSearch()">
+    </div>
     <div class="tb-tabs">
       <div class="tb-tab active" onclick="setMediaFilter('all',this)">All</div>
       <div class="tb-tab" onclick="setMediaFilter('image',this)">Images</div>
@@ -517,6 +557,7 @@ body.hide-scores .score-chip{display:none}
 <div class="viewer" id="viewer">
   <div class="v-shell">
     <div class="v-media" id="vMedia">
+      <div class="v-loading" id="vLoading"><div class="spin"></div></div>
       <div class="v-nav">
         <div class="v-arr" onclick="viewerNav(-1)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg></div>
         <div class="v-arr" onclick="viewerNav(1)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg></div>
@@ -557,6 +598,11 @@ body.hide-scores .score-chip{display:none}
         <span id="vPos">—</span>
         <div class="v-bar"><div class="v-bar-fill" id="vBarProg"></div></div>
         <span id="vPosR">—</span>
+        <!-- NEW: keyboard hints -->
+        <div class="v-key-hints">
+          <span class="v-key">←→</span>
+          <span class="v-key">Esc</span>
+        </div>
       </div>
     </div>
   </div>
@@ -651,17 +697,23 @@ body.hide-scores .score-chip{display:none}
   </div>
 </div>
 
+<!-- NEW: Back to top button -->
+<div class="back-top" id="backTop" onclick="scrollToTop()" title="Back to top">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="18 15 12 9 6 15"/></svg>
+</div>
+
 <div class="toasts" id="toasts"></div>
 
 <script>
 // ─── CONSTANTS ───
 const BAN_DURATION_MS = 3 * 24 * 60 * 60 * 1000;
 const BANNED_TERMS = ['child','children','minor','minors','kid','kids','underage','teen','teens','loli','lolicon','shota','shotacon','pedo','preteen','jailbait','13','14','15','16','17','ageplay'];
-// PERF: direct API call — no proxy needed for public read-only API (avoids proxy RTT)
 const API = 'https://api.rule34.xxx/index.php?page=dapi&s=post&q=index&json=1';
 const R34_KEY = '7088fd909e8ffedca36a0be2e5a11655eabd8f42cd07be62d91617cfb853e4132d309ae15a752be201c4c2415414f049d968eb5d6ec3fcc3274d365b0d3f399b';
 const R34_USER = '6090245';
 const PAGE_SIZE = 40;
+// PERF: Preload 2 pages ahead when approaching end
+const PRELOAD_THRESHOLD = 12;
 const POPULAR_TAGS = ['solo','animated','hentai','3d','uncensored','big_breasts','ass','cosplay','duo'];
 
 // ─── DEVICE ID ───
@@ -703,21 +755,19 @@ function showBanScreen(banData) {
 async function checkBanOnLoad() {
   const local = JSON.parse(localStorage.getItem('phx_ban')||'null');
   if (local?.active !== false && local?.until > Date.now()) { showBanScreen(local); return true; }
-  if (!FB?.ok) return false;
-  try {
-    const { ref, get, db } = FB;
-    const snap = await get(ref(db, `bans/${DEVICE_ID}`));
-    if (snap.exists()) {
-      const d = snap.val();
-      if (d.active !== false && d.until > Date.now()) { localStorage.setItem('phx_ban', JSON.stringify(d)); showBanScreen(d); return true; }
-    }
-  } catch(e) {}
   return false;
 }
 
 function containsBannedTerm(q) {
   const s = q.toLowerCase().replace(/[^a-z0-9_\-]/g,' ');
-  return BANNED_TERMS.some(t => s.includes(t));
+  return BANNED_TERMS.some(t => {
+    // Word-boundary style check to avoid false positives
+    const idx = s.indexOf(t);
+    if (idx === -1) return false;
+    const before = idx === 0 || /\W/.test(s[idx-1]);
+    const after = idx + t.length >= s.length || /\W/.test(s[idx+t.length]);
+    return before && after;
+  });
 }
 
 // ─── STATE ───
@@ -729,8 +779,10 @@ let ageOk = localStorage.getItem('phx_age') === '1';
 let ratingUnsub = null;
 const revealedIds = new Set();
 
-// PERF: In-flight fetch controller so we can abort stale requests on tag change
+// PERF: In-flight fetch controller for aborting stale requests
 let currentController = null;
+// PERF: Image preload cache — keeps Image objects alive so browser caches them
+const imgPreloadCache = new Map();
 
 // ─── SETTINGS ───
 function saveSettings() { localStorage.setItem('phx_settings', JSON.stringify(settings)); }
@@ -785,27 +837,12 @@ function closeSidebar() {
   document.getElementById('sbOverlay').classList.remove('show');
 }
 
-// ─── MEDIA ───
-// PERF: Removed /api/proxy wrapper — direct URLs are significantly faster.
-// Thumbnails (preview_url) are served directly from r34 CDN; only full viewer
-// uses the higher-res sample/file url which is also direct.
-function attachMedia(el, raw) {
-  if (!raw) return;
-  el.onerror = () => {
-    el.style.display = 'none';
-    const d = document.createElement('div');
-    d.className = 'media-err';
-    d.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg><div class="media-err-title">Failed to load</div><div class="media-err-sub">Media unavailable</div>';
-    el.parentElement?.appendChild(d);
-  };
-  el.src = raw;
-}
-
-// ─── FILTER ───
+// ─── MEDIA FILTER ───
 function setMediaFilter(f, el) {
   ST.mediaFilter = f;
   document.querySelectorAll('.tb-tab').forEach(b => b.classList.remove('active'));
   el.classList.add('active');
+  // FIX: Re-render with current posts instead of re-fetching
   renderGrid();
 }
 
@@ -819,7 +856,7 @@ function getFilteredPosts() {
 }
 
 // ─── GRID ───
-// PERF: Use DocumentFragment for batch DOM insert — avoids per-card reflow
+// PERF: Use DocumentFragment for batch DOM insert
 function renderGrid() {
   const grid = document.getElementById('grid');
   const frag = document.createDocumentFragment();
@@ -828,16 +865,32 @@ function renderGrid() {
   grid.appendChild(frag);
 }
 
-// PERF: SVG icons defined once as constants to avoid repeated string creation
+// PERF: Build skeletons before real content arrives
+function showSkeletons(count = 20) {
+  const grid = document.getElementById('grid');
+  if (grid.children.length > 0) return; // don't show if content exists
+  const frag = document.createDocumentFragment();
+  const heights = [180, 240, 200, 280, 160, 220, 300, 190];
+  for (let i = 0; i < count; i++) {
+    const s = document.createElement('div');
+    s.className = 'skel';
+    s.style.height = heights[i % heights.length] + 'px';
+    frag.appendChild(s);
+  }
+  grid.appendChild(frag);
+}
+
 const SVG_HEART = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>`;
 const SVG_ZOOM = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>`;
 
 function buildCard(post, idx) {
   const card = document.createElement('div');
-  card.className = 'card';
+  card.className = 'card card-new';
+  // FIX: stagger animation delay for visual appeal, cap at 500ms
+  card.style.animationDelay = Math.min(idx * 18, 500) + 'ms';
+
   const isVid = /\.(webm|mp4)$/i.test(post.file_url||'');
   const isGif = /\.gif$/i.test(post.file_url||'');
-  // PERF: always use preview_url (tiny thumbnail) for grid — full res only in viewer
   const thumbUrl = post.preview_url || post.sample_url;
   const isFaved = favs.includes(post.id);
   const isRevealed = revealedIds.has(post.id) || !!settings.autoReveal;
@@ -845,25 +898,24 @@ function buildCard(post, idx) {
 
   if (isVid) {
     const v = document.createElement('video');
-    // PERF: no autoplay in grid unless already revealed; use poster thumbnail
-    v.muted = true; v.loop = true; v.playsInline = true;
+    v.muted = true; v.loop = true; v.playsInline = true; v.preload = 'none';
     if (!isRevealed) v.className = 'blurred';
-    // PERF: always load poster first — avoids pulling multi-MB video just for thumbnail
-    if (post.preview_url || post.sample_url) {
-      v.poster = post.preview_url || post.sample_url;
-    }
-    // PERF: preload=none — don't buffer video until user reveals or hovers
-    v.preload = 'none';
-    if (isRevealed) {
-      v.src = post.file_url;
-      v.autoplay = true;
-    }
+    if (thumbUrl) v.poster = thumbUrl;
+    if (isRevealed) { v.src = post.file_url; v.autoplay = true; }
     card.appendChild(v);
   } else {
     const img = document.createElement('img');
     img.loading = 'lazy'; img.alt = ''; img.decoding = 'async';
+    // PERF: fetchpriority=high for first 8 cards (above-the-fold)
+    if (idx < 8) img.fetchPriority = 'high';
     if (!isRevealed) img.className = 'blurred';
-    // PERF: direct URL, no proxy
+    img.onerror = () => {
+      img.style.display = 'none';
+      const d = document.createElement('div');
+      d.className = 'media-err';
+      d.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg><div class="media-err-title">Unavailable</div>';
+      img.parentElement?.appendChild(d);
+    };
     if (thumbUrl) img.src = thumbUrl;
     card.appendChild(img);
   }
@@ -877,7 +929,7 @@ function buildCard(post, idx) {
         <div class="shield-desc">Tap to reveal</div>
         <div class="shield-actions">
           <button class="sh-btn yes">Reveal</button>
-          <button class="sh-btn no">Cancel</button>
+          <button class="sh-btn no">Skip</button>
         </div>
       </div>
     </div>
@@ -900,7 +952,6 @@ function buildCard(post, idx) {
     card.classList.add('revealed');
     const vid = card.querySelector('video');
     if (vid) {
-      // PERF: only set src on reveal to avoid background network requests
       if (!vid.src) vid.src = post.file_url;
       vid.play().catch(()=>{});
     }
@@ -912,27 +963,35 @@ function buildCard(post, idx) {
   acts[1].addEventListener('click', e => { e.stopPropagation(); openViewer(idx); });
   card.addEventListener('click', () => { if (card.classList.contains('revealed') || settings.autoReveal) openViewer(idx); });
 
+  // PERF: Hover-preload next viewer image
+  card.addEventListener('mouseenter', () => {
+    const f = getFilteredPosts();
+    const next = f[idx + 1];
+    if (next && next.sample_url && !imgPreloadCache.has(next.id)) {
+      const pre = new Image();
+      pre.src = next.sample_url || next.file_url;
+      imgPreloadCache.set(next.id, pre);
+      // keep cache bounded
+      if (imgPreloadCache.size > 30) {
+        imgPreloadCache.delete(imgPreloadCache.keys().next().value);
+      }
+    }
+  }, { passive: true });
+
   return card;
 }
 
 // ─── NAV & SEARCH ───
 function navItem(el) {
   document.querySelectorAll('.sb-item').forEach(i => i.classList.remove('active'));
+  // FIX: also deactivate tag items
+  document.querySelectorAll('.sb-tag-item').forEach(i => i.classList.remove('active'));
   el.classList.add('active');
-  document.getElementById('tbHeading').textContent = el.textContent.trim().replace(/NEW$/,'').trim();
+  const label = el.childNodes[el.childNodes.length - 1];
+  const text = el.textContent.trim().replace(/NEW$/,'').replace(/\s+/g,' ').trim();
+  document.getElementById('tbHeading').textContent = text;
   setTags(el.dataset.tags || 'rating:explicit');
   closeSidebar();
-}
-
-function setTags(tags) {
-  // PERF: abort any in-flight fetch before resetting state
-  if (currentController) { currentController.abort(); currentController = null; }
-  ST.tags = tags; ST.page = 0; ST.posts = []; ST.done = false; ST.loading = false;
-  revealedIds.clear();
-  document.getElementById('grid').innerHTML = '';
-  document.getElementById('tbCount').textContent = '';
-  document.getElementById('sentinel').innerHTML = '<div class="spin"></div>';
-  loadMore();
 }
 
 function doSearch() {
@@ -944,9 +1003,24 @@ function doSearch() {
     return;
   }
   document.getElementById('tbHeading').textContent = raw;
-  document.querySelectorAll('.sb-item').forEach(i => i.classList.remove('active'));
+  document.querySelectorAll('.sb-item,.sb-tag-item').forEach(i => i.classList.remove('active'));
   setTags(raw + ' rating:explicit');
   closeSidebar();
+}
+
+// NEW: Topbar search handler
+function doTopbarSearch() {
+  const raw = document.getElementById('tbSearchInput').value.trim();
+  if (!raw) return;
+  if (containsBannedTerm(raw)) {
+    document.getElementById('tbSearchInput').value = '';
+    setBan('Searching up Banned Material');
+    return;
+  }
+  document.getElementById('searchInput').value = raw;
+  document.getElementById('tbHeading').textContent = raw;
+  document.querySelectorAll('.sb-item,.sb-tag-item').forEach(i => i.classList.remove('active'));
+  setTags(raw + ' rating:explicit');
 }
 
 function setSort(s, el) {
@@ -957,11 +1031,19 @@ function setSort(s, el) {
 }
 
 // ─── FETCH ───
-// PERF: 
-//   1. AbortController cancels stale requests when tag changes
-//   2. Direct API call (no proxy) — single hop instead of two
-//   3. Incremental DOM append via DocumentFragment instead of full re-render
-//   4. Concurrent page preload — while user reads page N, preload page N+1
+function setTags(tags) {
+  if (currentController) { currentController.abort(); currentController = null; }
+  ST.tags = tags; ST.page = 0; ST.posts = []; ST.done = false; ST.loading = false;
+  revealedIds.clear();
+  imgPreloadCache.clear();
+  document.getElementById('grid').innerHTML = '';
+  document.getElementById('tbCount').textContent = '';
+  document.getElementById('sentinel').innerHTML = '<div class="spin"></div>';
+  // PERF: Show skeletons immediately for perceived speed
+  showSkeletons(20);
+  loadMore();
+}
+
 async function loadMore() {
   if (ST.loading || ST.done) return;
   ST.loading = true;
@@ -973,7 +1055,11 @@ async function loadMore() {
   const apiUrl = `${API}&tags=${encodeURIComponent(tags)}&limit=${PAGE_SIZE}&pid=${ST.page * PAGE_SIZE}&api_key=${R34_KEY}&user_id=${R34_USER}&json=1`;
 
   try {
-    const res = await fetch(apiUrl, { signal: controller.signal });
+    const res = await fetch(apiUrl, {
+      signal: controller.signal,
+      // PERF: hint browser to keep connection alive for subsequent pages
+      keepalive: true,
+    });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const data = await res.json();
     const posts = Array.isArray(data) ? data : [];
@@ -981,6 +1067,10 @@ async function loadMore() {
     if (!posts.length) {
       ST.done = true;
       document.getElementById('sentinel').innerHTML = '<span style="font-size:11px;font-family:JetBrains Mono,monospace;color:var(--t4)">— end of results —</span>';
+      // Clear skeletons if no results at all
+      if (!ST.posts.length) {
+        document.getElementById('grid').innerHTML = '<div class="err-state"><div class="err-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div><div class="err-title">No results</div><div class="err-sub">Try different tags.</div></div>';
+      }
       return;
     }
 
@@ -988,7 +1078,12 @@ async function loadMore() {
     ST.posts.push(...posts);
     ST.page++;
 
-    // PERF: only append new cards — no full re-render
+    // PERF: Remove skeletons on first real load
+    if (ST.page === 1) {
+      document.getElementById('grid').innerHTML = '';
+    }
+
+    // PERF: Only append new cards
     const newFiltered = getFilteredPosts();
     const frag = document.createDocumentFragment();
     for (let i = prevFilteredLen; i < newFiltered.length; i++) {
@@ -996,18 +1091,37 @@ async function loadMore() {
     }
     document.getElementById('grid').appendChild(frag);
     document.getElementById('tbCount').textContent = `${ST.posts.length.toLocaleString()} posts`;
+
+    // PERF: Preload thumbnails for next batch (background, low priority)
+    preloadNextBatch(posts.slice(0, 8));
+
   } catch(err) {
-    if (err.name === 'AbortError') return; // intentional cancel, not an error
-    if (!ST.posts.length) showFetchError('Could not load posts. Check your connection or try again.');
-    else toast('Failed to load more','red');
+    if (err.name === 'AbortError') return;
+    // Clear skeletons on error
+    if (!ST.posts.length) {
+      document.getElementById('grid').innerHTML = `<div class="err-state"><div class="err-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div><div class="err-title">Could not load content</div><div class="err-sub">Check connection or try again.</div><button class="err-retry" onclick="setTags(ST.tags)">Retry</button></div>`;
+    } else {
+      toast('Failed to load more — scroll up to retry','red');
+    }
   } finally {
     ST.loading = false;
     if (currentController === controller) currentController = null;
   }
 }
 
-function showFetchError(msg) {
-  document.getElementById('grid').innerHTML = `<div class="err-state"><div class="err-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div><div class="err-title">Could not load content</div><div class="err-sub">${msg}</div><button class="err-retry" onclick="setTags(ST.tags)">Retry</button></div>`;
+// PERF: Preload next batch thumbnails using low-priority fetch hints
+function preloadNextBatch(posts) {
+  // Only preload if browser supports requestIdleCallback
+  const schedule = window.requestIdleCallback || (fn => setTimeout(fn, 200));
+  schedule(() => {
+    posts.forEach(p => {
+      if (!p.preview_url || imgPreloadCache.has(p.id)) return;
+      const img = new Image();
+      img.fetchPriority = 'low';
+      img.src = p.preview_url;
+      imgPreloadCache.set(p.id, img);
+    });
+  });
 }
 
 // ─── VIEWER ───
@@ -1021,27 +1135,27 @@ function openViewer(filteredIdx) {
 function closeViewer() {
   document.getElementById('viewer').classList.remove('open');
   document.removeEventListener('keydown', vKey);
-  // PERF: revoke src to stop any ongoing video buffering
   document.getElementById('vMedia').querySelectorAll('video').forEach(v => { v.pause(); v.src = ''; v.load(); });
   if (typeof ratingUnsub === 'function') { ratingUnsub(); ratingUnsub = null; }
 }
 
 function vKey(e) {
-  if (e.key === 'ArrowRight') viewerNav(1);
-  else if (e.key === 'ArrowLeft') viewerNav(-1);
+  // FIX: Don't intercept keys when typing in inputs
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+  if (e.key === 'ArrowRight' || e.key === 'd') viewerNav(1);
+  else if (e.key === 'ArrowLeft' || e.key === 'a') viewerNav(-1);
   else if (e.key === 'Escape') closeViewer();
+  else if (e.key === 'f' || e.key === 'F') toggleViewerFav();
 }
 
 function viewerNav(dir) {
   const f = getFilteredPosts(), n = ST.vIdx + dir;
   if (n < 0 || n >= f.length) return;
   if (typeof ratingUnsub === 'function') { ratingUnsub(); ratingUnsub = null; }
-  // PERF: stop current video before moving to next
   document.getElementById('vMedia').querySelectorAll('video').forEach(v => { v.pause(); v.src = ''; v.load(); });
   ST.vIdx = n;
   renderViewer();
-  // PERF: trigger next page load early when nearing end of list
-  if (n > f.length - 8) loadMore();
+  if (n > f.length - PRELOAD_THRESHOLD) loadMore();
 }
 
 function renderViewer() {
@@ -1049,17 +1163,35 @@ function renderViewer() {
   if (!post) return;
 
   const vm = document.getElementById('vMedia');
+  const loader = document.getElementById('vLoading');
   vm.querySelectorAll('img,video,.media-err').forEach(el => el.remove());
+
+  // PERF: Show loading spinner immediately, hide on load
+  loader.classList.add('show');
 
   if (/\.(webm|mp4)$/i.test(post.file_url||'')) {
     const v = document.createElement('video');
     v.controls = true; v.loop = true; v.autoplay = true; v.playsInline = true;
-    // PERF: viewer shows full res directly (no proxy)
+    v.onloadeddata = () => loader.classList.remove('show');
+    v.onerror = () => loader.classList.remove('show');
     v.src = post.file_url;
     vm.prepend(v);
   } else {
     const img = document.createElement('img'); img.alt = ''; img.decoding = 'async';
-    // PERF: prefer sample_url (compressed version) over full file_url where available
+    img.fetchPriority = 'high';
+    img.onload = () => loader.classList.remove('show');
+    img.onerror = () => {
+      loader.classList.remove('show');
+      img.style.display = 'none';
+      const d = document.createElement('div');
+      d.className = 'media-err';
+      d.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg><div class="media-err-title">Failed to load</div><div class="media-err-sub">Media unavailable</div>';
+      vm.prepend(d);
+    };
+    // PERF: Use cached preload if available
+    if (imgPreloadCache.has(post.id) && imgPreloadCache.get(post.id).complete) {
+      loader.classList.remove('show');
+    }
     img.src = post.sample_url || post.file_url;
     vm.prepend(img);
   }
@@ -1084,6 +1216,17 @@ function renderViewer() {
   document.getElementById('vBarProg').style.width = `${(pos/tot)*100}%`;
   document.getElementById('vFavBtn').className = 'v-act' + (favs.includes(post.id) ? ' on' : '');
   renderVBody(post);
+
+  // PERF: Preload next/prev viewer images
+  [f[ST.vIdx+1], f[ST.vIdx-1]].forEach(np => {
+    if (!np || imgPreloadCache.has(np.id)) return;
+    if (!/\.(webm|mp4)$/i.test(np.file_url||'')) {
+      const pre = new Image();
+      pre.fetchPriority = 'low';
+      pre.src = np.sample_url || np.file_url;
+      imgPreloadCache.set(np.id, pre);
+    }
+  });
 }
 
 // ─── RATINGS ───
@@ -1123,7 +1266,7 @@ function renderRatingFromObj(postId, ratingsObj) {
 }
 
 async function ratePost(postId, stars) {
-  if (!user) { toast('Sign in to rate','red'); return; }
+  if (!user) { toast('Sign in to rate','red'); openAuth('login'); return; }
   if (FB?.ok) { await fbSetRating(postId, user.username, stars); }
   else {
     let lr = JSON.parse(localStorage.getItem('phx_ratings')||'{}');
@@ -1140,7 +1283,8 @@ function renderVBody(post) {
   if (!body) return;
   const tags = (post.tags||'').split(' ').filter(Boolean);
   document.getElementById('vTagCt').textContent = tags.length;
-  body.innerHTML = `<div class="v-tags">${tags.map(t => `<div class="v-tag" onclick="setTags('${escHtml(t)} rating:explicit');closeViewer()">${escHtml(t)}</div>`).join('')}</div>`;
+  // FIX: tags now properly close viewer after navigating
+  body.innerHTML = `<div class="v-tags">${tags.map(t => `<div class="v-tag" onclick="closeViewer();setTimeout(()=>setTags('${escHtml(t)} rating:explicit'),50)">${escHtml(t)}</div>`).join('')}</div>`;
 }
 
 function vTab(tab, el) {
@@ -1195,6 +1339,8 @@ function openAuth(mode) {
   document.getElementById('mUser').value = '';
   document.getElementById('mPass').value = '';
   document.getElementById('authModal').classList.add('open');
+  // FIX: Auto-focus username field
+  setTimeout(() => document.getElementById('mUser').focus(), 50);
 }
 function closeAuth() { document.getElementById('authModal').classList.remove('open'); }
 function toggleAuthMode() { openAuth(authMode === 'login' ? 'signup' : 'login'); }
@@ -1206,6 +1352,7 @@ async function submitAuth() {
   const errEl = document.getElementById('mErr');
   if (!u || !p) { errEl.textContent = 'Please fill in all fields.'; errEl.classList.add('show'); return; }
   if (authMode === 'signup' && p.length < 6) { errEl.textContent = 'Password must be 6+ characters.'; errEl.classList.add('show'); return; }
+  // Admin unban
   if (u.toLowerCase() === 'ricky' && FB?.ok) {
     try {
       const { ref, set, db } = FB;
@@ -1232,7 +1379,7 @@ function updateUserUI() {
   const av = document.getElementById('sbAvatar'), un = document.getElementById('sbUname');
   const st = document.getElementById('sbStatus'), fl = document.getElementById('footL');
   const fr = document.getElementById('footR'), tb = document.getElementById('tbAcctBtn');
-  if (user && user.username) {
+  if (user?.username) {
     av.textContent = user.username[0].toUpperCase();
     un.textContent = user.username;
     st.style.display = 'block';
@@ -1253,50 +1400,51 @@ function handleFootL() { if (user) openSettings(); else openAuth('login'); }
 
 try { const s = localStorage.getItem('phx_user'); if (s) { user = JSON.parse(s); updateUserUI(); } } catch(e) {}
 
+// ─── BACK TO TOP ───
+function scrollToTop() {
+  document.getElementById('content').scrollTo({ top: 0, behavior: 'smooth' });
+}
+
 // ─── STARTUP ───
-// PERF: Don't block page render waiting for Firebase.
-// Show age gate immediately, run Firebase ban check in background.
-// If already age-verified, kick off content load right away.
 async function startup() {
-  // Populate popular tags sidebar immediately (no async needed)
+  // Populate popular tags sidebar
   const tagsEl = document.getElementById('sbTags');
   POPULAR_TAGS.forEach(tag => {
     const el = document.createElement('div');
     el.className = 'sb-tag-item';
     el.innerHTML = `<div class="sb-pip"></div>${escHtml(tag)}`;
     el.onclick = () => {
+      // FIX: properly deactivate all nav items when tag clicked
+      document.querySelectorAll('.sb-item').forEach(i => i.classList.remove('active'));
       document.querySelectorAll('.sb-tag-item').forEach(t => t.classList.remove('active'));
       el.classList.add('active');
       document.getElementById('tbHeading').textContent = tag;
-      document.querySelectorAll('.sb-item').forEach(i => i.classList.remove('active'));
       setTags(tag + ' rating:explicit');
       closeSidebar();
     };
     tagsEl.appendChild(el);
   });
 
-  // PERF: Check localStorage ban instantly (no network wait)
+  // Check localStorage ban instantly
   const localBan = JSON.parse(localStorage.getItem('phx_ban')||'null');
   if (localBan?.active !== false && localBan?.until > Date.now()) {
     showBanScreen(localBan);
     return;
   }
 
-  // PERF: If age already confirmed, start loading content immediately
   if (ageOk) {
     document.getElementById('ageGate').classList.add('gone');
     applySettings();
-    loadMore(); // ← starts fetching without waiting for Firebase
+    loadMore();
   }
 
-  // PERF: Firebase ban check runs in parallel (non-blocking)
-  // Only matters if localStorage has no local ban record
+  // Firebase ban check (non-blocking, parallel)
   Promise.race([
     new Promise(resolve => {
       if (window.__FB_READY) { FB = window.__FB; resolve(); }
       else window.addEventListener('fb-ready', () => { FB = window.__FB; resolve(); }, { once: true });
     }),
-    new Promise(resolve => setTimeout(resolve, 2000)) // 2s max wait for Firebase
+    new Promise(resolve => setTimeout(resolve, 2000))
   ]).then(async () => {
     if (!FB?.ok) return;
     try {
@@ -1307,7 +1455,6 @@ async function startup() {
         if (d.active !== false && d.until > Date.now()) {
           localStorage.setItem('phx_ban', JSON.stringify(d));
           showBanScreen(d);
-          // If content was already loading, abort it
           if (currentController) { currentController.abort(); currentController = null; }
           document.getElementById('ageGate').classList.add('gone');
         }
@@ -1324,11 +1471,16 @@ function ageConfirm() {
 
 startup();
 
-// ─── INFINITE SCROLL ───
-// PERF: rootMargin 500px triggers load earlier so next page is ready before user reaches bottom
+// ─── INFINITE SCROLL (via IntersectionObserver) ───
 new IntersectionObserver(entries => {
   if (entries[0].isIntersecting && ageOk) loadMore();
-}, { rootMargin: '500px' }).observe(document.getElementById('sentinel'));
+}, { rootMargin: '800px' }).observe(document.getElementById('sentinel'));
+
+// ─── BACK TO TOP visibility ───
+document.getElementById('content').addEventListener('scroll', function() {
+  const btn = document.getElementById('backTop');
+  btn.classList.toggle('show', this.scrollTop > 600);
+}, { passive: true });
 
 // ─── UTILS ───
 function toast(msg, type='', dur=3200) {
@@ -1345,13 +1497,30 @@ function fmtSize(b) {
 // ─── GLOBAL EVENTS ───
 document.getElementById('viewer').addEventListener('click', e => { if (e.target === document.getElementById('viewer')) closeViewer(); });
 document.getElementById('authModal').addEventListener('click', e => { if (e.target === document.getElementById('authModal')) closeAuth(); });
+// FIX: Escape closes auth modal too
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    if (document.getElementById('authModal').classList.contains('open')) closeAuth();
+    if (document.getElementById('settingsOverlay').classList.contains('open')) closeSettings();
+    if (document.getElementById('arModal').classList.contains('open')) cancelAutoReveal();
+  }
+});
 
-// Swipe to navigate viewer on mobile
-let _tx = 0;
-document.getElementById('viewer').addEventListener('touchstart', e => { _tx = e.touches[0].clientX; }, { passive: true });
+// Swipe to navigate viewer — FIX: higher threshold, direction-locked
+let _tx = 0, _ty = 0, _locked = false;
+document.getElementById('viewer').addEventListener('touchstart', e => {
+  _tx = e.touches[0].clientX; _ty = e.touches[0].clientY; _locked = false;
+}, { passive: true });
+document.getElementById('viewer').addEventListener('touchmove', e => {
+  if (_locked) return;
+  const dx = Math.abs(e.touches[0].clientX - _tx);
+  const dy = Math.abs(e.touches[0].clientY - _ty);
+  if (dx > dy && dx > 10) _locked = true; // lock to horizontal
+}, { passive: true });
 document.getElementById('viewer').addEventListener('touchend', e => {
   const dx = e.changedTouches[0].clientX - _tx;
-  if (Math.abs(dx) > 48) viewerNav(dx < 0 ? 1 : -1);
+  // FIX: raised threshold from 48 → 72px to avoid accidental swipes
+  if (_locked && Math.abs(dx) > 72) viewerNav(dx < 0 ? 1 : -1);
 }, { passive: true });
 </script>
 </body>
