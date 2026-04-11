@@ -529,30 +529,34 @@ async function initProxy() {
   badge.className = 'proxy-badge';
   badgeText.textContent = 'checking…';
 
-  // 1. Try direct (no proxy) — works when site is served from same origin or CORS is open
-  const directTest = await fetchWithTimeout(
-    'https://api.rule34.xxx/index.php?page=dapi&s=post&q=index&json=1&tags=rating:explicit&limit=1',
-    PROXY_TIMEOUT_MS
-  ).then(r => r.ok).catch(() => false);
+  const TEST_API = 'https://api.rule34.xxx/index.php?page=dapi&s=post&q=index&json=1&tags=rating%3Aexplicit&limit=1&pid=0';
 
-  if (directTest) {
+  // Helper: probe a URL and verify it returns valid JSON array
+  async function probeApi(url) {
+    try {
+      const r = await fetchWithTimeout(url, PROXY_TIMEOUT_MS);
+      if (!r.ok) return false;
+      const text = await r.text();
+      const json = JSON.parse(text);
+      return Array.isArray(json) && json.length > 0;
+    } catch { return false; }
+  }
+
+  // 1. Try direct — works if CORS is open (unlikely for rule34 but free to check)
+  if (await probeApi(TEST_API)) {
     _activeProxy = null;
     badge.className = 'proxy-badge ok';
     badgeText.textContent = 'direct ✓';
-    console.info('[proxy] direct connection works');
+    console.info('[proxy] direct works');
     return true;
   }
 
-  // 2. Try each proxy in the list
+  // 2. Try each proxy
   for (let i = 0; i < PROXY_LIST.length; i++) {
     const base = PROXY_LIST[i];
     if (!base) continue;
-    const probeUrl = base + encodeURIComponent('https://rule34.xxx/favicon.ico');
-    const ok = await fetchWithTimeout(probeUrl, PROXY_TIMEOUT_MS)
-      .then(r => r.ok || r.type === 'opaque')
-      .catch(() => false);
-
-    if (ok) {
+    const probeUrl = base + encodeURIComponent(TEST_API);
+    if (await probeApi(probeUrl)) {
       _activeProxy = base;
       badge.className = 'proxy-badge ok';
       const name = i === 0 ? 'self-hosted' : base.includes('corsproxy') ? 'corsproxy' : 'allorigins';
@@ -560,10 +564,10 @@ async function initProxy() {
       console.info('[proxy] active:', name, base);
       return true;
     }
-    console.warn('[proxy] slot', i, 'failed, trying next…');
+    console.warn('[proxy] slot', i, 'failed');
   }
 
-  // 3. All failed — show setup banner, still attempt direct loads
+  // 3. All failed
   _activeProxy = null;
   badge.className = 'proxy-badge fail';
   badgeText.textContent = 'no proxy';
@@ -705,13 +709,17 @@ async function loadMore() {
     ? state.tags + ' sort:score:desc'
     : state.tags;
 
-  const apiUrl = `${API}&tags=${encodeURIComponent(tags)}&limit=${PAGE_SIZE}&pid=${state.page}`;
+  // Rule34 pid = post offset (not page number) — must multiply
+  const pid = state.page * PAGE_SIZE;
+  const apiUrl = `${API}&tags=${encodeURIComponent(tags)}&limit=${PAGE_SIZE}&pid=${pid}`;
   const fetchUrl = _activeProxy ? _activeProxy + encodeURIComponent(apiUrl) : apiUrl;
 
   try {
     const res = await fetchWithTimeout(fetchUrl, PROXY_TIMEOUT_MS * 2);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const data = await res.json();
+    const text = await res.text();
+    let data;
+    try { data = JSON.parse(text); } catch { data = []; }
     const posts = Array.isArray(data) ? data : [];
 
     if (posts.length === 0) {
