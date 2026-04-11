@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>phX</title>
 <link rel="dns-prefetch" href="https://api.rule34.xxx">
-<link rel="dns-prefetch" href="https://www.eporner.com">
+<link rel="dns-prefetch" href="https://api.redgifs.com">
 <link rel="preconnect" href="https://wimg.rule34.xxx" crossorigin>
 <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500&display=swap" onload="this.onload=null;this.rel='stylesheet'">
 <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500&display=swap"></noscript>
@@ -55,7 +55,7 @@
   --acc2: #ff7043;
   --acc3: #a855f7;
   --acc4: #6366f1;
-  --ep: #ff6b35;    /* eporner brand accent */
+  --rg: #00c9a7;    /* redgifs brand accent */
 
   --accbg: rgba(255,71,87,0.08);
   --accborder: rgba(255,71,87,0.22);
@@ -161,7 +161,7 @@ body::before {
 .sb-online { width:6px;height:6px;border-radius:50%;background:var(--green);flex-shrink:0;box-shadow:0 0 7px rgba(29,209,161,.7); }
 .owner-crown { font-size:11px;flex-shrink:0; }
 
-/* Search — ONE search bar in sidebar */
+/* Search */
 .sb-search { padding:7px 7px 3px;flex-shrink:0; }
 .sb-search-inner { display:flex;align-items:center;gap:6px;background:var(--s2);border:1px solid var(--b1);border-radius:8px;padding:0 9px;transition:all .16s; }
 .sb-search-inner:focus-within { border-color:var(--accborder);background:var(--s3);box-shadow:0 0 0 3px var(--accdim); }
@@ -184,7 +184,7 @@ body::before {
 /* Source badges */
 .sb-nav-item .src-badge { margin-left:auto;font-family:var(--mono);font-size:7px;padding:1px 5px;border-radius:3px;font-weight:700;letter-spacing:.08em;text-transform:uppercase; }
 .src-r34 { background:rgba(99,102,241,.15);color:#818cf8; }
-.src-ep { background:rgba(255,107,53,.15);color:var(--ep); }
+.src-rg { background:rgba(0,201,167,.15);color:var(--rg); }
 .sb-divider { height:1px;background:var(--b0);margin:5px 2px; }
 .sb-tag { display:flex;align-items:center;gap:7px;padding:4px 10px;border-radius:7px;font-size:11.5px;color:var(--t4);cursor:pointer;transition:all .11s;margin-bottom:1px; }
 .sb-tag:hover { background:var(--b0);color:var(--t2); }
@@ -201,7 +201,7 @@ body::before {
 /* ── MAIN ── */
 .main { flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0; }
 
-/* Topbar — NO search input here */
+/* Topbar */
 .topbar { height:var(--topbar);flex-shrink:0;display:flex;align-items:center;gap:6px;padding:0 11px;background:var(--s0);border-bottom:1px solid var(--b0);position:relative;z-index:100; }
 .topbar::after { content:'';position:absolute;bottom:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--acc) 30%,var(--acc3) 70%,transparent);opacity:.1; }
 .tb-menu { width:30px;height:30px;border-radius:7px;background:var(--s2);border:1px solid var(--b1);display:none;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0; }
@@ -211,7 +211,7 @@ body::before {
 .tb-sep { width:1px;height:12px;background:var(--b1);flex-shrink:0; }
 .tb-source-pill { display:flex;align-items:center;gap:4px;font-family:var(--mono);font-size:9px;font-weight:700;padding:4px 9px;border-radius:6px;border:1px solid;flex-shrink:0; }
 .tb-source-pill.r34 { background:rgba(99,102,241,.1);border-color:rgba(99,102,241,.25);color:#818cf8; }
-.tb-source-pill.ep { background:rgba(255,107,53,.1);border-color:rgba(255,107,53,.25);color:var(--ep); }
+.tb-source-pill.rg { background:rgba(0,201,167,.1);border-color:rgba(0,201,167,.25);color:var(--rg); }
 .tb-source-pill.both { background:var(--s2);border-color:var(--b2);color:var(--t2); }
 
 .spacer { flex:1; }
@@ -260,7 +260,7 @@ body.auto-reveal .card .card-glass { pointer-events:all; }
 /* Source indicator */
 .card-src-dot { position:absolute;top:6px;left:6px;z-index:12;width:16px;height:16px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:7px;font-weight:700;letter-spacing:0; }
 .card-src-r34 { background:rgba(99,102,241,.7);color:#c7d2fe; }
-.card-src-ep { background:rgba(255,107,53,.7);color:#fff; }
+.card-src-rg { background:rgba(0,201,167,.7);color:#fff; }
 
 .shield { position:absolute;inset:0;z-index:20;display:flex;align-items:center;justify-content:center;background:rgba(5,5,8,.45);backdrop-filter:blur(3px);opacity:0;pointer-events:none;transition:opacity .18s;border-radius:var(--rad); }
 .card:hover .shield { opacity:1;pointer-events:all; }
@@ -284,7 +284,7 @@ body.auto-reveal .card:hover .card-glass { opacity:1;pointer-events:all; }
 .card-chip { font-size:7px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:rgba(242,240,255,.9);background:rgba(255,255,255,.07);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.09);padding:2px 5px;border-radius:3px;font-family:var(--mono); }
 .card-chip.vid { background:rgba(99,102,241,.18);border-color:rgba(99,102,241,.35);color:#818cf8; }
 .card-chip.gif { background:rgba(168,85,247,.15);border-color:rgba(168,85,247,.28);color:#c084fc; }
-.card-chip.ep { background:rgba(255,107,53,.18);border-color:rgba(255,107,53,.3);color:var(--ep); }
+.card-chip.rg { background:rgba(0,201,167,.18);border-color:rgba(0,201,167,.3);color:var(--rg); }
 .card-score { font-size:8px;font-family:var(--mono);color:rgba(255,255,255,.32); }
 .card-actions { margin-left:auto;display:flex;gap:2px;flex-shrink:0;pointer-events:all; }
 .card-act { width:24px;height:24px;border-radius:6px;background:rgba(5,5,8,.8);backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,.09);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .14s; }
@@ -336,7 +336,7 @@ body.auto-reveal .card:hover .card-glass { opacity:1;pointer-events:all; }
 .v-panel-id { font-family:var(--mono);font-size:9px;color:var(--t4); }
 .v-src-label { font-family:var(--mono);font-size:8px;font-weight:700;padding:2px 6px;border-radius:3px; }
 .v-src-r34 { background:rgba(99,102,241,.15);color:#818cf8; }
-.v-src-ep { background:rgba(255,107,53,.15);color:var(--ep); }
+.v-src-rg { background:rgba(0,201,167,.15);color:var(--rg); }
 .v-close { width:24px;height:24px;border-radius:6px;background:var(--s2);border:1px solid var(--b1);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--t3);transition:all .12s; }
 .v-close:hover { background:rgba(255,71,87,.09);border-color:var(--accborder);color:var(--acc); }
 .v-close svg { width:11px;height:11px; }
@@ -366,7 +366,7 @@ body.auto-reveal .card:hover .card-glass { opacity:1;pointer-events:all; }
 .v-act.on { background:rgba(255,71,87,.07);border-color:var(--accborder);color:var(--acc); }
 .v-act svg { width:10px;height:10px; }
 
-/* Viewer tabs: Tags | Info | Comments */
+/* Viewer tabs */
 .v-tabs { display:flex;padding:6px 9px 0;gap:2px;flex-shrink:0; }
 .v-tab { flex:1;padding:5px 3px;border-radius:6px;font-size:10.5px;font-weight:600;color:var(--t3);background:transparent;border:none;font-family:var(--font);cursor:pointer;transition:all .12s;display:flex;align-items:center;justify-content:center;gap:2px; }
 .v-tab:hover { color:var(--t2);background:var(--b0); }
@@ -377,13 +377,13 @@ body.auto-reveal .card:hover .card-glass { opacity:1;pointer-events:all; }
 .v-body { flex:1;overflow-y:auto;padding:7px 9px 9px; }
 
 .v-tags-list { display:flex;flex-wrap:wrap;gap:3px;padding-top:3px; }
-.v-tag { padding:3px 8px;background:var(--s2);border:1px solid var(--b1);border-radius:999px;font-size:10px;color:var(--t3);cursor:pointer;transition:all .12s;white-space:nowrap; }
+.v-tag { padding:3px 8px;background:var(--s2);border:1px solid var(--b1);border-radius:999px;font-size:10px;color:var(--t3);cursor:pointer;transition:all .12px;white-space:nowrap; }
 .v-tag:hover { background:var(--accbg);color:var(--acc);border-color:var(--accborder); }
 
 /* ── COMMENTS ── */
 .comments-wrap { display:flex;flex-direction:column;gap:0;padding-top:3px; }
 .comment-form { background:var(--s2);border:1px solid var(--b1);border-radius:9px;padding:8px;margin-bottom:8px; }
-.comment-form textarea { width:100%;background:transparent;border:none;outline:none;font-family:var(--font);font-size:11.5px;color:var(--t1);resize:none;line-height:1.5;min-height:50px;placeholder-color:var(--t4); }
+.comment-form textarea { width:100%;background:transparent;border:none;outline:none;font-family:var(--font);font-size:11.5px;color:var(--t1);resize:none;line-height:1.5;min-height:50px; }
 .comment-form textarea::placeholder { color:var(--t4); }
 .comment-form-row { display:flex;align-items:center;justify-content:space-between;margin-top:6px; }
 .comment-form-hint { font-size:10px;color:var(--t4);font-family:var(--mono); }
@@ -626,7 +626,7 @@ body.hide-scores .score-chip { display:none; }
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3"/></svg>
     </div>
     <span class="sb-wordmark">ph<em>X</em></span>
-    <span class="sb-ver">v3.0</span>
+    <span class="sb-ver">v3.1</span>
   </div>
 
   <div class="sb-user">
@@ -638,7 +638,6 @@ body.hide-scores .score-chip { display:none; }
     </div>
   </div>
 
-  <!-- THE ONE SEARCH BAR -->
   <div class="sb-search">
     <div class="sb-search-inner">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
@@ -679,23 +678,23 @@ body.hide-scores .score-chip { display:none; }
     </div>
 
     <div class="sb-divider"></div>
-    <!-- eporner -->
-    <div class="sb-section-label" style="padding:4px 16px 2px;font-size:7px">Eporner <span style="color:var(--ep)">HD</span></div>
-    <div class="sb-nav-item" data-label="EP: Popular" data-src="ep" data-ep-query="" data-ep-order="top-rated" onclick="navItemEP(this)">
+    <!-- RedGifs -->
+    <div class="sb-section-label" style="padding:4px 16px 2px;font-size:7px">RedGifs <span style="color:var(--rg)">GIFs</span></div>
+    <div class="sb-nav-item" data-label="RG: Trending" data-src="rg" data-rg-mode="trending" onclick="navItemRG(this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+      Trending <span class="src-badge src-rg">RG</span>
+    </div>
+    <div class="sb-nav-item" data-label="RG: Top This Week" data-src="rg" data-rg-mode="top-week" onclick="navItemRG(this)">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-      Popular <span class="src-badge src-ep">EP</span>
+      Top This Week <span class="src-badge src-rg">RG</span>
     </div>
-    <div class="sb-nav-item" data-label="EP: HD Videos" data-src="ep" data-ep-query="hd" data-ep-order="latest" onclick="navItemEP(this)">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="2.18"/><line x1="7" y1="2" x2="7" y2="22"/><line x1="17" y1="2" x2="17" y2="22"/><line x1="2" y1="12" x2="22" y2="12"/></svg>
-      HD Videos <span class="src-badge src-ep">EP</span>
+    <div class="sb-nav-item" data-label="RG: Hot" data-src="rg" data-rg-mode="search" data-rg-query="" data-rg-order="score" onclick="navItemRG(this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg>
+      Hot <span class="src-badge src-rg">RG</span>
     </div>
-    <div class="sb-nav-item" data-label="EP: 4K Ultra" data-src="ep" data-ep-query="4k" data-ep-order="top-rated" onclick="navItemEP(this)">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>
-      4K Ultra <span class="src-badge src-ep">EP</span>
-    </div>
-    <div class="sb-nav-item" data-label="EP: Latest" data-src="ep" data-ep-query="" data-ep-order="latest" onclick="navItemEP(this)">
+    <div class="sb-nav-item" data-label="RG: Latest" data-src="rg" data-rg-mode="search" data-rg-query="" data-rg-order="recent" onclick="navItemRG(this)">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-      Latest <span class="src-badge src-ep">EP</span>
+      Latest <span class="src-badge src-rg">RG</span>
     </div>
 
     <div class="sb-divider"></div>
@@ -966,10 +965,10 @@ body.hide-scores .score-chip { display:none; }
 const BAN_DURATION_MS = 3 * 24 * 60 * 60 * 1000;
 const BANNED_TERMS = ['child','children','minor','minors','kid','kids','underage','teen','teens','loli','lolicon','shota','shotacon','pedo','preteen','jailbait','13','14','15','16','17','ageplay'];
 const R34_API = 'https://api.rule34.xxx/index.php?page=dapi&s=post&q=index&json=1';
-const EP_API = 'https://www.eporner.com/api/v2/video/search/';
+const RG_API = 'https://api.redgifs.com/v2';
 const R34_KEY = '7088fd909e8ffedca36a0be2e5a11655eabd8f42cd07be62d91617cfb853e4132d309ae15a752be201c4c2415414f049d968eb5d6ec3fcc3274d365b0d3f399b';
 const R34_USER = '6090245';
-const PAGE_SIZE = 50; // 50 per load
+const PAGE_SIZE = 50;
 const PRELOAD_THRESHOLD = 16;
 const POPULAR_TAGS = ['solo','animated','hentai','3d','uncensored','big_breasts','ass','cosplay','duo','futa','monster_girl','yuri'];
 const MAX_HISTORY = 20;
@@ -1019,14 +1018,66 @@ function containsBanned(q) {
   });
 }
 
+// ─── REDGIFS TOKEN ───
+let rgToken = null;
+let rgTokenExpiry = 0;
+
+async function getRGToken() {
+  if (rgToken && Date.now() < rgTokenExpiry) return rgToken;
+  try {
+    const res = await fetch(`${RG_API}/auth/temporary`);
+    const data = await res.json();
+    rgToken = data.token;
+    // Tokens are temporary; refresh after 23 hours to be safe
+    rgTokenExpiry = Date.now() + 23 * 60 * 60 * 1000;
+    return rgToken;
+  } catch(e) {
+    console.warn('RedGifs token fetch failed', e);
+    return null;
+  }
+}
+
+async function rgFetch(path) {
+  const token = await getRGToken();
+  if (!token) throw new Error('No RedGifs token');
+  const res = await fetch(`${RG_API}${path}`, {
+    headers: { 'Authorization': `Bearer ${token}` }
+  });
+  if (!res.ok) throw new Error(`RG HTTP ${res.status}`);
+  return res.json();
+}
+
+// Normalize a RedGifs GIF object into our internal post format
+function normalizeRGGif(gif) {
+  return {
+    id: 'rg_' + gif.id,
+    _src: 'rg',
+    _rgid: gif.id,
+    file_url: gif.urls?.hd || gif.urls?.sd || '',
+    preview_url: gif.urls?.thumbnail || gif.urls?.poster || '',
+    sample_url: gif.urls?.sd || gif.urls?.thumbnail || '',
+    score: gif.likes || 0,
+    views: gif.views || 0,
+    width: gif.width || 0,
+    height: gif.height || 0,
+    duration: gif.duration || 0,
+    has_audio: gif.hasAudio || false,
+    tags: (gif.tags || []).join(' '),
+    username: gif.userName || '',
+    web_url: gif.urls?.web_url || `https://redgifs.com/watch/${gif.id}`,
+    rating: 'explicit'
+  };
+}
+
 // ─── STATE ───
 let ST = {
-  source: 'r34',   // 'r34' | 'ep'
+  source: 'r34',   // 'r34' | 'rg'
   tags: 'rating:explicit',
-  epQuery: '',
-  epOrder: 'top-rated',
+  rgMode: 'trending',   // 'trending' | 'top-week' | 'search'
+  rgQuery: '',
+  rgOrder: 'trending',
+  rgPage: 1,
   page: 0,
-  epPage: 1,
   sort: 'latest',
   mediaFilter: 'all',
   posts: [],
@@ -1058,7 +1109,7 @@ window._vObs = new IntersectionObserver(entries => {
     if (!v.src || v.src === window.location.href) v.src = v.dataset.src;
     window._vObs.unobserve(v);
   });
-}, { rootMargin: '600px' }); // wider rootMargin = preload sooner
+}, { rootMargin: '600px' });
 
 // ─── SETTINGS ───
 function saveSettings() { localStorage.setItem('phx_settings', JSON.stringify(settings)); }
@@ -1246,7 +1297,7 @@ function setMediaFilter(f, el) {
 }
 function getFiltered() {
   return ST.posts.filter(p => {
-    const isVid = p._src === 'ep' ? true : /\.(webm|mp4)$/i.test(p.file_url||'');
+    const isVid = /\.(webm|mp4)$/i.test(p.file_url||'') || p._src === 'rg';
     if (ST.mediaFilter === 'image') return !isVid;
     if (ST.mediaFilter === 'video') return isVid;
     return true;
@@ -1257,7 +1308,7 @@ function getFiltered() {
 function updateSrcPill(src) {
   const el = document.getElementById('tbSrcPill');
   el.className = 'tb-source-pill ' + src;
-  el.textContent = src === 'r34' ? 'R34' : src === 'ep' ? 'EPORNER' : 'ALL';
+  el.textContent = src === 'r34' ? 'R34' : src === 'rg' ? 'REDGIFS' : 'ALL';
 }
 
 // ─── GRID ───
@@ -1291,9 +1342,10 @@ function buildCard(post, idx) {
   card.style.animationDelay = Math.min(idx * 12, 380) + 'ms';
   card.dataset.postId = post.id;
 
-  const isEP = post._src === 'ep';
-  const isVid = isEP || /\.(webm|mp4)$/i.test(post.file_url||'');
-  const isGif = !isEP && /\.gif$/i.test(post.file_url||'');
+  const isRG = post._src === 'rg';
+  // RG posts are always video/gif (they're looping video clips)
+  const isVid = isRG || /\.(webm|mp4)$/i.test(post.file_url||'');
+  const isGif = !isRG && /\.gif$/i.test(post.file_url||'');
   const thumb = post.preview_url || post.sample_url;
   const isFaved = favs.includes(post.id);
   const isRevealed = revealedIds.has(post.id) || !!settings.autoReveal;
@@ -1301,19 +1353,30 @@ function buildCard(post, idx) {
 
   // Source dot
   const srcDot = document.createElement('div');
-  srcDot.className = 'card-src-dot ' + (isEP ? 'card-src-ep' : 'card-src-r34');
-  srcDot.textContent = isEP ? 'EP' : 'R';
+  srcDot.className = 'card-src-dot ' + (isRG ? 'card-src-rg' : 'card-src-r34');
+  srcDot.textContent = isRG ? 'RG' : 'R';
   card.appendChild(srcDot);
 
-  if (isEP) {
-    // Eporner: always show thumb, click = open ep in new tab or viewer
+  if (isRG) {
+    // RedGifs: use thumbnail image, reveal loads the actual video
     const img = document.createElement('img');
     img.loading = idx < 14 ? 'eager' : 'lazy';
     img.decoding = 'async'; img.alt = '';
     if (!isRevealed) img.className = 'blurred';
+    // Use aspect ratio from metadata to avoid layout shift
+    if (post.width && post.height) {
+      img.style.aspectRatio = `${post.width}/${post.height}`;
+    }
     if (thumb) img.src = thumb;
     img.onerror = () => { img.style.display='none'; };
     card.appendChild(img);
+
+    // When revealed, swap image for looping video
+    if (isRevealed) {
+      const vid = buildRGVideo(post);
+      card.insertBefore(vid, srcDot.nextSibling);
+      img.remove();
+    }
   } else if (isVid) {
     const v = document.createElement('video');
     v.muted = true; v.loop = true; v.playsInline = true;
@@ -1363,7 +1426,9 @@ function buildCard(post, idx) {
     </div>
     <div class="card-glass">
       <div class="card-row">
-        ${isVid?`<span class="card-chip vid${isEP?' ep':''}">VIDEO</span>`:isGif?'<span class="card-chip gif">GIF</span>':''}
+        ${isRG?`<span class="card-chip rg">GIF</span>`
+          :isVid?'<span class="card-chip vid">VIDEO</span>'
+          :isGif?'<span class="card-chip gif">GIF</span>':''}
         <span class="card-score score-chip">↑${post.score||post.views||0}</span>
         <div class="card-actions">
           <div class="card-act${isFaved?' faved':''}" title="Save">${HEART_SVG}</div>
@@ -1376,9 +1441,15 @@ function buildCard(post, idx) {
   overlayWrap.querySelector('.sh-btn.yes').addEventListener('click', e => {
     e.stopPropagation();
     revealedIds.add(post.id);
-    card.querySelectorAll('.blurred').forEach(el => el.classList.remove('blurred'));
     card.classList.add('revealed');
-    if (!isEP) {
+    if (isRG) {
+      // Replace thumbnail with looping video
+      const existingImg = card.querySelector('img');
+      const vid = buildRGVideo(post);
+      if (existingImg) existingImg.replaceWith(vid);
+      else card.insertBefore(vid, card.firstChild);
+    } else {
+      card.querySelectorAll('.blurred').forEach(el => el.classList.remove('blurred'));
       const vid = card.querySelector('video');
       if (vid) {
         if (!vid.src || vid.src === window.location.href) vid.src = post.file_url;
@@ -1394,12 +1465,7 @@ function buildCard(post, idx) {
 
   card.addEventListener('click', () => {
     if (card.classList.contains('revealed') || settings.autoReveal) {
-      if (isEP && post.url) {
-        // EP: open in viewer-style (shows embed/thumb with link)
-        openViewer(idx);
-      } else {
-        openViewer(idx);
-      }
+      openViewer(idx);
     }
   });
 
@@ -1407,7 +1473,7 @@ function buildCard(post, idx) {
     const f = getFiltered();
     [f[idx+1], f[idx+2]].forEach(np => {
       if (!np || imgCache.has(np.id)) return;
-      if (np._src !== 'ep' && /\.(webm|mp4)$/i.test(np.file_url||'')) return;
+      if (np._src !== 'rg' && /\.(webm|mp4)$/i.test(np.file_url||'')) return;
       const pre = new Image(); pre.fetchPriority = 'low';
       pre.src = np.preview_url || np.sample_url;
       imgCache.set(np.id, pre);
@@ -1416,6 +1482,17 @@ function buildCard(post, idx) {
   }, { passive: true });
 
   return card;
+}
+
+function buildRGVideo(post) {
+  const vid = document.createElement('video');
+  vid.muted = true; vid.loop = true; vid.playsInline = true; vid.autoplay = true;
+  vid.preload = 'auto';
+  if (post.width && post.height) vid.style.aspectRatio = `${post.width}/${post.height}`;
+  // Use SD first for faster load, fall back to hd
+  vid.src = post.sample_url || post.file_url;
+  vid.play().catch(()=>{});
+  return vid;
 }
 
 // ─── NAV ───
@@ -1427,22 +1504,24 @@ function navItem(el) {
   ST.source = 'r34';
   ST.savedView = false;
   updateSrcPill('r34');
-  // Show r34 sort buttons
   document.getElementById('tbSortBar').style.display = '';
   setTagsR34(el.dataset.tags || 'rating:explicit');
   closeSidebar();
 }
 
-function navItemEP(el) {
+function navItemRG(el) {
   document.querySelectorAll('.sb-nav-item,.sb-tag').forEach(i => i.classList.remove('active'));
   el.classList.add('active');
-  document.getElementById('tbHeading').textContent = el.dataset.label || 'Eporner';
-  ST.source = 'ep';
+  document.getElementById('tbHeading').textContent = el.dataset.label || 'RedGifs';
+  ST.source = 'rg';
   ST.savedView = false;
-  updateSrcPill('ep');
-  // Hide r34-specific sort bar for EP (EP has its own order)
+  updateSrcPill('rg');
+  // RedGifs has its own built-in ordering; hide the R34 sort bar
   document.getElementById('tbSortBar').style.display = 'none';
-  setEP(el.dataset.epQuery || '', el.dataset.epOrder || 'top-rated');
+  const mode = el.dataset.rgMode || 'trending';
+  const query = el.dataset.rgQuery || '';
+  const order = el.dataset.rgOrder || 'trending';
+  setRG(mode, query, order);
   closeSidebar();
 }
 
@@ -1453,11 +1532,10 @@ function doSearchQuery(raw) {
   document.getElementById('tbHeading').textContent = raw;
   document.querySelectorAll('.sb-nav-item,.sb-tag').forEach(i => i.classList.remove('active'));
   ST.savedView = false;
-  // Heuristic: if current source is EP, search EP; else R34
-  if (ST.source === 'ep') {
-    updateSrcPill('ep');
+  if (ST.source === 'rg') {
+    updateSrcPill('rg');
     document.getElementById('tbSortBar').style.display = 'none';
-    setEP(raw, 'top-rated');
+    setRG('search', raw, 'trending');
   } else {
     ST.source = 'r34';
     updateSrcPill('r34');
@@ -1499,11 +1577,11 @@ function setTagsR34(tags) {
   resetGrid(); loadMoreR34();
 }
 
-function setEP(query, order) {
+function setRG(mode, query, order) {
   if (currentCtrl) { currentCtrl.abort(); currentCtrl = null; }
-  ST.epQuery = query; ST.epOrder = order;
-  ST.epPage = 1; ST.posts = []; ST.done = false; ST.loading = false;
-  resetGrid(); loadMoreEP();
+  ST.rgMode = mode; ST.rgQuery = query; ST.rgOrder = order;
+  ST.rgPage = 1; ST.posts = []; ST.done = false; ST.loading = false;
+  resetGrid(); loadMoreRG();
 }
 
 function resetGrid() {
@@ -1568,58 +1646,52 @@ async function prefetchR34Next() {
   } catch(e) {}
 }
 
-// ─── FETCH EPORNER ───
-async function loadMoreEP() {
-  if (ST.loading || ST.done || ST.savedView || ST.source !== 'ep') return;
+// ─── FETCH REDGIFS ───
+async function loadMoreRG() {
+  if (ST.loading || ST.done || ST.savedView || ST.source !== 'rg') return;
   ST.loading = true;
   const ctrl = new AbortController(); currentCtrl = ctrl;
   try {
-    const params = new URLSearchParams({
-      query: ST.epQuery || 'hd',
-      per_page: PAGE_SIZE,
-      page: ST.epPage,
-      order: ST.epOrder,
-      gay: 0,
-      thumbsize: 'medium',
-      format: 'json'
-    });
-    const res = await fetch(`${EP_API}?${params}`, { signal: ctrl.signal });
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const data = await res.json();
-    const videos = data.videos || [];
+    let gifs = [];
+    let total = 0;
 
-    if (!videos.length) {
+    if (ST.rgMode === 'trending') {
+      // GET /v2/gifs/trending
+      const data = await rgFetch(`/gifs/trending?count=${PAGE_SIZE}&page=${ST.rgPage}`);
+      gifs = data.gifs || [];
+      total = data.found || gifs.length;
+    } else if (ST.rgMode === 'top-week') {
+      // GET /v2/gifs/top-week
+      const data = await rgFetch(`/gifs/top-week?count=${PAGE_SIZE}&page=${ST.rgPage}`);
+      gifs = data.gifs || [];
+      total = data.found || gifs.length;
+    } else {
+      // Search mode
+      const q = encodeURIComponent(ST.rgQuery || 'hot');
+      const order = ST.rgOrder || 'trending';
+      const data = await rgFetch(`/gifs/search?search_text=${q}&count=${PAGE_SIZE}&page=${ST.rgPage}&order=${order}&type=g`);
+      gifs = data.gifs || [];
+      total = data.found || gifs.length;
+    }
+
+    if (!gifs.length) {
       ST.done = true;
       document.getElementById('sentinel').innerHTML = '<span style="font-size:10px;font-family:var(--mono);color:var(--t4)">— end of results —</span>';
-      if (!ST.posts.length) showErr('No Eporner results', 'Try a different search.');
+      if (!ST.posts.length) showErr('No RedGifs results', 'Try a different search or category.');
       return;
     }
 
-    // Normalize EP posts to match our data model
-    const posts = videos.map(v => ({
-      id: 'ep_' + v.id,
-      _src: 'ep',
-      _epid: v.id,
-      file_url: v.embed || '',
-      preview_url: v.default_thumb?.src || v.thumbs?.[0]?.src || '',
-      sample_url: v.default_thumb?.src || '',
-      score: 0,
-      views: v.views || 0,
-      title: v.title || '',
-      url: v.url || `https://www.eporner.com/video-${v.id}/`,
-      duration: v.length_min || '',
-      tags: (v.keywords || '').replace(/,/g,' ')
-    }));
-
+    const posts = gifs.map(normalizeRGGif);
     const prevLen = getFiltered().length;
     ST.posts.push(...posts);
-    ST.epPage++;
-    if (ST.epPage === 2) document.getElementById('grid').innerHTML = '';
+    ST.rgPage++;
+    if (ST.rgPage === 2) document.getElementById('grid').innerHTML = '';
     appendNewCards(prevLen);
-    document.getElementById('tbCount').textContent = `${ST.posts.length.toLocaleString()} videos`;
+    document.getElementById('tbCount').textContent = `${ST.posts.length.toLocaleString()} GIFs`;
   } catch(err) {
     if (err.name === 'AbortError') return;
-    if (!ST.posts.length) showErr('Could not load Eporner', 'CORS may block this in browser. Try a proxy or server-side API.', false);
+    console.error('RedGifs error:', err);
+    if (!ST.posts.length) showErr('Could not load RedGifs', 'API error — please retry.', true);
     else toast('Failed to load more','red');
   } finally {
     ST.loading = false;
@@ -1641,7 +1713,7 @@ function showErr(title, sub, retry = false) {
     <div class="err-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div>
     <div class="err-title">${esc(title)}</div>
     <div class="err-sub">${esc(sub)}</div>
-    ${retry?`<button class="err-retry" onclick="ST.source==='ep'?setEP(ST.epQuery,ST.epOrder):setTagsR34(ST.tags)">Retry</button>`:''}
+    ${retry?`<button class="err-retry" onclick="ST.source==='rg'?loadMoreRG():setTagsR34(ST.tags)">Retry</button>`:''}
   </div>`;
 }
 
@@ -1684,7 +1756,7 @@ function viewerNav(dir) {
   document.getElementById('vMedia').querySelectorAll('video,iframe').forEach(v=>{if(v.tagName==='VIDEO'){v.pause();v.src='';v.load();}else v.src='';});
   resetZoom(); ST.vIdx=n; renderViewer();
   if (n > f.length - PRELOAD_THRESHOLD) {
-    if (ST.source === 'ep') loadMoreEP(); else loadMoreR34();
+    if (ST.source === 'rg') loadMoreRG(); else loadMoreR34();
   }
 }
 function resetZoom() {
@@ -1724,39 +1796,36 @@ function renderViewer() {
   vm.querySelectorAll('img,video,iframe,.media-err').forEach(el=>el.remove());
   loader.classList.add('show');
 
-  const isEP = post._src === 'ep';
+  const isRG = post._src === 'rg';
 
   // Source label
   const srcLbl = document.getElementById('vSrcLabel');
-  srcLbl.className = 'v-src-label ' + (isEP ? 'v-src-ep' : 'v-src-r34');
-  srcLbl.textContent = isEP ? 'EPORNER' : 'R34';
+  srcLbl.className = 'v-src-label ' + (isRG ? 'v-src-rg' : 'v-src-r34');
+  srcLbl.textContent = isRG ? 'REDGIFS' : 'R34';
 
-  if (isEP) {
-    // Show thumbnail with overlay play button linking to eporner
-    const img = document.createElement('img');
-    img.alt=''; img.decoding='async'; img.fetchPriority='high';
-    img.style.cssText='max-width:100%;max-height:100%;object-fit:contain;opacity:.7';
-    img.onload=()=>loader.classList.remove('show');
-    img.onerror=()=>loader.classList.remove('show');
-    img.src = post.preview_url || '';
-    vm.prepend(img);
-    // Play button overlay
-    const playBtn = document.createElement('a');
-    playBtn.href = post.url || '#';
-    playBtn.target = '_blank';
-    playBtn.rel = 'noopener noreferrer';
-    playBtn.style.cssText='position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:8;display:flex;align-items:center;justify-content:center;width:72px;height:72px;border-radius:50%;background:rgba(255,107,53,.85);border:3px solid rgba(255,255,255,.3);transition:all .15s;text-decoration:none;';
-    playBtn.innerHTML='<svg style="width:28px;height:28px;color:#fff;margin-left:4px" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>';
-    playBtn.addEventListener('mouseenter',()=>playBtn.style.background='rgba(255,107,53,1)');
-    playBtn.addEventListener('mouseleave',()=>playBtn.style.background='rgba(255,107,53,.85)');
-    vm.appendChild(playBtn);
-    // Title overlay
-    if (post.title) {
-      const titleEl = document.createElement('div');
-      titleEl.style.cssText='position:absolute;bottom:0;left:0;right:0;padding:16px 12px 10px;background:linear-gradient(to top,rgba(0,0,0,.9),transparent);color:#fff;font-size:12px;font-weight:600;font-family:var(--font);z-index:7;';
-      titleEl.textContent = post.title;
-      vm.appendChild(titleEl);
-    }
+  if (isRG) {
+    // RedGifs: play HD video in viewer, show muted loop first then unmute
+    const vid = document.createElement('video');
+    vid.controls = true; vid.loop = true; vid.autoplay = true; vid.playsInline = true;
+    // Start with SD for faster initial load, then switch to HD if available
+    const hdUrl = post.file_url;
+    const sdUrl = post.sample_url;
+    vid.src = sdUrl || hdUrl;
+    vid.onloadeddata = () => {
+      loader.classList.remove('show');
+      // Switch to HD after SD loads
+      if (hdUrl && hdUrl !== sdUrl && vid.readyState >= 2) {
+        const t = vid.currentTime;
+        vid.src = hdUrl;
+        vid.currentTime = t;
+        vid.play().catch(()=>{});
+      }
+    };
+    vid.onerror = () => { loader.classList.remove('show'); };
+    vid.style.cssText='max-width:100%;max-height:100%;object-fit:contain';
+    vm.prepend(vid);
+    vid.play().catch(()=>{});
+    scheduleVidPreload(f, ST.vIdx);
   } else if (/\.(webm|mp4)$/i.test(post.file_url||'')) {
     let v = vidCache.get(post.id);
     if (v && v.readyState >= 2) { loader.classList.remove('show'); vidCache.delete(post.id); }
@@ -1777,18 +1846,18 @@ function renderViewer() {
     const src=settings.hq?(post.file_url||post.sample_url):(post.sample_url||post.file_url);
     img.src=src; vm.prepend(img);
     [f[ST.vIdx+1],f[ST.vIdx-1]].forEach(np=>{
-      if(!np||imgCache.has(np.id)||/\.(webm|mp4)$/i.test(np.file_url||'')) return;
+      if(!np||imgCache.has(np.id)||/\.(webm|mp4)$/i.test(np.file_url||'')||np._src==='rg') return;
       const pre=new Image(); pre.fetchPriority='low';
       pre.src=settings.hq?(np.file_url||np.sample_url):(np.sample_url||np.file_url);
       imgCache.set(np.id,pre);
     });
   }
 
-  document.getElementById('vPostId').textContent = isEP ? `EP ${esc(post._epid||'')}` : `POST #${post.id}`;
-  document.getElementById('vStats').innerHTML = isEP
-    ? `<div class="v-stat"><div class="v-stat-num">${fmtNum(post.views)}</div><div class="v-stat-lbl">Views</div></div>
-       <div class="v-stat"><div class="v-stat-num">${esc(post.duration||'?')}</div><div class="v-stat-lbl">Duration</div></div>
-       <div class="v-stat"><div class="v-stat-num">HD</div><div class="v-stat-lbl">Quality</div></div>`
+  document.getElementById('vPostId').textContent = isRG ? `RG ${esc(post._rgid||'')}` : `POST #${post.id}`;
+  document.getElementById('vStats').innerHTML = isRG
+    ? `<div class="v-stat"><div class="v-stat-num">${fmtNum(post.likes||post.score||0)}</div><div class="v-stat-lbl">Likes</div></div>
+       <div class="v-stat"><div class="v-stat-num">${fmtNum(post.views)}</div><div class="v-stat-lbl">Views</div></div>
+       <div class="v-stat"><div class="v-stat-num">${post.duration?Math.round(post.duration)+'s':'?'}</div><div class="v-stat-lbl">Duration</div></div>`
     : `<div class="v-stat"><div class="v-stat-num">${post.score||0}</div><div class="v-stat-lbl">Score</div></div>
        <div class="v-stat"><div class="v-stat-num">${fmtSize(post.file_size)}</div><div class="v-stat-lbl">Size</div></div>
        <div class="v-stat"><div class="v-stat-num">${post.width||'?'}×${post.height||'?'}</div><div class="v-stat-lbl">Res</div></div>`;
@@ -1811,10 +1880,14 @@ function scheduleVidPreload(posts, idx) {
   sched(() => {
     [idx+1, idx+2, idx-1].forEach(i => {
       const np=posts[i];
-      if(!np?.file_url||!/\.(webm|mp4)$/i.test(np.file_url)||vidCache.has(np.id)||np._src==='ep') return;
+      if(!np) return;
+      if(vidCache.has(np.id)) return;
       if(vidCache.size>=3) vidCache.delete(vidCache.keys().next().value);
       const pv=document.createElement('video');
-      pv.src=np.file_url; pv.preload='auto'; pv.muted=true;
+      // For RG, preload the SD version
+      pv.src = np._src==='rg' ? (np.sample_url||np.file_url) : np.file_url;
+      if(!pv.src) return;
+      pv.preload='auto'; pv.muted=true;
       pv.style.cssText='position:absolute;width:1px;height:1px;opacity:0;pointer-events:none;z-index:-1';
       document.body.appendChild(pv); pv.load();
       vidCache.set(np.id,pv);
@@ -1905,7 +1978,6 @@ function renderCommentsTab(postId) {
     const wrap = document.createElement('div');
     wrap.className = 'comments-wrap';
 
-    // Comment form
     const isOwner = user?.username?.toLowerCase() === OWNER_USERNAME;
     if (user) {
       const form = document.createElement('div');
@@ -1949,7 +2021,6 @@ function renderCommentsTab(postId) {
 
     body.innerHTML='';
     body.appendChild(wrap);
-    // scroll to bottom of comments
     setTimeout(()=>body.scrollTop=body.scrollHeight,50);
   };
 
@@ -1998,10 +2069,13 @@ function renderVBody(post) {
   if(currentVTab==='comments'){
     renderCommentsTab(post.id);
   } else if(currentVTab==='info'){
-    const isEP=post._src==='ep';
+    const isRG=post._src==='rg';
     body.innerHTML=`<div style="padding-top:5px;display:flex;flex-direction:column;gap:5px">
-      ${isEP?`<div class="v-stat" style="grid-column:span 3"><div class="v-stat-lbl">Title</div><div style="font-size:11px;color:var(--t2);margin-top:2px;word-break:break-all">${esc(post.title||'—')}</div></div>
-      <div class="v-stat" style="grid-column:span 3"><div class="v-stat-lbl">URL</div><a href="${esc(post.url||'')}" target="_blank" rel="noopener" style="font-size:10px;color:var(--acc);word-break:break-all">${esc(post.url||'—')}</a></div>`
+      ${isRG?`
+      <div class="v-stat" style="grid-column:span 3"><div class="v-stat-lbl">Creator</div><div style="font-size:11px;color:var(--t2);margin-top:2px">@${esc(post.username||'unknown')}</div></div>
+      <div class="v-stat" style="grid-column:span 3"><div class="v-stat-lbl">RedGifs Link</div><a href="${esc(post.web_url||'')}" target="_blank" rel="noopener" style="font-size:10px;color:var(--rg);word-break:break-all">${esc(post.web_url||'—')}</a></div>
+      <div class="v-stat"><div class="v-stat-lbl">Audio</div><div class="v-stat-num" style="font-size:9px">${post.has_audio?'🔊 Yes':'🔇 No'}</div></div>
+      <div class="v-stat"><div class="v-stat-lbl">Res</div><div class="v-stat-num" style="font-size:9px">${post.width||'?'}×${post.height||'?'}</div></div>`
       :`<div class="v-stat" style="grid-column:span 3"><div class="v-stat-lbl">Source</div><div style="font-size:11px;color:var(--t2);margin-top:2px;word-break:break-all">${esc(post.source||'—')}</div></div>
       <div class="v-stat"><div class="v-stat-lbl">Rating</div><div class="v-stat-num">${esc(post.rating||'?').toUpperCase()}</div></div>
       <div class="v-stat"><div class="v-stat-lbl">Posted</div><div class="v-stat-num" style="font-size:9px">${post.created_at?new Date(post.created_at*1000).toLocaleDateString():'?'}</div></div>
@@ -2013,7 +2087,6 @@ function renderVBody(post) {
 }
 
 function vTab(tab, el) {
-  // Unsubscribe from comment listener when leaving comments tab
   if (currentVTab === 'comments' && tab !== 'comments') {
     if (typeof commentUnsub==='function') { commentUnsub(); commentUnsub=null; }
   }
@@ -2026,15 +2099,23 @@ function vTab(tab, el) {
 
 // ─── VIEWER ACTIONS ───
 function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
-function openOriginal(){const p=getFiltered()[ST.vIdx];if(!p) return; const url=p._src==='ep'?p.url:p.file_url; if(url) window.open(url,'_blank');}
+function openOriginal(){
+  const p=getFiltered()[ST.vIdx]; if(!p) return;
+  const url=p._src==='rg'?p.web_url:p.file_url;
+  if(url) window.open(url,'_blank');
+}
 function downloadCurrent(){
   const p=getFiltered()[ST.vIdx]; if(!p) return;
-  if(p._src==='ep'){window.open(p.url,'_blank');return;}
+  if(p._src==='rg'){
+    // Direct download of the HD file
+    const a=document.createElement('a'); a.href=p.file_url; a.download=`phx_rg_${p._rgid}.mp4`; a.target='_blank'; a.click();
+    return;
+  }
   const a=document.createElement('a');a.href=p.file_url;a.download=`phx_${p.id}`;a.target='_blank';a.click();
 }
 function copyPostLink(){
   const p=getFiltered()[ST.vIdx]; if(!p) return;
-  const url=p._src==='ep'?p.url:`https://rule34.xxx/index.php?page=post&s=view&id=${p.id}`;
+  const url=p._src==='rg'?p.web_url:`https://rule34.xxx/index.php?page=post&s=view&id=${p.id}`;
   navigator.clipboard.writeText(url).then(()=>toast('Link copied!','green')).catch(()=>toast('Copy failed','red'));
 }
 function toggleViewerFav(){
@@ -2078,7 +2159,6 @@ async function submitAuth(){
 
   const isOwner = u.toLowerCase() === OWNER_USERNAME;
 
-  // Admin unban for owner
   if(isOwner&&FB?.ok){
     try{const{ref,set,db}=FB;await set(ref(db,`bans/${DEVICE_ID}/active`),false);await set(ref(db,`bans/${DEVICE_ID}/until`),Date.now()-1000);}catch(e){}
     localStorage.removeItem('phx_ban');
@@ -2141,16 +2221,26 @@ async function startup(){
       document.querySelectorAll('.sb-nav-item,.sb-tag').forEach(i=>i.classList.remove('active'));
       el.classList.add('active');
       document.getElementById('tbHeading').textContent=tag;
-      ST.source='r34'; ST.savedView=false;
-      updateSrcPill('r34');
-      document.getElementById('tbSortBar').style.display='';
-      setTagsR34(tag+' rating:explicit');
+      // Search in current source
+      if(ST.source==='rg'){
+        updateSrcPill('rg');
+        document.getElementById('tbSortBar').style.display='none';
+        setRG('search', tag, 'trending');
+      } else {
+        ST.source='r34'; ST.savedView=false;
+        updateSrcPill('r34');
+        document.getElementById('tbSortBar').style.display='';
+        setTagsR34(tag+' rating:explicit');
+      }
       closeSidebar();
     };
     tagsEl.appendChild(el);
   });
 
   updateFavCount();
+
+  // Kick off RedGifs token fetch early
+  getRGToken().catch(()=>{});
 
   const localBan=JSON.parse(localStorage.getItem('phx_ban')||'null');
   if(localBan?.active!==false&&localBan?.until>Date.now()){showBanScreen(localBan);return;}
@@ -2192,7 +2282,7 @@ startup();
 // ─── INFINITE SCROLL ───
 new IntersectionObserver(entries=>{
   if(entries[0].isIntersecting&&ageOk&&!ST.savedView){
-    if(ST.source==='ep') loadMoreEP(); else loadMoreR34();
+    if(ST.source==='rg') loadMoreRG(); else loadMoreR34();
   }
 },{rootMargin:'1200px'}).observe(document.getElementById('sentinel'));
 
