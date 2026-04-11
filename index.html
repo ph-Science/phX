@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-<!-- phX v3 — embedded JS proxy, no local server required, GitHub-ready -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -446,74 +445,77 @@ firebase.initializeApp({
 });
 const auth=firebase.auth(),db=firebase.database();
 
-/* ─────────────────────────────────────────────────────────────
-   EMBEDDED JS PROXY  —  no local server, no Node, GitHub-ready
-   Tries three public CORS proxies in order; falls back automatically.
-   To add your own: push a function(rawUrl)=>proxyUrl to PROXIES.
-   ───────────────────────────────────────────────────────────── */
-const API_BASE = 'https://api.rule34.xxx/index.php?page=dapi&s=post&q=index&json=1';
+/* ═══════════════════════════════════════════════════════════════
+   RULE34 API  +  EMBEDDED CORS BYPASS
+   CORS is a browser restriction — API keys don't fix it.
+   Solution: route every request through a public CORS proxy in JS.
+   No Node, no local server, works on GitHub Pages as-is.
+   ═══════════════════════════════════════════════════════════════ */
 
-const PROXIES = [
-  /* 1. corsproxy.io  — free, fast, no key needed */
-  raw => `https://corsproxy.io/?${encodeURIComponent(raw)}`,
-  /* 2. allorigins    — reliable fallback */
-  raw => `https://api.allorigins.win/raw?url=${encodeURIComponent(raw)}`,
-  /* 3. codetabs      — second fallback */
-  raw => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(raw)}`,
+// ── Auth credentials (gives higher rate limits)
+const R34_USER_ID = '6090245';
+const R34_API_KEY = '7088fd909e8ffedca36a0be2e5a11655eabd8f42cd07be62d91617cfb853e4132d309ae15a752be201c4c2415414f049d968eb5d6ec3fcc3274d365b0d3f399b';
+const R34_BASE    = 'https://api.rule34.xxx/index.php?page=dapi&s=post&q=index&json=1'
+                  + `&user_id=${R34_USER_ID}&api_key=${R34_API_KEY}`;
+
+// ── Public CORS proxies tried in order — first success wins
+// ── All wrap the real URL so the browser thinks it's same-origin
+const CORS_PROXIES = [
+  u => `https://corsproxy.io/?${encodeURIComponent(u)}`,
+  u => `https://api.allorigins.win/raw?url=${encodeURIComponent(u)}`,
+  u => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(u)}`,
+  u => `https://corsproxy.org/?${encodeURIComponent(u)}`,
 ];
 
-let _proxyIdx = 0;   // index of currently working proxy
-let proxyOk   = false;
+let _px   = 0;      // index of currently working proxy
+let proxyOk = false;
 
-/* Build the raw Rule34 API URL (no proxy yet) */
+// Build a full signed Rule34 URL (not yet proxied)
 function rawApiUrl(tags, limit, page) {
-  return `${API_BASE}&limit=${limit}&tags=${encodeURIComponent(tags)}&pid=${page}`;
+  return `${R34_BASE}&limit=${limit}&tags=${encodeURIComponent(tags)}&pid=${page}`;
 }
 
-/* Core proxy fetch — auto-advances through PROXIES on failure */
+// The main fetch — cycles through CORS_PROXIES automatically
 async function proxyFetch(rawUrl, attempt = 0) {
-  if (attempt >= PROXIES.length) throw new Error('All proxies exhausted');
-  _proxyIdx = attempt;
-  const proxiedUrl = PROXIES[attempt](rawUrl);
-  let text;
+  if (attempt >= CORS_PROXIES.length) throw new Error('All CORS proxies failed');
+  _px = attempt;
   try {
-    const res = await fetch(proxiedUrl, { signal: AbortSignal.timeout(8000) });
+    const res  = await fetch(CORS_PROXIES[attempt](rawUrl), { signal: AbortSignal.timeout(9000) });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    text = await res.text();
-    if (!text || text.trimStart().startsWith('<')) throw new Error('HTML response – likely blocked');
+    const text = await res.text();
+    if (!text || text.trimStart()[0] === '<') throw new Error('Got HTML — proxy blocked');
     return JSON.parse(text);
   } catch (err) {
-    console.warn(`[phX] proxy[${attempt}] failed:`, err.message);
-    return proxyFetch(rawUrl, attempt + 1);   // try next proxy
+    console.warn(`[phX] CORS proxy #${attempt} failed: ${err.message}`);
+    return proxyFetch(rawUrl, attempt + 1);
   }
 }
 
-/* Startup — probe with a tiny request, then kick off the grid */
+// Startup check — fires one test request, then loads grid
 async function checkProxy() {
-  setBanner('checking', 'Connecting…', 'wait');
+  setBanner('checking', 'Connecting to Rule34 API…', 'wait');
   try {
     const test = await proxyFetch(rawApiUrl('rating:explicit', 1, 0));
-    if (!Array.isArray(test)) throw new Error('Unexpected response shape');
+    if (!Array.isArray(test)) throw new Error('Bad response shape');
     proxyOk = true;
-    const label = ['corsproxy.io','allorigins.win','codetabs.com'][_proxyIdx] ?? `proxy[${_proxyIdx}]`;
-    setBanner('ok', `Online via ${label}`, 'ok');
+    const name = ['corsproxy.io','allorigins.win','codetabs.com','corsproxy.org'][_px] ?? `proxy[${_px}]`;
+    setBanner('ok', `Rule34 API connected via ${name}`, 'ok');
     setTimeout(() => document.getElementById('proxyBanner').className = 'proxy-banner hidden', 2500);
     startLoad('rating:explicit', 'Home');
   } catch (e) {
     proxyOk = false;
-    setBanner('err', 'All proxies failed — check your connection', 'err');
+    setBanner('err', 'All CORS proxies failed — check your connection', 'err');
     showErrState();
   }
 }
 
 function setBanner(state, msg, badge) {
-  const b  = document.getElementById('proxyBanner');
-  const d  = document.getElementById('proxyDot');
-  const bg = document.getElementById('proxyBadge');
-  b.className  = `proxy-banner ${state}`;
+  const b = document.getElementById('proxyBanner');
+  b.className = `proxy-banner ${state}`;
   document.getElementById('proxyMsg').textContent = msg;
-  d.className  = `proxy-dot ${ {checking:'pulse', ok:'green', err:'red'}[state] ?? '' }`;
-  bg.className = `proxy-badge ${ {ok:'green', err:'red'}[state] ?? '' }`;
+  document.getElementById('proxyDot').className = `proxy-dot ${{checking:'pulse',ok:'green',err:'red'}[state]||''}`;
+  const bg = document.getElementById('proxyBadge');
+  bg.className = `proxy-badge ${{ok:'green',err:'red'}[state]||''}`;
   bg.textContent = badge;
 }
 
@@ -525,8 +527,8 @@ function showErrState() {
         <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
         <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
       </svg></div>
-      <div class="err-title">Could not connect</div>
-      <div class="err-sub">All three CORS proxies failed. Check your internet connection and try again.</div>
+      <div class="err-title">Could not reach Rule34 API</div>
+      <div class="err-sub">All four CORS proxies are unreachable. This is usually temporary — try again in a moment.</div>
       <button class="err-retry" onclick="checkProxy()">Retry</button>
     </div>`;
 }
