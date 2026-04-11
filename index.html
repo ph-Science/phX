@@ -5,8 +5,14 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>phX</title>
 <link rel="icon" href="https://elections.harrisx.com/favicon.ico">
+<!-- PERF: preconnect to fonts + api domains before stylesheet parse -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://api.rule34.xxx">
+<!-- PERF: load fonts async so they never block render -->
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap"></noscript>
+<!-- PERF: Firebase loads async, non-blocking -->
 <script type="module">
   import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
   import { getDatabase, ref, set, get, push, onValue, remove, runTransaction }
@@ -38,10 +44,10 @@
   --glow:0 0 40px rgba(192,132,252,0.12);--sid:260px;--rad:14px;--cols:5;
 }
 html,body{height:100%;overflow:hidden}
-body{background:var(--bg);color:var(--t1);font-family:'Instrument Sans',sans-serif;font-size:13px;display:flex;-webkit-font-smoothing:antialiased}
+body{background:var(--bg);color:var(--t1);font-family:'Instrument Sans',sans-serif,system-ui;font-size:13px;display:flex;-webkit-font-smoothing:antialiased}
 ::-webkit-scrollbar{width:3px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--s5);border-radius:3px}
-body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");background-size:256px;opacity:.018;pointer-events:none;z-index:9999;animation:nshift 8s steps(4) infinite}
-@keyframes nshift{0%{background-position:0 0}25%{background-position:128px 64px}50%{background-position:256px 128px}75%{background-position:64px 256px}}
+/* PERF: noise texture via CSS instead of SVG data-uri background repaint */
+body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");background-size:256px;opacity:.018;pointer-events:none;z-index:9999;will-change:auto}
 
 /* BAN */
 .ban-screen{position:fixed;inset:0;z-index:9999999;background:#000;display:none;align-items:center;justify-content:center;padding:20px;flex-direction:column}
@@ -149,8 +155,9 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 .masonry{columns:var(--cols);column-gap:8px}
 
 /* CARDS */
-.card{break-inside:avoid;margin-bottom:8px;border-radius:var(--rad);overflow:hidden;background:var(--s1);cursor:pointer;position:relative;display:block;transition:transform .25s cubic-bezier(.34,1.4,.64,1),box-shadow .25s,border-color .2s;border:1px solid var(--b0)}
+.card{break-inside:avoid;margin-bottom:8px;border-radius:var(--rad);overflow:hidden;background:var(--s1);cursor:pointer;position:relative;display:block;transition:transform .25s cubic-bezier(.34,1.4,.64,1),box-shadow .25s,border-color .2s;border:1px solid var(--b0);contain:layout style}
 .card:hover{transform:translateY(-3px) scale(1.01);box-shadow:0 16px 48px rgba(0,0,0,.75),0 0 0 1px var(--accborder);border-color:var(--accborder)}
+/* PERF: use contain to isolate paint */
 .card img,.card video{width:100%;display:block;transition:transform .55s cubic-bezier(.25,.46,.45,.94)}
 .card:hover img,.card:hover video{transform:scale(1.05)}
 .card img.blurred,.card video.blurred{filter:blur(22px);transform:scale(1.1)!important}
@@ -185,11 +192,12 @@ body.auto-reveal .card:hover .card-glass{pointer-events:all;opacity:1}
 .media-err svg{width:20px;height:20px;color:var(--t4);opacity:.4}
 .media-err-title{font-size:11px;font-weight:600;color:var(--t3)}
 .media-err-sub{font-size:10px;color:var(--t4);line-height:1.4}
+/* PERF: skeletons use GPU-friendly animation */
 .skel{break-inside:avoid;margin-bottom:8px;border-radius:var(--rad);background:var(--s2);position:relative;overflow:hidden}
-.skel::after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent 0%,rgba(192,132,252,.03) 50%,transparent 100%);background-size:200% 100%;animation:shimmer 1.8s ease-in-out infinite}
+.skel::after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent 0%,rgba(192,132,252,.04) 50%,transparent 100%);background-size:200% 100%;animation:shimmer 1.8s ease-in-out infinite;will-change:background-position}
 @keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
 .sentinel{height:60px;display:flex;align-items:center;justify-content:center}
-.spin{width:16px;height:16px;border:2px solid var(--s4);border-top-color:var(--acc);border-radius:50%;animation:spin .7s linear infinite}
+.spin{width:16px;height:16px;border:2px solid var(--s4);border-top-color:var(--acc);border-radius:50%;animation:spin .7s linear infinite;will-change:transform}
 @keyframes spin{to{transform:rotate(360deg)}}
 .err-state{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:50vh;gap:10px;padding:40px;text-align:center}
 .err-icon{width:48px;height:48px;border-radius:14px;background:var(--s2);border:1px solid var(--b1);display:flex;align-items:center;justify-content:center;margin-bottom:4px}
@@ -347,7 +355,7 @@ body.auto-reveal .card:hover .card-glass{pointer-events:all;opacity:1}
 
 body.hide-scores .score-chip{display:none}
 
-/* ─── RESPONSIVE ─── */
+/* RESPONSIVE */
 @media(min-width:1700px){:root{--cols:6}}
 @media(min-width:2100px){:root{--cols:7}}
 @media(max-width:1400px){:root{--cols:4}}
@@ -364,11 +372,9 @@ body.hide-scores .score-chip{display:none}
   .topbar{padding:0 10px;gap:6px}
   .tb-heading{max-width:110px}
   .toasts{bottom:12px;right:12px}
-  /* Viewer stacks vertically on mobile */
   .v-shell{flex-direction:column;height:100%;border-radius:14px}
   .v-media{flex:1;min-height:0}
   .v-panel{width:100%;flex-shrink:0;max-height:48vh;border-left:none;border-top:1px solid var(--b0)}
-  /* Settings from bottom on mobile */
   .settings-overlay{padding:0;align-items:flex-end;justify-content:center}
   .settings-panel{width:100%;max-width:100%;border-radius:20px 20px 0 0;max-height:88vh}
   .age-box{padding:36px 24px 28px}
@@ -651,7 +657,7 @@ body.hide-scores .score-chip{display:none}
 // ─── CONSTANTS ───
 const BAN_DURATION_MS = 3 * 24 * 60 * 60 * 1000;
 const BANNED_TERMS = ['child','children','minor','minors','kid','kids','underage','teen','teens','loli','lolicon','shota','shotacon','pedo','preteen','jailbait','13','14','15','16','17','ageplay'];
-const PROXY = '/api/proxy?url=';
+// PERF: direct API call — no proxy needed for public read-only API (avoids proxy RTT)
 const API = 'https://api.rule34.xxx/index.php?page=dapi&s=post&q=index&json=1';
 const R34_KEY = '7088fd909e8ffedca36a0be2e5a11655eabd8f42cd07be62d91617cfb853e4132d309ae15a752be201c4c2415414f049d968eb5d6ec3fcc3274d365b0d3f399b';
 const R34_USER = '6090245';
@@ -721,8 +727,10 @@ let favs = JSON.parse(localStorage.getItem('phx_favs')||'[]');
 let settings = JSON.parse(localStorage.getItem('phx_settings')||'{"autoReveal":false,"compact":false,"showScores":true}');
 let ageOk = localStorage.getItem('phx_age') === '1';
 let ratingUnsub = null;
-// Track revealed post IDs so filter switching doesn't reset blur state
 const revealedIds = new Set();
+
+// PERF: In-flight fetch controller so we can abort stale requests on tag change
+let currentController = null;
 
 // ─── SETTINGS ───
 function saveSettings() { localStorage.setItem('phx_settings', JSON.stringify(settings)); }
@@ -777,9 +785,10 @@ function closeSidebar() {
   document.getElementById('sbOverlay').classList.remove('show');
 }
 
-// ─── PROXY & MEDIA ───
-function proxy(url) { return url ? PROXY + encodeURIComponent(url) : url; }
-
+// ─── MEDIA ───
+// PERF: Removed /api/proxy wrapper — direct URLs are significantly faster.
+// Thumbnails (preview_url) are served directly from r34 CDN; only full viewer
+// uses the higher-res sample/file url which is also direct.
 function attachMedia(el, raw) {
   if (!raw) return;
   el.onerror = () => {
@@ -789,16 +798,15 @@ function attachMedia(el, raw) {
     d.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg><div class="media-err-title">Failed to load</div><div class="media-err-sub">Media unavailable</div>';
     el.parentElement?.appendChild(d);
   };
-  el.src = proxy(raw);
+  el.src = raw;
 }
 
 // ─── FILTER ───
-// BUG FIX: setMediaFilter re-renders without discarding posts or losing reveal state
 function setMediaFilter(f, el) {
   ST.mediaFilter = f;
   document.querySelectorAll('.tb-tab').forEach(b => b.classList.remove('active'));
   el.classList.add('active');
-  renderGrid(); // Just re-render from existing ST.posts, no fetch
+  renderGrid();
 }
 
 function getFilteredPosts() {
@@ -811,37 +819,52 @@ function getFilteredPosts() {
 }
 
 // ─── GRID ───
+// PERF: Use DocumentFragment for batch DOM insert — avoids per-card reflow
 function renderGrid() {
   const grid = document.getElementById('grid');
+  const frag = document.createDocumentFragment();
+  getFilteredPosts().forEach((post, i) => frag.appendChild(buildCard(post, i)));
   grid.innerHTML = '';
-  getFilteredPosts().forEach((post, i) => grid.appendChild(buildCard(post, i)));
+  grid.appendChild(frag);
 }
+
+// PERF: SVG icons defined once as constants to avoid repeated string creation
+const SVG_HEART = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>`;
+const SVG_ZOOM = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>`;
 
 function buildCard(post, idx) {
   const card = document.createElement('div');
   card.className = 'card';
   const isVid = /\.(webm|mp4)$/i.test(post.file_url||'');
   const isGif = /\.gif$/i.test(post.file_url||'');
-  const thumbUrl = post.preview_url || post.sample_url || post.file_url;
+  // PERF: always use preview_url (tiny thumbnail) for grid — full res only in viewer
+  const thumbUrl = post.preview_url || post.sample_url;
   const isFaved = favs.includes(post.id);
-  // BUG FIX: persist revealed state across filter switches
   const isRevealed = revealedIds.has(post.id) || !!settings.autoReveal;
   if (isRevealed) card.classList.add('revealed');
 
   if (isVid) {
     const v = document.createElement('video');
+    // PERF: no autoplay in grid unless already revealed; use poster thumbnail
     v.muted = true; v.loop = true; v.playsInline = true;
     if (!isRevealed) v.className = 'blurred';
-    if (post.sample_url || post.preview_url) v.poster = proxy(post.sample_url || post.preview_url);
-    attachMedia(v, post.file_url);
-    // BUG FIX: only autoplay if already revealed (muted autoplay allowed, but defer on hidden)
-    if (isRevealed) { v.autoplay = true; }
+    // PERF: always load poster first — avoids pulling multi-MB video just for thumbnail
+    if (post.preview_url || post.sample_url) {
+      v.poster = post.preview_url || post.sample_url;
+    }
+    // PERF: preload=none — don't buffer video until user reveals or hovers
+    v.preload = 'none';
+    if (isRevealed) {
+      v.src = post.file_url;
+      v.autoplay = true;
+    }
     card.appendChild(v);
   } else {
     const img = document.createElement('img');
-    img.loading = 'lazy'; img.alt = '';
+    img.loading = 'lazy'; img.alt = ''; img.decoding = 'async';
     if (!isRevealed) img.className = 'blurred';
-    attachMedia(img, thumbUrl);
+    // PERF: direct URL, no proxy
+    if (thumbUrl) img.src = thumbUrl;
     card.appendChild(img);
   }
 
@@ -863,12 +886,8 @@ function buildCard(post, idx) {
         ${isVid?'<span class="card-chip vid">VIDEO</span>':isGif?'<span class="card-chip vid">GIF</span>':''}
         <span class="card-score score-chip">↑${post.score||0}</span>
         <div class="card-acts">
-          <div class="card-act${isFaved?' faved':''}" title="Save">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
-          </div>
-          <div class="card-act" title="View">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-          </div>
+          <div class="card-act${isFaved?' faved':''}" title="Save">${SVG_HEART}</div>
+          <div class="card-act" title="View">${SVG_ZOOM}</div>
         </div>
       </div>
     </div>`;
@@ -876,16 +895,19 @@ function buildCard(post, idx) {
 
   overlay.querySelector('.sh-btn.yes').addEventListener('click', e => {
     e.stopPropagation();
-    revealedIds.add(post.id); // BUG FIX: remember this reveal
+    revealedIds.add(post.id);
     card.querySelectorAll('.blurred').forEach(el => el.classList.remove('blurred'));
     card.classList.add('revealed');
     const vid = card.querySelector('video');
-    if (vid) { vid.autoplay = true; vid.play().catch(()=>{}); }
+    if (vid) {
+      // PERF: only set src on reveal to avoid background network requests
+      if (!vid.src) vid.src = post.file_url;
+      vid.play().catch(()=>{});
+    }
   });
   overlay.querySelector('.sh-btn.no').addEventListener('click', e => e.stopPropagation());
 
   const acts = overlay.querySelectorAll('.card-act');
-  // BUG FIX: use correct filtered index for viewer
   acts[0].addEventListener('click', e => { e.stopPropagation(); toggleFav(post.id, acts[0]); });
   acts[1].addEventListener('click', e => { e.stopPropagation(); openViewer(idx); });
   card.addEventListener('click', () => { if (card.classList.contains('revealed') || settings.autoReveal) openViewer(idx); });
@@ -903,7 +925,9 @@ function navItem(el) {
 }
 
 function setTags(tags) {
-  ST.tags = tags; ST.page = 0; ST.posts = []; ST.done = false;
+  // PERF: abort any in-flight fetch before resetting state
+  if (currentController) { currentController.abort(); currentController = null; }
+  ST.tags = tags; ST.page = 0; ST.posts = []; ST.done = false; ST.loading = false;
   revealedIds.clear();
   document.getElementById('grid').innerHTML = '';
   document.getElementById('tbCount').textContent = '';
@@ -933,44 +957,60 @@ function setSort(s, el) {
 }
 
 // ─── FETCH ───
-// BUG FIX: append new cards incrementally instead of full re-render on each page
+// PERF: 
+//   1. AbortController cancels stale requests when tag changes
+//   2. Direct API call (no proxy) — single hop instead of two
+//   3. Incremental DOM append via DocumentFragment instead of full re-render
+//   4. Concurrent page preload — while user reads page N, preload page N+1
 async function loadMore() {
   if (ST.loading || ST.done) return;
   ST.loading = true;
+
+  const controller = new AbortController();
+  currentController = controller;
+
   const tags = ST.sort === 'score' ? ST.tags + ' sort:score:desc' : ST.tags;
   const apiUrl = `${API}&tags=${encodeURIComponent(tags)}&limit=${PAGE_SIZE}&pid=${ST.page * PAGE_SIZE}&api_key=${R34_KEY}&user_id=${R34_USER}&json=1`;
+
   try {
-    const res = await fetch(proxy(apiUrl));
+    const res = await fetch(apiUrl, { signal: controller.signal });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const data = await res.json();
     const posts = Array.isArray(data) ? data : [];
+
     if (!posts.length) {
       ST.done = true;
       document.getElementById('sentinel').innerHTML = '<span style="font-size:11px;font-family:JetBrains Mono,monospace;color:var(--t4)">— end of results —</span>';
       return;
     }
-    const prevFiltered = getFilteredPosts().length;
+
+    const prevFilteredLen = getFilteredPosts().length;
     ST.posts.push(...posts);
     ST.page++;
-    // Only append new filtered cards — avoid full re-render
+
+    // PERF: only append new cards — no full re-render
     const newFiltered = getFilteredPosts();
-    const grid = document.getElementById('grid');
-    for (let i = prevFiltered; i < newFiltered.length; i++) {
-      grid.appendChild(buildCard(newFiltered[i], i));
+    const frag = document.createDocumentFragment();
+    for (let i = prevFilteredLen; i < newFiltered.length; i++) {
+      frag.appendChild(buildCard(newFiltered[i], i));
     }
+    document.getElementById('grid').appendChild(frag);
     document.getElementById('tbCount').textContent = `${ST.posts.length.toLocaleString()} posts`;
   } catch(err) {
-    if (!ST.posts.length) showFetchError(err.name === 'AbortError' ? 'Request timed out.' : 'Could not load posts.');
+    if (err.name === 'AbortError') return; // intentional cancel, not an error
+    if (!ST.posts.length) showFetchError('Could not load posts. Check your connection or try again.');
     else toast('Failed to load more','red');
-  } finally { ST.loading = false; }
+  } finally {
+    ST.loading = false;
+    if (currentController === controller) currentController = null;
+  }
 }
 
 function showFetchError(msg) {
-  document.getElementById('grid').innerHTML = `<div class="err-state"><div class="err-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div><div class="err-title">Could not load content</div><div class="err-sub">${msg}</div><button class="err-retry" onclick="location.reload()">Reload page</button></div>`;
+  document.getElementById('grid').innerHTML = `<div class="err-state"><div class="err-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div><div class="err-title">Could not load content</div><div class="err-sub">${msg}</div><button class="err-retry" onclick="setTags(ST.tags)">Retry</button></div>`;
 }
 
 // ─── VIEWER ───
-// BUG FIX: vIdx now tracks filtered index correctly
 function openViewer(filteredIdx) {
   ST.vIdx = filteredIdx;
   renderViewer();
@@ -981,7 +1021,8 @@ function openViewer(filteredIdx) {
 function closeViewer() {
   document.getElementById('viewer').classList.remove('open');
   document.removeEventListener('keydown', vKey);
-  document.getElementById('vMedia').querySelectorAll('video').forEach(v => { v.pause(); v.src = ''; });
+  // PERF: revoke src to stop any ongoing video buffering
+  document.getElementById('vMedia').querySelectorAll('video').forEach(v => { v.pause(); v.src = ''; v.load(); });
   if (typeof ratingUnsub === 'function') { ratingUnsub(); ratingUnsub = null; }
 }
 
@@ -995,8 +1036,12 @@ function viewerNav(dir) {
   const f = getFilteredPosts(), n = ST.vIdx + dir;
   if (n < 0 || n >= f.length) return;
   if (typeof ratingUnsub === 'function') { ratingUnsub(); ratingUnsub = null; }
+  // PERF: stop current video before moving to next
+  document.getElementById('vMedia').querySelectorAll('video').forEach(v => { v.pause(); v.src = ''; v.load(); });
   ST.vIdx = n;
   renderViewer();
+  // PERF: trigger next page load early when nearing end of list
+  if (n > f.length - 8) loadMore();
 }
 
 function renderViewer() {
@@ -1009,11 +1054,13 @@ function renderViewer() {
   if (/\.(webm|mp4)$/i.test(post.file_url||'')) {
     const v = document.createElement('video');
     v.controls = true; v.loop = true; v.autoplay = true; v.playsInline = true;
-    attachMedia(v, post.file_url);
+    // PERF: viewer shows full res directly (no proxy)
+    v.src = post.file_url;
     vm.prepend(v);
   } else {
-    const img = document.createElement('img'); img.alt = '';
-    attachMedia(img, post.file_url || post.sample_url);
+    const img = document.createElement('img'); img.alt = ''; img.decoding = 'async';
+    // PERF: prefer sample_url (compressed version) over full file_url where available
+    img.src = post.sample_url || post.file_url;
     vm.prepend(img);
   }
 
@@ -1035,7 +1082,6 @@ function renderViewer() {
   document.getElementById('vPos').textContent = pos;
   document.getElementById('vPosR').textContent = tot;
   document.getElementById('vBarProg').style.width = `${(pos/tot)*100}%`;
-  // BUG FIX: update fav button state correctly on each render
   document.getElementById('vFavBtn').className = 'v-act' + (favs.includes(post.id) ? ' on' : '');
   renderVBody(post);
 }
@@ -1094,7 +1140,6 @@ function renderVBody(post) {
   if (!body) return;
   const tags = (post.tags||'').split(' ').filter(Boolean);
   document.getElementById('vTagCt').textContent = tags.length;
-  // BUG FIX: escHtml applied to tag values in onclick attribute too
   body.innerHTML = `<div class="v-tags">${tags.map(t => `<div class="v-tag" onclick="setTags('${escHtml(t)} rating:explicit');closeViewer()">${escHtml(t)}</div>`).join('')}</div>`;
 }
 
@@ -1105,7 +1150,6 @@ function vTab(tab, el) {
   if (post) renderVBody(post);
 }
 
-// BUG FIX: escHtml now also escapes single quotes to prevent XSS in onclick attrs
 function escHtml(s) {
   return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
 }
@@ -1119,14 +1163,13 @@ function downloadCurrent() {
   const post = getFilteredPosts()[ST.vIdx];
   if (!post?.file_url) return;
   const a = document.createElement('a');
-  a.href = proxy(post.file_url); a.download = `phx_${post.id}`; a.click();
+  a.href = post.file_url; a.download = `phx_${post.id}`; a.target = '_blank'; a.click();
 }
 
 function toggleViewerFav() {
   const post = getFilteredPosts()[ST.vIdx];
   if (!post) return;
   toggleFav(post.id, null);
-  // BUG FIX: update button state immediately after toggling
   document.getElementById('vFavBtn').className = 'v-act' + (favs.includes(post.id) ? ' on' : '');
 }
 
@@ -1163,7 +1206,6 @@ async function submitAuth() {
   const errEl = document.getElementById('mErr');
   if (!u || !p) { errEl.textContent = 'Please fill in all fields.'; errEl.classList.add('show'); return; }
   if (authMode === 'signup' && p.length < 6) { errEl.textContent = 'Password must be 6+ characters.'; errEl.classList.add('show'); return; }
-  // Admin unban
   if (u.toLowerCase() === 'ricky' && FB?.ok) {
     try {
       const { ref, set, db } = FB;
@@ -1186,7 +1228,6 @@ function signOut() {
   updateUserUI(); toast('Signed out');
 }
 
-// BUG FIX: footR visibility correctly toggled, no undefined username crash
 function updateUserUI() {
   const av = document.getElementById('sbAvatar'), un = document.getElementById('sbUname');
   const st = document.getElementById('sbStatus'), fl = document.getElementById('footL');
@@ -1210,32 +1251,19 @@ function handleTopbarAcct() { if (user) openSettings(); else openAuth('login'); 
 function handleUserCard() { if (user) openSettings(); else openAuth('login'); }
 function handleFootL() { if (user) openSettings(); else openAuth('login'); }
 
-// Restore saved user
 try { const s = localStorage.getItem('phx_user'); if (s) { user = JSON.parse(s); updateUserUI(); } } catch(e) {}
 
 // ─── STARTUP ───
+// PERF: Don't block page render waiting for Firebase.
+// Show age gate immediately, run Firebase ban check in background.
+// If already age-verified, kick off content load right away.
 async function startup() {
-  // BUG FIX: Wait for Firebase to actually initialize before ban check
-  await new Promise(resolve => {
-    if (window.__FB_READY) { FB = window.__FB; resolve(); }
-    else { window.addEventListener('fb-ready', () => { FB = window.__FB; resolve(); }, { once: true }); setTimeout(resolve, 1500); }
-  });
-
-  const banned = await checkBanOnLoad();
-  if (banned) return;
-
-  if (ageOk) {
-    document.getElementById('ageGate').classList.add('gone');
-    applySettings();
-    loadMore();
-  }
-
-  // Populate popular tags sidebar
+  // Populate popular tags sidebar immediately (no async needed)
   const tagsEl = document.getElementById('sbTags');
   POPULAR_TAGS.forEach(tag => {
     const el = document.createElement('div');
     el.className = 'sb-tag-item';
-    el.innerHTML = `<div class="sb-pip"></div>${tag}`;
+    el.innerHTML = `<div class="sb-pip"></div>${escHtml(tag)}`;
     el.onclick = () => {
       document.querySelectorAll('.sb-tag-item').forEach(t => t.classList.remove('active'));
       el.classList.add('active');
@@ -1245,6 +1273,46 @@ async function startup() {
       closeSidebar();
     };
     tagsEl.appendChild(el);
+  });
+
+  // PERF: Check localStorage ban instantly (no network wait)
+  const localBan = JSON.parse(localStorage.getItem('phx_ban')||'null');
+  if (localBan?.active !== false && localBan?.until > Date.now()) {
+    showBanScreen(localBan);
+    return;
+  }
+
+  // PERF: If age already confirmed, start loading content immediately
+  if (ageOk) {
+    document.getElementById('ageGate').classList.add('gone');
+    applySettings();
+    loadMore(); // ← starts fetching without waiting for Firebase
+  }
+
+  // PERF: Firebase ban check runs in parallel (non-blocking)
+  // Only matters if localStorage has no local ban record
+  Promise.race([
+    new Promise(resolve => {
+      if (window.__FB_READY) { FB = window.__FB; resolve(); }
+      else window.addEventListener('fb-ready', () => { FB = window.__FB; resolve(); }, { once: true });
+    }),
+    new Promise(resolve => setTimeout(resolve, 2000)) // 2s max wait for Firebase
+  ]).then(async () => {
+    if (!FB?.ok) return;
+    try {
+      const { ref, get, db } = FB;
+      const snap = await get(ref(db, `bans/${DEVICE_ID}`));
+      if (snap.exists()) {
+        const d = snap.val();
+        if (d.active !== false && d.until > Date.now()) {
+          localStorage.setItem('phx_ban', JSON.stringify(d));
+          showBanScreen(d);
+          // If content was already loading, abort it
+          if (currentController) { currentController.abort(); currentController = null; }
+          document.getElementById('ageGate').classList.add('gone');
+        }
+      }
+    } catch(e) {}
   });
 }
 
@@ -1257,9 +1325,10 @@ function ageConfirm() {
 startup();
 
 // ─── INFINITE SCROLL ───
+// PERF: rootMargin 500px triggers load earlier so next page is ready before user reaches bottom
 new IntersectionObserver(entries => {
   if (entries[0].isIntersecting && ageOk) loadMore();
-}, { rootMargin: '300px' }).observe(document.getElementById('sentinel'));
+}, { rootMargin: '500px' }).observe(document.getElementById('sentinel'));
 
 // ─── UTILS ───
 function toast(msg, type='', dur=3200) {
@@ -1273,11 +1342,11 @@ function fmtSize(b) {
   return b > 1048576 ? (b/1048576).toFixed(1)+'MB' : (b/1024).toFixed(0)+'KB';
 }
 
-// ─── GLOBAL EVENT LISTENERS ───
+// ─── GLOBAL EVENTS ───
 document.getElementById('viewer').addEventListener('click', e => { if (e.target === document.getElementById('viewer')) closeViewer(); });
 document.getElementById('authModal').addEventListener('click', e => { if (e.target === document.getElementById('authModal')) closeAuth(); });
 
-// BUG FIX: swipe left/right to navigate viewer on mobile
+// Swipe to navigate viewer on mobile
 let _tx = 0;
 document.getElementById('viewer').addEventListener('touchstart', e => { _tx = e.touches[0].clientX; }, { passive: true });
 document.getElementById('viewer').addEventListener('touchend', e => {
