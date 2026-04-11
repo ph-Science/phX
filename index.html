@@ -5,86 +5,69 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>phX</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
 :root{
-  --bg:#080809;--s0:#0c0c0e;--s1:#101012;--s2:#16161a;--s3:#1d1d22;--s4:#24242a;--s5:#2d2d35;
-  --b0:rgba(255,255,255,0.04);--b1:rgba(255,255,255,0.07);--b2:rgba(255,255,255,0.12);
-  --t0:#fff;--t1:#e8e8ed;--t2:#a0a0b0;--t3:#606070;--t4:#3a3a48;
-  --acc:#ff2d55;--acc2:#ff6b84;--accbg:rgba(255,45,85,0.12);
-  --gold:#f5a623;--goldbg:rgba(245,166,35,0.12);
-  --green:#30d158;--greenbg:rgba(48,209,88,0.1);
-  --sid:240px;--rad:10px;
+  --bg:#07070a;--s0:#0c0c10;--s1:#111116;--s2:#17171d;--s3:#1e1e26;--s4:#26262f;--s5:#30303b;
+  --b0:rgba(255,255,255,0.04);--b1:rgba(255,255,255,0.08);--b2:rgba(255,255,255,0.13);
+  --t0:#fff;--t1:#eaeaf0;--t2:#9898ac;--t3:#5a5a70;--t4:#36364a;
+  --acc:#ff2d55;--acc2:#ff6b84;--accbg:rgba(255,45,85,0.13);--accborder:rgba(255,45,85,0.25);
+  --gold:#f5a623;--goldbg:rgba(245,166,35,0.13);
+  --green:#30d158;
+  --sid:244px;--rad:11px;
 }
 html,body{height:100%;overflow:hidden}
 body{background:var(--bg);color:var(--t1);font-family:'DM Sans',sans-serif;font-size:13px;display:flex;-webkit-font-smoothing:antialiased}
 ::-webkit-scrollbar{width:3px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--s5);border-radius:2px}
 *{scrollbar-width:thin;scrollbar-color:var(--s5) transparent}
 
-/* PROXY STATUS BAR */
-.proxy-banner{position:fixed;top:0;left:0;right:0;z-index:99990;padding:9px 18px;font-size:11.5px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--b1);transition:all .3s}
-.proxy-banner.checking{background:rgba(15,15,18,.97);color:var(--t3)}
-.proxy-banner.ok{background:rgba(48,209,88,.07);border-color:rgba(48,209,88,.18);color:var(--green)}
-.proxy-banner.err{background:rgba(255,45,85,.08);border-color:rgba(255,45,85,.2);color:var(--acc2)}
-.proxy-banner.hidden{display:none}
-.proxy-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;transition:background .3s}
-.proxy-dot.pulse{background:var(--t4);animation:pulse 1.2s ease-in-out infinite}
-.proxy-dot.green{background:var(--green)}.proxy-dot.red{background:var(--acc)}
-@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.3;transform:scale(.8)}}
-.proxy-dismiss{margin-left:auto;cursor:pointer;color:var(--t4);font-size:11px;padding:2px 8px;border-radius:4px;background:transparent;border:none;font-family:'DM Sans',sans-serif;opacity:.6;transition:opacity .15s}
-.proxy-dismiss:hover{opacity:1;color:var(--t2)}
-.proxy-badge{font-size:10px;font-family:'DM Mono',monospace;padding:2px 7px;border-radius:9999px;background:var(--s3);color:var(--t4);border:1px solid var(--b1);flex-shrink:0}
-.proxy-badge.green{background:var(--greenbg);color:var(--green);border-color:rgba(48,209,88,.2)}
-.proxy-badge.red{background:var(--accbg);color:var(--acc2);border-color:rgba(255,45,85,.2)}
-
-/* SIDEBAR */
-.sidebar{width:var(--sid);flex-shrink:0;background:var(--s0);border-right:1px solid var(--b0);display:flex;flex-direction:column;height:100vh;z-index:200;position:relative}
-.sb-logo{padding:18px 16px 14px;display:flex;align-items:center;gap:11px;border-bottom:1px solid var(--b0);flex-shrink:0}
-.sb-logo-icon{width:30px;height:30px;border-radius:9px;background:linear-gradient(135deg,var(--acc),#c01a3a);display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 2px 8px rgba(255,45,85,.3)}
+/* ── SIDEBAR ── */
+.sidebar{width:var(--sid);flex-shrink:0;background:var(--s0);border-right:1px solid var(--b0);display:flex;flex-direction:column;height:100vh;z-index:200}
+.sb-logo{padding:20px 18px 16px;display:flex;align-items:center;gap:11px;border-bottom:1px solid var(--b0);flex-shrink:0}
+.sb-logo-icon{width:32px;height:32px;border-radius:10px;background:var(--acc);display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 0 20px rgba(255,45,85,.35)}
 .sb-logo-icon svg{width:14px;height:14px;color:#fff}
-.sb-wordmark{font-size:17px;font-weight:600;letter-spacing:-0.6px;color:var(--t0)}
+.sb-wordmark{font-size:18px;font-weight:600;letter-spacing:-.6px;color:var(--t0)}
 .sb-wordmark em{font-style:normal;color:var(--acc)}
-.sb-version{font-size:9px;font-family:'DM Mono',monospace;color:var(--t4);background:var(--s3);padding:1px 5px;border-radius:4px;margin-left:auto;border:1px solid var(--b0)}
-.sb-user{padding:10px 10px;border-bottom:1px solid var(--b0);flex-shrink:0}
-.sb-user-card{display:flex;align-items:center;gap:9px;padding:8px 10px;background:var(--s2);border:1px solid var(--b1);border-radius:9px;cursor:pointer;transition:all .15s}
+.sb-user{padding:10px;border-bottom:1px solid var(--b0);flex-shrink:0}
+.sb-user-card{display:flex;align-items:center;gap:9px;padding:8px 11px;background:var(--s2);border:1px solid var(--b1);border-radius:9px;cursor:pointer;transition:all .15s}
 .sb-user-card:hover{background:var(--s3);border-color:var(--b2)}
-.sb-avatar{width:26px;height:26px;border-radius:50%;background:linear-gradient(135deg,var(--acc),#c01a3a);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;flex-shrink:0}
+.sb-avatar{width:27px;height:27px;border-radius:50%;background:var(--acc);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;flex-shrink:0}
 .sb-uname{font-size:12px;font-weight:500;color:var(--t1);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.sb-user-dot{width:6px;height:6px;border-radius:50%;background:var(--green);flex-shrink:0;box-shadow:0 0 6px rgba(48,209,88,.5)}
+.sb-user-dot{width:6px;height:6px;border-radius:50%;background:var(--green);flex-shrink:0;box-shadow:0 0 6px rgba(48,209,88,.6)}
 .sb-search{padding:10px 10px 6px;flex-shrink:0}
-.sb-search-box{display:flex;align-items:center;gap:8px;background:var(--s2);border:1px solid var(--b1);border-radius:9px;padding:0 10px;transition:all .15s}
+.sb-search-box{display:flex;align-items:center;gap:8px;background:var(--s2);border:1px solid var(--b1);border-radius:9px;padding:0 11px;transition:all .15s}
 .sb-search-box:focus-within{border-color:var(--b2);background:var(--s3)}
 .sb-search-box svg{width:13px;height:13px;color:var(--t4);flex-shrink:0}
 .sb-search-box input{flex:1;background:transparent;border:none;outline:none;font-family:'DM Sans',sans-serif;font-size:12px;color:var(--t1);padding:8px 0}
 .sb-search-box input::placeholder{color:var(--t4)}
-.sb-sec{font-size:9.5px;font-weight:600;color:var(--t4);letter-spacing:.14em;text-transform:uppercase;padding:14px 16px 4px;flex-shrink:0}
+.sb-sec{font-size:9.5px;font-weight:600;color:var(--t4);letter-spacing:.14em;text-transform:uppercase;padding:14px 18px 5px;flex-shrink:0}
 .sb-scroll{flex:1;overflow-y:auto;padding:0 6px 6px}
-.sb-item{display:flex;align-items:center;gap:9px;padding:7px 10px;border-radius:8px;font-size:12.5px;color:var(--t2);cursor:pointer;transition:all .12s;user-select:none;margin-bottom:1px}
+.sb-item{display:flex;align-items:center;gap:9px;padding:7px 11px;border-radius:8px;font-size:12.5px;color:var(--t2);cursor:pointer;transition:all .12s;user-select:none;margin-bottom:1px}
 .sb-item:hover{background:var(--b0);color:var(--t1)}
 .sb-item.active{background:var(--accbg);color:var(--acc)}
-.sb-item svg{width:14px;height:14px;opacity:.65;flex-shrink:0;transition:opacity .12s}
+.sb-item svg{width:14px;height:14px;opacity:.6;flex-shrink:0}
 .sb-item.active svg{opacity:1}
-.sb-divider{height:1px;background:var(--b0);margin:6px 4px}
-.sb-tag{display:flex;align-items:center;gap:8px;padding:6px 10px;border-radius:7px;font-size:12px;color:var(--t3);cursor:pointer;transition:all .12s;user-select:none;margin-bottom:1px}
+.sb-divider{height:1px;background:var(--b0);margin:7px 4px}
+.sb-tag{display:flex;align-items:center;gap:8px;padding:6px 11px;border-radius:7px;font-size:12px;color:var(--t3);cursor:pointer;transition:all .12s;user-select:none;margin-bottom:1px}
 .sb-tag:hover{background:var(--b0);color:var(--t2)}
 .sb-tag.active{color:var(--acc)}
 .sb-tag-pip{width:5px;height:5px;border-radius:50%;background:var(--s5);flex-shrink:0;transition:background .12s}
 .sb-tag.active .sb-tag-pip{background:var(--acc)}
 .sb-foot{padding:10px;border-top:1px solid var(--b0);flex-shrink:0;display:flex;gap:5px}
-.sb-foot-btn{flex:1;padding:8px 0;border-radius:9px;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;cursor:pointer;transition:all .15s;border:none;letter-spacing:-.1px}
+.sb-foot-btn{flex:1;padding:8px 0;border-radius:9px;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;cursor:pointer;transition:all .15s;border:none}
 .btn-ghost{background:var(--s3);color:var(--t2);border:1px solid var(--b1)}.btn-ghost:hover{background:var(--s4);color:var(--t1)}
-.btn-acc{background:var(--acc);color:#fff;box-shadow:0 2px 8px rgba(255,45,85,.25)}.btn-acc:hover{background:#e0223e;box-shadow:0 2px 12px rgba(255,45,85,.4)}
-.btn-danger{background:rgba(255,45,85,.12);color:var(--acc);border:1px solid rgba(255,45,85,.15)}.btn-danger:hover{background:rgba(255,45,85,.2)}
+.btn-acc{background:var(--acc);color:#fff;box-shadow:0 2px 12px rgba(255,45,85,.3)}.btn-acc:hover{background:#e0223e}
+.btn-danger{background:rgba(255,45,85,.12);color:var(--acc);border:1px solid var(--accborder)}.btn-danger:hover{background:rgba(255,45,85,.2)}
 .sb-user-wrap{position:relative}
-.acct-menu{position:absolute;left:10px;right:10px;top:calc(100% + 4px);background:var(--s2);border:1px solid var(--b2);border-radius:10px;z-index:9999;overflow:hidden;box-shadow:0 8px 32px rgba(0,0,0,.6)}
-.acct-menu-item{display:flex;align-items:center;gap:9px;padding:10px 12px;font-size:12.5px;color:var(--t2);cursor:pointer;transition:all .12s}
+.acct-menu{position:absolute;left:10px;right:10px;top:calc(100% + 4px);background:var(--s2);border:1px solid var(--b2);border-radius:11px;z-index:9999;overflow:hidden;box-shadow:0 12px 40px rgba(0,0,0,.7)}
+.acct-menu-item{display:flex;align-items:center;gap:9px;padding:10px 13px;font-size:12.5px;color:var(--t2);cursor:pointer;transition:all .12s}
 .acct-menu-item:hover{background:var(--b1);color:var(--t1)}
 .acct-menu-item svg{width:13px;height:13px;opacity:.7}
 .acct-menu-item.danger{color:var(--acc)}
 .acct-menu-divider{height:1px;background:var(--b0)}
 
-/* MAIN */
+/* ── MAIN / TOPBAR ── */
 .main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0}
 .topbar{height:50px;flex-shrink:0;display:flex;align-items:center;gap:10px;padding:0 18px;background:var(--s0);border-bottom:1px solid var(--b0);z-index:100}
 .tb-heading{font-size:14px;font-weight:600;color:var(--t0);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:200px;letter-spacing:-.2px}
@@ -94,7 +77,7 @@ body{background:var(--bg);color:var(--t1);font-family:'DM Sans',sans-serif;font-
 .tb-tab{padding:4px 12px;border-radius:7px;font-size:11.5px;font-weight:500;color:var(--t3);cursor:pointer;transition:all .12s;user-select:none;white-space:nowrap}
 .tb-tab:hover{color:var(--t2)}.tb-tab.active{background:var(--s4);color:var(--t0)}
 .spacer{flex:1}
-.tb-sort{display:flex;gap:1px;background:var(--s2);border:1px solid var(--b1);border-radius:9px;padding:3px}
+.tb-sort{display:flex;background:var(--s2);border:1px solid var(--b1);border-radius:9px;padding:3px;gap:2px}
 .tb-sort-btn{padding:4px 11px;border-radius:7px;font-size:11.5px;font-weight:500;color:var(--t3);background:transparent;border:none;font-family:'DM Sans',sans-serif;cursor:pointer;transition:all .12s;white-space:nowrap}
 .tb-sort-btn:hover{color:var(--t2)}.tb-sort-btn.active{background:var(--s4);color:var(--t0)}
 .tb-icon-btn{width:32px;height:32px;border-radius:9px;background:var(--s2);border:1px solid var(--b1);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .15s;flex-shrink:0}
@@ -104,49 +87,109 @@ body{background:var(--bg);color:var(--t1);font-family:'DM Sans',sans-serif;font-
 .grid-wrap{padding:12px 12px 0}
 .masonry{columns:var(--cols,5);column-gap:8px}
 
-/* CARDS */
+/* ── CARDS ── */
 .card{break-inside:avoid;margin-bottom:8px;border-radius:var(--rad);overflow:hidden;background:var(--s1);cursor:pointer;position:relative;display:block;transition:transform .22s cubic-bezier(.34,1.56,.64,1),box-shadow .22s}
-.card:hover{transform:translateY(-3px);box-shadow:0 8px 24px rgba(0,0,0,.4)}
+.card:hover{transform:translateY(-3px);box-shadow:0 10px 32px rgba(0,0,0,.55)}
 .card img,.card video{width:100%;display:block;transition:transform .5s cubic-bezier(.25,.46,.45,.94)}
 .card:hover img,.card:hover video{transform:scale(1.04)}
-.card-glass{position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.82) 0%,rgba(0,0,0,.1) 45%,transparent 72%);opacity:0;transition:opacity .2s;display:flex;flex-direction:column;justify-content:flex-end;padding:10px;border-radius:var(--rad)}
+
+/* blurred state on every image until user confirms */
+.card img.blurred,.card video.blurred{filter:blur(24px);transform:scale(1.08)!important}
+
+/* hover shield — appears over blurred images */
+.age-shield{
+  position:absolute;inset:0;z-index:20;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;
+  background:rgba(7,7,10,.6);
+  backdrop-filter:blur(2px);-webkit-backdrop-filter:blur(2px);
+  border-radius:var(--rad);
+  opacity:0;pointer-events:none;
+  transition:opacity .18s ease;
+}
+.card:hover .age-shield{opacity:1;pointer-events:all}
+/* hide shield once unblurred */
+.card.unblurred .age-shield{display:none}
+.shield-icon{font-size:26px;line-height:1;filter:drop-shadow(0 2px 8px rgba(0,0,0,.6))}
+.shield-card{
+  background:rgba(17,17,22,.92);
+  border:1px solid var(--b2);
+  border-radius:14px;
+  padding:16px 18px 14px;
+  text-align:center;
+  width:160px;
+  box-shadow:0 8px 32px rgba(0,0,0,.7);
+  display:flex;flex-direction:column;align-items:center;gap:6px;
+}
+.shield-title{font-size:12px;font-weight:700;color:var(--t0);letter-spacing:-.1px;line-height:1.3}
+.shield-sub{font-size:10px;color:var(--t3);line-height:1.4}
+.shield-actions{display:flex;gap:6px;margin-top:4px;width:100%}
+.shield-btn{flex:1;padding:6px 0;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:11px;font-weight:700;cursor:pointer;transition:all .15s;border:none;letter-spacing:-.1px}
+.shield-btn.go{background:var(--acc);color:#fff;box-shadow:0 2px 10px rgba(255,45,85,.4)}.shield-btn.go:hover{background:#e0223e;transform:scale(1.04)}
+.shield-btn.no{background:var(--s4);color:var(--t2);border:1px solid var(--b2)}.shield-btn.no:hover{background:var(--s5);color:var(--t1)}
+
+/* card glass overlay */
+.card-glass{position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.85) 0%,rgba(0,0,0,.06) 44%,transparent 70%);opacity:0;transition:opacity .2s;display:flex;flex-direction:column;justify-content:flex-end;padding:10px;border-radius:var(--rad);z-index:10;pointer-events:none}
 .card:hover .card-glass{opacity:1}
+.card.unblurred:hover .card-glass{pointer-events:all}
 .card-bottom{display:flex;align-items:center;gap:5px;flex-wrap:wrap}
 .card-chip{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:rgba(255,255,255,.85);background:rgba(255,255,255,.1);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.12);padding:2px 7px;border-radius:5px;max-width:90px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .card-chip.vid{background:rgba(255,45,85,.22);border-color:rgba(255,45,85,.38);color:var(--acc2)}
 .card-rating-badge{display:none;align-items:center;gap:3px;font-size:10px;font-family:'DM Mono',monospace;color:var(--gold);background:rgba(245,166,35,.15);border:1px solid rgba(245,166,35,.25);padding:2px 6px;border-radius:5px}
 .card-rating-badge svg{width:9px;height:9px;fill:var(--gold)}
 .card-score{font-size:10px;font-family:'DM Mono',monospace;color:rgba(255,255,255,.35)}
-.card-acts{margin-left:auto;display:flex;gap:4px;flex-shrink:0}
+.card-acts{margin-left:auto;display:flex;gap:4px;flex-shrink:0;pointer-events:all}
 .card-act{width:28px;height:28px;border-radius:8px;background:rgba(8,8,9,.65);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .15s}
-.card-act:hover{background:rgba(255,255,255,.18);border-color:rgba(255,255,255,.2);transform:scale(1.08)}
+.card-act:hover{background:rgba(255,255,255,.18);transform:scale(1.08)}
 .card-act svg{width:12px;height:12px;color:#fff}
 .card-act.faved svg path{fill:var(--acc);stroke:var(--acc)}
+
+/* skeleton */
 .skel{break-inside:avoid;margin-bottom:8px;border-radius:var(--rad);background:var(--s2);position:relative;overflow:hidden}
 .skel::after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,.03),transparent);background-size:200% 100%;animation:sh 2s ease-in-out infinite}
 @keyframes sh{0%{background-position:200% 0}100%{background-position:-200% 0}}
 .sentinel{height:80px;display:flex;align-items:center;justify-content:center}
 .spin{width:18px;height:18px;border:2px solid var(--s4);border-top-color:var(--t4);border-radius:50%;animation:spin .8s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
-
-/* ERROR STATE */
 .err-state{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:60vh;gap:12px;padding:40px;text-align:center}
 .err-icon{width:48px;height:48px;border-radius:14px;background:var(--s2);border:1px solid var(--b1);display:flex;align-items:center;justify-content:center;margin-bottom:8px}
 .err-icon svg{width:22px;height:22px;color:var(--t4)}
-.err-title{font-size:16px;font-weight:600;color:var(--t1);letter-spacing:-.2px}
+.err-title{font-size:16px;font-weight:600;color:var(--t1)}
 .err-sub{font-size:12.5px;color:var(--t3);max-width:360px;line-height:1.6}
-.err-retry{padding:9px 24px;border-radius:9px;background:var(--acc);border:none;color:#fff;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;box-shadow:0 2px 10px rgba(255,45,85,.25)}
+.err-retry{padding:9px 24px;border-radius:9px;background:var(--acc);border:none;color:#fff;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s}
 .err-retry:hover{background:#e0223e;transform:translateY(-1px)}
 
-/* VIEWER */
-.viewer{position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.92);backdrop-filter:blur(14px);display:none;align-items:center;justify-content:center;padding:16px}
+/* ════════════════════════════════════
+   AGE GATE — shown on first ever visit
+   ════════════════════════════════════ */
+.age-gate{position:fixed;inset:0;z-index:999999;background:rgba(0,0,0,.97);backdrop-filter:blur(28px);-webkit-backdrop-filter:blur(28px);display:flex;align-items:center;justify-content:center;padding:20px}
+.age-gate.gone{display:none}
+.age-box{background:var(--s1);border:1px solid var(--b2);border-radius:22px;width:100%;max-width:420px;padding:44px 40px 36px;text-align:center;box-shadow:0 48px 120px rgba(0,0,0,.95);animation:popIn .45s cubic-bezier(.34,1.56,.64,1)}
+@keyframes popIn{from{transform:scale(.86) translateY(24px);opacity:0}to{transform:none;opacity:1}}
+.age-logo{display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:28px}
+.age-logo-icon{width:38px;height:38px;border-radius:11px;background:var(--acc);display:flex;align-items:center;justify-content:center;box-shadow:0 0 24px rgba(255,45,85,.45)}
+.age-logo-icon svg{width:16px;height:16px;color:#fff}
+.age-logo-word{font-size:24px;font-weight:700;letter-spacing:-.6px;color:var(--t0)}
+.age-logo-word em{font-style:normal;color:var(--acc)}
+.age-emoji{font-size:52px;line-height:1;margin-bottom:18px;display:block}
+.age-badge{display:inline-flex;align-items:center;gap:5px;background:var(--accbg);border:1px solid var(--accborder);color:var(--acc);font-size:10.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:4px 12px;border-radius:999px;margin-bottom:16px}
+.age-title{font-size:24px;font-weight:700;color:var(--t0);letter-spacing:-.5px;margin-bottom:12px;line-height:1.2}
+.age-sub{font-size:13px;color:var(--t3);line-height:1.65;margin-bottom:32px;max-width:320px;margin-left:auto;margin-right:auto}
+.age-sub b{color:var(--t2);font-weight:500}
+.age-btn-yes{width:100%;padding:15px;border-radius:13px;background:var(--acc);border:none;color:#fff;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:700;cursor:pointer;transition:all .18s;margin-bottom:9px;box-shadow:0 4px 22px rgba(255,45,85,.45);letter-spacing:-.1px}
+.age-btn-yes:hover{background:#e0223e;transform:translateY(-2px);box-shadow:0 8px 32px rgba(255,45,85,.55)}
+.age-btn-no{width:100%;padding:12px;border-radius:13px;background:transparent;border:1px solid var(--b1);color:var(--t3);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer;transition:all .15s}
+.age-btn-no:hover{background:var(--s3);color:var(--t2);border-color:var(--b2)}
+.age-legal{margin-top:18px;font-size:10px;color:var(--t4);line-height:1.5}
+
+/* ── VIEWER ── */
+.viewer{position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.93);backdrop-filter:blur(16px);display:none;align-items:center;justify-content:center;padding:16px}
 .viewer.open{display:flex}
-.v-shell{display:flex;width:100%;max-width:1360px;height:min(92vh,940px);background:var(--s1);border:1px solid var(--b1);border-radius:16px;overflow:hidden;box-shadow:0 24px 64px rgba(0,0,0,.7)}
-.v-media{flex:1;min-width:0;background:#000;display:flex;align-items:center;justify-content:center;position:relative;border-radius:0}
+.v-shell{display:flex;width:100%;max-width:1380px;height:min(92vh,950px);background:var(--s1);border:1px solid var(--b1);border-radius:16px;overflow:hidden;box-shadow:0 32px 80px rgba(0,0,0,.8)}
+.v-media{flex:1;min-width:0;background:#000;display:flex;align-items:center;justify-content:center;position:relative}
 .v-media img,.v-media video{max-width:100%;max-height:100%;object-fit:contain;display:block}
 .v-media-nav{position:absolute;inset:0;display:flex;align-items:center;justify-content:space-between;padding:0 14px;pointer-events:none}
-.v-arr{width:40px;height:40px;border-radius:50%;background:rgba(8,8,9,.75);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center;cursor:pointer;pointer-events:all;transition:all .15s;opacity:.45}
-.v-arr:hover{opacity:1;transform:scale(1.05)}
+.v-arr{width:40px;height:40px;border-radius:50%;background:rgba(8,8,9,.75);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center;cursor:pointer;pointer-events:all;transition:all .15s;opacity:.4}
+.v-arr:hover{opacity:1;transform:scale(1.06)}
 .v-arr svg{width:18px;height:18px;color:#fff}
 .v-panel{width:300px;flex-shrink:0;border-left:1px solid var(--b0);display:flex;flex-direction:column;background:var(--s0)}
 .v-panel-head{padding:14px 16px 12px;border-bottom:1px solid var(--b0);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
@@ -175,7 +218,7 @@ body{background:var(--bg);color:var(--t1);font-family:'DM Sans',sans-serif;font-
 .v-actions{padding:10px 14px;border-bottom:1px solid var(--b0);display:flex;gap:5px;flex-shrink:0}
 .v-action-btn{flex:1;padding:7px;border-radius:9px;background:var(--s2);border:1px solid var(--b1);font-family:'DM Sans',sans-serif;font-size:11.5px;font-weight:500;color:var(--t2);cursor:pointer;transition:all .14s;display:flex;align-items:center;justify-content:center;gap:5px}
 .v-action-btn:hover{background:var(--s3);color:var(--t1)}
-.v-action-btn.acc{background:var(--accbg);border-color:rgba(255,45,85,.2);color:var(--acc)}
+.v-action-btn.acc{background:var(--accbg);border-color:var(--accborder);color:var(--acc)}
 .v-action-btn svg{width:13px;height:13px}
 .v-panel-tabs{display:flex;padding:10px 14px 0;gap:3px;flex-shrink:0}
 .v-ptab{flex:1;padding:6px;border-radius:8px;font-size:11px;font-weight:500;color:var(--t3);background:transparent;border:none;font-family:'DM Sans',sans-serif;cursor:pointer;transition:all .12s;display:flex;align-items:center;justify-content:center;gap:4px}
@@ -200,7 +243,7 @@ body{background:var(--bg);color:var(--t1);font-family:'DM Sans',sans-serif;font-
 .comment-item{display:flex;flex-direction:column;gap:4px;padding:8px 10px;background:var(--s2);border:1px solid var(--b1);border-radius:9px;transition:background .12s}
 .comment-item:hover{background:var(--s3)}
 .comment-header{display:flex;align-items:center;gap:7px}
-.comment-avatar{width:20px;height:20px;border-radius:50%;background:linear-gradient(135deg,var(--acc),#c01a3a);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#fff;flex-shrink:0}
+.comment-avatar{width:20px;height:20px;border-radius:50%;background:var(--acc);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#fff;flex-shrink:0}
 .comment-uname{font-size:11.5px;font-weight:600;color:var(--t1)}
 .comment-time{font-size:10px;color:var(--t4);margin-left:auto;font-family:'DM Mono',monospace}
 .comment-star{width:10px;height:10px;fill:none;stroke:var(--t4)}
@@ -215,7 +258,7 @@ body{background:var(--bg);color:var(--t1);font-family:'DM Sans',sans-serif;font-
 .v-pos-bar{flex:1;height:2px;background:var(--s4);border-radius:1px;margin:0 10px;overflow:hidden}
 .v-pos-fill{height:100%;background:var(--acc);border-radius:1px;transition:width .2s}
 
-/* AUTH MODAL */
+/* ── AUTH MODAL ── */
 .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.82);backdrop-filter:blur(12px);z-index:99999;display:none;align-items:center;justify-content:center;padding:20px}
 .modal-overlay.open{display:flex}
 .modal-box{background:var(--s1);border:1px solid var(--b2);border-radius:18px;width:100%;max-width:340px;overflow:hidden;position:relative;box-shadow:0 24px 64px rgba(0,0,0,.7)}
@@ -226,7 +269,7 @@ body{background:var(--bg);color:var(--t1);font-family:'DM Sans',sans-serif;font-
 .modal-input{background:var(--s2);border:1px solid var(--b1);border-radius:9px;padding:9px 12px;color:var(--t1);font-family:'DM Sans',sans-serif;font-size:13px;outline:none;width:100%;transition:border-color .15s}
 .modal-input:focus{border-color:var(--b2);background:var(--s3)}
 .modal-input::placeholder{color:var(--t4)}
-.modal-btn{padding:10px;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;border:none;width:100%;letter-spacing:-.1px}
+.modal-btn{padding:10px;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;border:none;width:100%}
 .modal-btn.solid{background:#fff;color:#000}.modal-btn.solid:hover{background:#e8e8e8}
 .modal-btn.ghost{background:var(--s2);color:var(--t2);border:1px solid var(--b1)}.modal-btn.ghost:hover{background:var(--s3);color:var(--t1)}
 .modal-btn:disabled{opacity:.4;cursor:not-allowed}
@@ -237,18 +280,18 @@ body{background:var(--bg);color:var(--t1);font-family:'DM Sans',sans-serif;font-
 .modal-close svg{width:12px;height:12px}
 .modal-switch{text-align:center;font-size:12px;color:var(--t4);cursor:pointer;margin-top:2px}
 .modal-switch span{color:var(--t2);font-weight:500}
-.modal-err{font-size:11px;color:var(--acc);background:var(--accbg);border:1px solid rgba(255,45,85,.2);border-radius:7px;padding:7px 10px;display:none}
+.modal-err{font-size:11px;color:var(--acc);background:var(--accbg);border:1px solid var(--accborder);border-radius:7px;padding:7px 10px;display:none}
 .modal-err.show{display:block}
 
-/* TOASTS */
+/* ── TOASTS ── */
 .toasts{position:fixed;bottom:20px;right:20px;z-index:99998;display:flex;flex-direction:column;gap:6px;pointer-events:none}
-.toast{background:var(--s2);border:1px solid var(--b2);color:var(--t1);font-size:12px;font-weight:500;padding:9px 14px;border-radius:10px;pointer-events:all;animation:toastIn .3s cubic-bezier(.34,1.56,.64,1) both;max-width:280px;box-shadow:0 4px 16px rgba(0,0,0,.4)}
+.toast{background:var(--s2);border:1px solid var(--b2);color:var(--t1);font-size:12px;font-weight:500;padding:9px 14px;border-radius:10px;pointer-events:all;animation:toastIn .3s cubic-bezier(.34,1.56,.64,1) both;max-width:280px;box-shadow:0 4px 20px rgba(0,0,0,.5)}
 .toast.green{border-color:rgba(48,209,88,.3)}.toast.red{border-color:rgba(255,45,85,.3)}
 @keyframes toastIn{from{transform:translateX(110%);opacity:0}to{transform:translateX(0);opacity:1}}
 .toast.out{animation:toastOut .2s ease-in forwards}
 @keyframes toastOut{to{transform:translateX(110%);opacity:0}}
 
-/* RESPONSIVE */
+/* ── RESPONSIVE ── */
 @media(max-width:1300px){body{--cols:4}}
 @media(max-width:1050px){.sidebar{display:none};body{--cols:3}}
 @media(max-width:720px){body{--cols:2};.v-panel{display:none};.tb-sort{display:none};.topbar{padding:0 12px;gap:8px}}
@@ -258,18 +301,31 @@ body{background:var(--bg);color:var(--t1);font-family:'DM Sans',sans-serif;font-
 </head>
 <body>
 
-<div class="proxy-banner checking" id="proxyBanner">
-  <div class="proxy-dot pulse" id="proxyDot"></div>
-  <span id="proxyMsg">Connecting via proxy…</span>
-  <span class="proxy-badge" id="proxyBadge">checking</span>
-  <button class="proxy-dismiss" onclick="document.getElementById('proxyBanner').className='proxy-banner hidden'">✕</button>
+<!-- ════════════ AGE GATE ════════════ -->
+<div class="age-gate" id="ageGate">
+  <div class="age-box">
+    <div class="age-logo">
+      <div class="age-logo-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3"/></svg></div>
+      <span class="age-logo-word">ph<em>X</em></span>
+    </div>
+    <span class="age-emoji">⚠️</span>
+    <div class="age-badge">
+      <svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+      Adults Only — 18+
+    </div>
+    <div class="age-title">Must be 18+<br>to View</div>
+    <div class="age-sub">This site contains <b>explicit adult content</b> intended only for adults aged 18 and over. By continuing you confirm you meet the legal age requirement in your jurisdiction.</div>
+    <button class="age-btn-yes" onclick="ageConfirm()">I am 18 or older — Continue</button>
+    <button class="age-btn-no" onclick="window.location.href='https://www.google.com'">Nevermind, take me back</button>
+    <div class="age-legal">By clicking "Continue" you agree you are of legal age to view adult content in your country or region. Clicking "Nevermind" will redirect you away from this site.</div>
+  </div>
 </div>
 
+<!-- ════════════ SIDEBAR ════════════ -->
 <aside class="sidebar">
   <div class="sb-logo">
     <div class="sb-logo-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3"/></svg></div>
     <span class="sb-wordmark">ph<em>X</em></span>
-    <span class="sb-version">v2</span>
   </div>
   <div class="sb-user-wrap">
     <div class="sb-user">
@@ -297,7 +353,7 @@ body{background:var(--bg);color:var(--t1);font-family:'DM Sans',sans-serif;font-
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>Home
     </div>
     <div class="sb-item" data-tags="rating:explicit order:score" onclick="navItem(this)">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>Top rated
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>Top Rated
     </div>
     <div class="sb-item" data-tags="animated rating:explicit" onclick="navItem(this)">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg>Animated
@@ -312,7 +368,7 @@ body{background:var(--bg);color:var(--t1);font-family:'DM Sans',sans-serif;font-
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Cosplay
     </div>
     <div class="sb-divider"></div>
-    <div class="sb-sec" style="padding:8px 12px 4px">Popular tags</div>
+    <div class="sb-sec" style="padding:8px 12px 4px">Popular Tags</div>
     <div id="sbTags"></div>
   </div>
   <div class="sb-foot">
@@ -321,6 +377,7 @@ body{background:var(--bg);color:var(--t1);font-family:'DM Sans',sans-serif;font-
   </div>
 </aside>
 
+<!-- ════════════ MAIN ════════════ -->
 <div class="main">
   <div class="topbar">
     <span class="tb-heading" id="tbHeading">Home</span>
@@ -359,17 +416,14 @@ body{background:var(--bg);color:var(--t1);font-family:'DM Sans',sans-serif;font-
       </div>
     </div>
     <div class="v-panel">
-      <div class="v-panel-head">
-        <span class="v-panel-title" id="vpTitle">POST INFO</span>
-        <div class="v-close" onclick="closeViewer()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg></div>
-      </div>
+      <div class="v-panel-head"><span class="v-panel-title" id="vpTitle">POST INFO</span><div class="v-close" onclick="closeViewer()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg></div></div>
       <div class="v-meta">
         <div class="v-stat-box"><div class="v-stat-num" id="vs-score">—</div><div class="v-stat-lbl">Score</div></div>
         <div class="v-stat-box"><div class="v-stat-num" id="vs-res">—</div><div class="v-stat-lbl">Size</div></div>
         <div class="v-stat-box"><div class="v-stat-num" id="vs-comments">0</div><div class="v-stat-lbl">Comments</div></div>
       </div>
       <div class="v-rating-section">
-        <div class="v-rating-label">Community rating</div>
+        <div class="v-rating-label">Community Rating</div>
         <div class="stars-row" id="starsRow">
           <div class="star-btn" data-star="1" onclick="submitRating(1)"><svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div>
           <div class="star-btn" data-star="2" onclick="submitRating(2)"><svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div>
@@ -377,30 +431,19 @@ body{background:var(--bg);color:var(--t1);font-family:'DM Sans',sans-serif;font-
           <div class="star-btn" data-star="4" onclick="submitRating(4)"><svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div>
           <div class="star-btn" data-star="5" onclick="submitRating(5)"><svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div>
         </div>
-        <div class="rating-summary">
-          <span class="rating-avg" id="ratingAvg">—</span>
-          <div class="rating-bar-wrap"><div class="rating-bar-fill" id="ratingBar" style="width:0%"></div></div>
-          <span class="rating-count" id="ratingCount">0 ratings</span>
-        </div>
+        <div class="rating-summary"><span class="rating-avg" id="ratingAvg">—</span><div class="rating-bar-wrap"><div class="rating-bar-fill" id="ratingBar" style="width:0%"></div></div><span class="rating-count" id="ratingCount">0 ratings</span></div>
         <div class="rating-my" id="ratingMy" style="display:none">Your rating: <span id="ratingMyVal"></span> ★</div>
       </div>
       <div class="v-actions">
-        <button class="v-action-btn acc" id="vFavBtn" onclick="toggleFav()">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>Save
-        </button>
-        <button class="v-action-btn" onclick="dlCurrent()">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Download
-        </button>
+        <button class="v-action-btn acc" id="vFavBtn" onclick="toggleFav()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>Save</button>
+        <button class="v-action-btn" onclick="dlCurrent()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Download</button>
       </div>
       <div class="v-panel-tabs">
         <button class="v-ptab active" id="ptabTags" onclick="switchPanelTab('tags')">Tags</button>
         <button class="v-ptab" id="ptabComments" onclick="switchPanelTab('comments')">Comments <span class="v-ptab-count" id="commentTabCount">0</span></button>
       </div>
       <div class="v-panel-body" id="vPanelBody"><div class="v-tags" id="vtags"></div></div>
-      <div class="v-pos">
-        <span id="vpos-txt">1 / 1</span>
-        <div class="v-pos-bar"><div class="v-pos-fill" id="vpos-fill"></div></div>
-      </div>
+      <div class="v-pos"><span id="vpos-txt">1 / 1</span><div class="v-pos-bar"><div class="v-pos-fill" id="vpos-fill"></div></div></div>
     </div>
   </div>
 </div>
@@ -409,10 +452,7 @@ body{background:var(--bg);color:var(--t1);font-family:'DM Sans',sans-serif;font-
 <div class="modal-overlay" id="authModal">
   <div class="modal-box">
     <div class="modal-close" onclick="closeAuth()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg></div>
-    <div class="modal-head">
-      <div class="modal-title" id="authTitle">Sign in to phX</div>
-      <div class="modal-sub" id="authSub">Rate posts, comment, save favorites</div>
-    </div>
+    <div class="modal-head"><div class="modal-title" id="authTitle">Sign in to phX</div><div class="modal-sub" id="authSub">Rate posts, comment, save favorites</div></div>
     <div class="modal-body">
       <div class="modal-err" id="authErr"></div>
       <input class="modal-input" id="authUsername" type="text" placeholder="Username" maxlength="20" autocomplete="username">
@@ -434,48 +474,34 @@ body{background:var(--bg);color:var(--t1);font-family:'DM Sans',sans-serif;font-
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
 <script>
+/* ─── Firebase ─── */
 firebase.initializeApp({
   apiKey:"AIzaSyA-68XKNt_PD0I1TJbNcyotT4qMbgHh-tI",
-  authDomain:"ph-science.firebaseapp.com",
-  projectId:"ph-science",
-  storageBucket:"ph-science.firebasestorage.app",
-  messagingSenderId:"883067098385",
+  authDomain:"ph-science.firebaseapp.com",projectId:"ph-science",
+  storageBucket:"ph-science.firebasestorage.app",messagingSenderId:"883067098385",
   appId:"1:883067098385:web:036ccc248ffa4f44cf28b0",
   databaseURL:"https://ph-science-default-rtdb.firebaseio.com"
 });
 const auth=firebase.auth(),db=firebase.database();
 
-/* ═══════════════════════════════════════════════════════════════
-   RULE34 API  +  EMBEDDED CORS BYPASS
-   CORS is a browser restriction — API keys don't fix it.
-   Solution: route every request through a public CORS proxy in JS.
-   No Node, no local server, works on GitHub Pages as-is.
-   ═══════════════════════════════════════════════════════════════ */
-
-// ── Auth credentials (gives higher rate limits)
 const R34_USER_ID = '6090245';
 const R34_API_KEY = '7088fd909e8ffedca36a0be2e5a11655eabd8f42cd07be62d91617cfb853e4132d309ae15a752be201c4c2415414f049d968eb5d6ec3fcc3274d365b0d3f399b';
-const R34_BASE    = 'https://api.rule34.xxx/index.php?page=dapi&s=post&q=index&json=1'
-                  + `&user_id=${R34_USER_ID}&api_key=${R34_API_KEY}`;
+const R34_BASE    = `https://api.rule34.xxx/index.php?page=dapi&s=post&q=index&json=1&user_id=${R34_USER_ID}&api_key=${R34_API_KEY}`;
 
-// ── Public CORS proxies tried in order — first success wins
-// ── All wrap the real URL so the browser thinks it's same-origin
+// Public CORS proxies — tried in order, first success wins for the session
 const CORS_PROXIES = [
   u => `https://corsproxy.io/?${encodeURIComponent(u)}`,
   u => `https://api.allorigins.win/raw?url=${encodeURIComponent(u)}`,
   u => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(u)}`,
   u => `https://corsproxy.org/?${encodeURIComponent(u)}`,
 ];
+let _px = 0, proxyOk = false;
 
-let _px   = 0;      // index of currently working proxy
-let proxyOk = false;
-
-// Build a full signed Rule34 URL (not yet proxied)
 function rawApiUrl(tags, limit, page) {
   return `${R34_BASE}&limit=${limit}&tags=${encodeURIComponent(tags)}&pid=${page}`;
 }
 
-// The main fetch — cycles through CORS_PROXIES automatically
+// Wraps any Rule34 URL through a CORS proxy; auto-advances on failure
 async function proxyFetch(rawUrl, attempt = 0) {
   if (attempt >= CORS_PROXIES.length) throw new Error('All CORS proxies failed');
   _px = attempt;
@@ -483,55 +509,51 @@ async function proxyFetch(rawUrl, attempt = 0) {
     const res  = await fetch(CORS_PROXIES[attempt](rawUrl), { signal: AbortSignal.timeout(9000) });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const text = await res.text();
-    if (!text || text.trimStart()[0] === '<') throw new Error('Got HTML — proxy blocked');
+    if (!text || text.trimStart()[0] === '<') throw new Error('Got HTML back — proxy is blocking');
     return JSON.parse(text);
   } catch (err) {
-    console.warn(`[phX] CORS proxy #${attempt} failed: ${err.message}`);
+    console.warn(`[phX] proxy #${attempt} failed: ${err.message}`);
     return proxyFetch(rawUrl, attempt + 1);
   }
 }
 
-// Startup check — fires one test request, then loads grid
-async function checkProxy() {
-  setBanner('checking', 'Connecting to Rule34 API…', 'wait');
+async function initLoad() {
   try {
     const test = await proxyFetch(rawApiUrl('rating:explicit', 1, 0));
-    if (!Array.isArray(test)) throw new Error('Bad response shape');
+    if (!Array.isArray(test)) throw new Error('Unexpected shape');
     proxyOk = true;
-    const name = ['corsproxy.io','allorigins.win','codetabs.com','corsproxy.org'][_px] ?? `proxy[${_px}]`;
-    setBanner('ok', `Rule34 API connected via ${name}`, 'ok');
-    setTimeout(() => document.getElementById('proxyBanner').className = 'proxy-banner hidden', 2500);
     startLoad('rating:explicit', 'Home');
-  } catch (e) {
+  } catch {
     proxyOk = false;
-    setBanner('err', 'All CORS proxies failed — check your connection', 'err');
-    showErrState();
+    document.getElementById('grid').innerHTML = '';
+    document.getElementById('sentinel').innerHTML = `
+      <div class="err-state">
+        <div class="err-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
+        <div class="err-title">Could not reach Rule34</div>
+        <div class="err-sub">All CORS proxies failed. Check your connection and try again.</div>
+        <button class="err-retry" onclick="initLoad()">Retry</button>
+      </div>`;
   }
 }
 
-function setBanner(state, msg, badge) {
-  const b = document.getElementById('proxyBanner');
-  b.className = `proxy-banner ${state}`;
-  document.getElementById('proxyMsg').textContent = msg;
-  document.getElementById('proxyDot').className = `proxy-dot ${{checking:'pulse',ok:'green',err:'red'}[state]||''}`;
-  const bg = document.getElementById('proxyBadge');
-  bg.className = `proxy-badge ${{ok:'green',err:'red'}[state]||''}`;
-  bg.textContent = badge;
+function ageConfirm() {
+  try { localStorage.setItem('phx_age_ok', Date.now().toString()) } catch {}
+  document.getElementById('ageGate').classList.add('gone');
+  initLoad();
 }
 
-function showErrState() {
-  document.getElementById('grid').innerHTML = '';
-  document.getElementById('sentinel').innerHTML = `
-    <div class="err-state">
-      <div class="err-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-        <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
-        <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
-      </svg></div>
-      <div class="err-title">Could not reach Rule34 API</div>
-      <div class="err-sub">All four CORS proxies are unreachable. This is usually temporary — try again in a moment.</div>
-      <button class="err-retry" onclick="checkProxy()">Retry</button>
-    </div>`;
-}
+(function checkAgeGate() {
+  let ok = false;
+  try {
+    const t = parseInt(localStorage.getItem('phx_age_ok') || '0');
+    ok = t > 0 && (Date.now() - t) < 30 * 86400000; // 30 days
+  } catch {}
+  if (ok) {
+    document.getElementById('ageGate').classList.add('gone');
+    initLoad();
+  }
+  // else: gate stays visible, initLoad() fires after ageConfirm()
+})();
 
 /* ── STATE ── */
 const TAGS_POP=['milf','solo','big_ass','blonde','brunette','big_breasts','creampie','lesbian','hentai','3d','animated','cosplay','futanari','anal','pussy','blowjob','cum'];
@@ -582,7 +604,7 @@ function refreshAuthModal(){
 }
 function showAuthErr(msg){const e=document.getElementById('authErr');e.textContent=msg;e.classList.add('show')}
 async function authSubmit(){
-  const u=document.getElementById('authUsername').value.trim();const p=document.getElementById('authPassword').value;
+  const u=document.getElementById('authUsername').value.trim(),p=document.getElementById('authPassword').value;
   if(!u||!p){showAuthErr('Fill in both fields');return}
   const email=u.toLowerCase().replace(/[^a-z0-9]/g,'')+'@phx.user';
   const btn=document.getElementById('authSubmitBtn');btn.disabled=true;btn.textContent='…';
@@ -646,12 +668,12 @@ function renderComments(postId){
   let h='<div class="comments-wrap">';
   h+=currentUser?`<div class="comment-compose"><textarea class="comment-input" id="commentInput" placeholder="Write a comment…" maxlength="300" oninput="updateCommentChar()"></textarea><div class="comment-post-row"><span class="comment-char" id="commentChar">0 / 300</span><button class="comment-post-btn" id="commentPostBtn" onclick="postComment('${postId}')">Post</button></div></div>`:`<div class="comment-login-prompt" onclick="openAuth()">Sign in to comment →</div>`;
   h+=`<div class="comment-divider"></div>`;
-  if(!comments.length){h+=`<div class="no-comments">No comments yet. Be first!</div>`}
-  else{comments.slice().reverse().forEach(c=>{
+  if(!comments.length)h+=`<div class="no-comments">No comments yet. Be first!</div>`;
+  else comments.slice().reverse().forEach(c=>{
     const mine=currentUser&&c.uid===currentUser.uid;
     const stars=c.rating?Array.from({length:5},(_,i)=>`<svg class="comment-star${i<c.rating?' lit':''}" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>`).join(''):'';
     h+=`<div class="comment-item"><div class="comment-header"><div class="comment-avatar">${(c.username||'?')[0].toUpperCase()}</div><span class="comment-uname">${escHtml(c.username||'anon')}</span>${stars?`<div style="display:flex;gap:2px;margin-left:4px">${stars}</div>`:''}<span class="comment-time">${timeAgo(c.ts)}</span>${mine?`<button class="comment-delete" onclick="deleteComment('${postId}','${c.id}')">delete</button>`:''}</div><div class="comment-text">${escHtml(c.text)}</div></div>`;
-  })}
+  });
   body.innerHTML=h+'</div>';
 }
 function updateCommentChar(){const v=(document.getElementById('commentInput')?.value||'').length;const el=document.getElementById('commentChar');if(el)el.textContent=v+' / 300'}
@@ -689,7 +711,7 @@ function navTag(el,tag){document.querySelectorAll('.sb-item,.sb-tag').forEach(x=
 function doSearch(){const q=document.getElementById('search').value.trim();if(!q)return;document.querySelectorAll('.sb-item,.sb-tag').forEach(x=>x.classList.remove('active'));startLoad(q,q)}
 function setTab(el,f){tabFilter=f;document.querySelectorAll('.tb-tab').forEach(t=>t.classList.remove('active'));el.classList.add('active');document.querySelectorAll('.card').forEach(c=>{const v=c.querySelector('.card-chip.vid');c.style.display=f==='all'?'':(f==='video'?(!v?'none':''):(v?'none':''))})}
 function setSort(el,s){sortMode=s;document.querySelectorAll('.tb-sort-btn').forEach(b=>b.classList.remove('active'));el.classList.add('active');startLoad(currentTags,document.getElementById('tbHeading').textContent)}
-function reload(){proxyOk?startLoad(currentTags,document.getElementById('tbHeading').textContent):checkProxy()}
+function reload(){proxyOk?startLoad(currentTags,document.getElementById('tbHeading').textContent):initLoad()}
 function startLoad(tags,heading){
   if(!proxyOk)return;
   currentTags=tags;pid=0;done=false;posts=[];
@@ -707,8 +729,7 @@ async function fetch_posts(replace=false){
   if(loading||done||!proxyOk)return;loading=true;
   try{
     const p=sortMode==='random'?Math.floor(Math.random()*30):pid;
-    const raw=rawApiUrl(currentTags,42,p);
-    let items=await proxyFetch(raw);
+    let items=await proxyFetch(rawApiUrl(currentTags,42,p));
     if(!Array.isArray(items))items=[];
     items=items.filter(x=>x.preview_url||x.sample_url);
     if(sortMode==='popular')items.sort((a,b)=>(b.score||0)-(a.score||0));
@@ -720,7 +741,7 @@ async function fetch_posts(replace=false){
     document.getElementById('tbCount').textContent=`${posts.length} posts`;
     document.getElementById('sentinel').innerHTML='<div class="spin"></div>';
   }catch(e){
-    clearSkels();console.error(e);
+    clearSkels();
     document.getElementById('sentinel').innerHTML=`<div style="color:var(--t4);font-size:12px;padding:20px;cursor:pointer" onclick="fetch_posts()">Error — click to retry</div>`;
   }
   loading=false;
@@ -737,31 +758,100 @@ function renderBatch(items,offset){
     db.ref(`phx_ratings/${p.id}`).once('value',s=>{const d=s.val()||{};postRatings[p.id]=d;updateCardRatingBadge(p.id,d)});
   });
   g.appendChild(frag);
-  requestAnimationFrame(()=>requestAnimationFrame(()=>{g.querySelectorAll('.card').forEach(c=>{if(c.style.opacity==='0'){c.style.opacity='1';c.style.transform='translateY(0)'}})}));
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{
+    g.querySelectorAll('.card').forEach(c=>{if(c.style.opacity==='0'){c.style.opacity='1';c.style.transform='translateY(0)'}});
+  }));
 }
-function buildCard(post,idx){
-  const c=document.createElement('div');c.className='card';c.dataset.postid=post.id;
-  const isVid=/\.(mp4|webm)/i.test(post.file_url||'');
-  const img=post.preview_url||post.sample_url||'';
-  const tag=(post.tags||'').split(' ').find(t=>t.length>2&&!/^(rating:|tagme|absurdres|highres|lowres)/.test(t))||'';
-  const isFaved=favs.has(post.id.toString());
-  c.innerHTML=`<img src="${img}" loading="lazy" decoding="async" onerror="this.closest('.card')?.remove()">
-<div class="card-glass"><div class="card-bottom">
-${isVid?'<span class="card-chip vid">▶ video</span>':`<span class="card-chip">${escHtml(tag)}</span>`}
-<div class="card-rating-badge"><svg viewBox="0 0 24 24" width="9" height="9"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg><span>0</span></div>
-${post.score>0?`<span class="card-score">↑${post.score}</span>`:''}
-<div class="card-acts">
-<div class="card-act comment-act"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div>
-<div class="card-act fav-act${isFaved?' faved':''}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></div>
-</div></div></div>`;
-  c.addEventListener('click',e=>{if(!e.target.closest('.card-act'))openViewer(post,idx)});
-  c.querySelector('.fav-act').addEventListener('click',e=>{
-    e.stopPropagation();if(!currentUser){toast('Sign in to save','red');openAuth();return}
-    const id=post.id.toString();const on=favs.has(id);if(on)favs.delete(id);else favs.add(id);
-    e.currentTarget.classList.toggle('faved',!on);db.ref(`phx_users/${currentUser.uid}/favs`).set([...favs]);toast(on?'Removed':'⭐ Saved',on?'':'green');
+
+/* ── BUILD CARD ── */
+function buildCard(post, idx) {
+  const c   = document.createElement('div');
+  c.className   = 'card';
+  c.dataset.postid = post.id;
+  const isVid   = /\.(mp4|webm)/i.test(post.file_url || '');
+  const imgSrc  = post.preview_url || post.sample_url || '';
+  const chipTag = (post.tags||'').split(' ').find(t=>t.length>2&&!/^(rating:|tagme|absurdres|highres|lowres)/.test(t))||'';
+  const isFaved = favs.has(post.id.toString());
+
+  c.innerHTML = `
+    <img src="${imgSrc}" loading="lazy" decoding="async" class="blurred"
+         onerror="this.closest('.card')?.remove()">
+
+    <!-- ⚠️ Age shield — fades in on hover, disappears once card.unblurred -->
+    <div class="age-shield">
+      <div class="shield-card">
+        <div class="shield-icon">⚠️</div>
+        <div class="shield-title">Must be 18+ to View</div>
+        <div class="shield-sub">Explicit adult content</div>
+        <div class="shield-actions">
+          <button class="shield-btn go" onclick="unblurCard(event,${post.id},${idx})">Continue</button>
+          <button class="shield-btn no" onclick="dismissShield(event,${post.id})">Nevermind</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="card-glass">
+      <div class="card-bottom">
+        ${isVid?'<span class="card-chip vid">▶ video</span>':`<span class="card-chip">${escHtml(chipTag)}</span>`}
+        <div class="card-rating-badge"><svg viewBox="0 0 24 24" width="9" height="9"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg><span>0</span></div>
+        ${post.score>0?`<span class="card-score">↑${post.score}</span>`:''}
+        <div class="card-acts">
+          <div class="card-act comment-act" title="Comments"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div>
+          <div class="card-act fav-act${isFaved?' faved':''}" title="Save"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></div>
+        </div>
+      </div>
+    </div>`;
+
+  // main card click → open viewer only if already unblurred
+  c.addEventListener('click', e => {
+    if (e.target.closest('.card-act') || e.target.closest('.age-shield')) return;
+    if (!c.classList.contains('unblurred')) return;
+    openViewer(post, idx);
   });
-  c.querySelector('.comment-act').addEventListener('click',e=>{e.stopPropagation();openViewer(post,idx);setTimeout(()=>switchPanelTab('comments'),120)});
+
+  c.querySelector('.fav-act').addEventListener('click', e => {
+    e.stopPropagation();
+    if (!currentUser) { toast('Sign in to save','red'); openAuth(); return; }
+    const id=post.id.toString(),on=favs.has(id);
+    if(on)favs.delete(id);else favs.add(id);
+    e.currentTarget.classList.toggle('faved',!on);
+    db.ref(`phx_users/${currentUser.uid}/favs`).set([...favs]);
+    toast(on?'Removed':'⭐ Saved',on?'':'green');
+  });
+
+  c.querySelector('.comment-act').addEventListener('click', e => {
+    e.stopPropagation();
+    if (!c.classList.contains('unblurred')) return;
+    openViewer(post, idx);
+    setTimeout(()=>switchPanelTab('comments'),120);
+  });
+
   return c;
+}
+
+// "Continue" clicked on a card shield → unblur and open viewer
+function unblurCard(e, postId, idx) {
+  e.stopPropagation();
+  const card = document.querySelector(`.card[data-postid="${postId}"]`);
+  if (!card) return;
+  card.querySelector('img,video')?.classList.remove('blurred');
+  card.classList.add('unblurred'); // hides the shield via CSS
+  // immediately open the viewer too
+  const post = posts.find(p => p.id == postId);
+  if (post) openViewer(post, idx);
+}
+
+// "Nevermind" — just collapse the shield without unblurring
+function dismissShield(e, postId) {
+  e.stopPropagation();
+  // momentarily hide shield by pointer events — it returns next hover
+  const card = document.querySelector(`.card[data-postid="${postId}"]`);
+  if (!card) return;
+  const shield = card.querySelector('.age-shield');
+  if (shield) {
+    shield.style.opacity='0';shield.style.pointerEvents='none';
+    setTimeout(()=>{shield.style.opacity='';shield.style.pointerEvents=''},800);
+  }
 }
 
 /* ── VIEWER ── */
@@ -806,8 +896,6 @@ document.addEventListener('keydown',e=>{
 });
 document.getElementById('viewer').addEventListener('click',e=>{if(e.target===document.getElementById('viewer'))closeViewer()});
 new IntersectionObserver(en=>{if(en[0].isIntersecting&&!loading&&!done)fetch_posts()},{rootMargin:'400px'}).observe(document.getElementById('sentinel'));
-
-checkProxy();
 </script>
 </body>
 </html>
