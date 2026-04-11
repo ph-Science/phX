@@ -496,120 +496,42 @@ body{background:var(--bg);color:var(--t1);font-family:'DM Sans',sans-serif;font-
 //
 //  Leave as null to attempt direct loading (may work in some environments).
 // ══════════════════════════════════════════════════════
-const SELF_HOSTED_PROXY = '/api/proxy?url=';
+// ══════════════════════════════════════════════════════
+//  PROXY — same-origin Vercel serverless function
+//  /api/proxy?url=<encoded>  runs server-side, no CORS.
+//  No probing or fallback needed.
+// ══════════════════════════════════════════════════════
+const PROXY = '/api/proxy?url=';
+const FETCH_TIMEOUT_MS = 15000;
 
-// ── Proxy config ──
-const PROXY_TIMEOUT_MS = 6000;
-
-// Build the proxy list — self-hosted is always tried first when set
-const PROXY_LIST = [
-  SELF_HOSTED_PROXY,                           // [0] your proxy (set above)
-  'https://corsproxy.io/?',                    // [1] public fallback 1
-  'https://api.allorigins.win/raw?url=',       // [2] public fallback 2
-].filter(Boolean); // removes null/undefined slots
-
-let _activeProxy = null; // null = try direct first
-
-function proxyUrl(url) {
+function p(url) {
   if (!url) return url;
-  if (!_activeProxy) return url; // direct attempt
-  return _activeProxy + encodeURIComponent(url);
+  return PROXY + encodeURIComponent(url);
 }
 
-function fetchWithTimeout(url, ms, opts = {}) {
+function fetchWithTimeout(url, ms) {
   const ctrl = new AbortController();
   const timer = setTimeout(() => ctrl.abort(), ms);
-  return fetch(url, { signal: ctrl.signal, ...opts }).finally(() => clearTimeout(timer));
+  return fetch(url, { signal: ctrl.signal }).finally(() => clearTimeout(timer));
 }
 
-// Probe each proxy in order — first success wins
-async function initProxy() {
-  const badge = document.getElementById('proxyBadge');
-  const badgeText = document.getElementById('proxyBadgeText');
-  badge.className = 'proxy-badge';
-  badgeText.textContent = 'checking…';
-
-  const TEST_API = 'https://api.rule34.xxx/index.php?page=dapi&s=post&q=index&json=1&tags=rating%3Aexplicit&limit=1&pid=0';
-
-  // Helper: probe a URL and verify it returns valid JSON array
-  async function probeApi(url) {
-    try {
-      const r = await fetchWithTimeout(url, PROXY_TIMEOUT_MS);
-      if (!r.ok) return false;
-      const text = await r.text();
-      const json = JSON.parse(text);
-      return Array.isArray(json) && json.length > 0;
-    } catch { return false; }
-  }
-
-  // 1. Try direct — works if CORS is open (unlikely for rule34 but free to check)
-  if (await probeApi(TEST_API)) {
-    _activeProxy = null;
-    badge.className = 'proxy-badge ok';
-    badgeText.textContent = 'direct ✓';
-    console.info('[proxy] direct works');
-    return true;
-  }
-
-  // 2. Try each proxy
-  for (let i = 0; i < PROXY_LIST.length; i++) {
-    const base = PROXY_LIST[i];
-    if (!base) continue;
-    const probeUrl = base + encodeURIComponent(TEST_API);
-    if (await probeApi(probeUrl)) {
-      _activeProxy = base;
-      badge.className = 'proxy-badge ok';
-      const name = i === 0 ? 'self-hosted' : base.includes('corsproxy') ? 'corsproxy' : 'allorigins';
-      badgeText.textContent = name + ' ✓';
-      console.info('[proxy] active:', name, base);
-      return true;
-    }
-    console.warn('[proxy] slot', i, 'failed');
-  }
-
-  // 3. All failed
-  _activeProxy = null;
-  badge.className = 'proxy-badge fail';
-  badgeText.textContent = 'no proxy';
-  document.getElementById('proxyBanner').classList.add('show');
-  return false;
+function initProxy() {
+  document.getElementById('proxyBadge').className = 'proxy-badge ok';
+  document.getElementById('proxyBadgeText').textContent = 'vercel ✓';
+  return Promise.resolve(true);
 }
 
-// ── Smart media attachment with multi-strategy fallback ──
-// Strategy order: direct → proxy[0] → proxy[1] → proxy[2] → error UI
-async function attachMedia(el, rawUrl, card) {
+function attachMedia(el, rawUrl) {
   if (!rawUrl) return;
-
-  const strategies = [rawUrl, ...PROXY_LIST.map(p => p + encodeURIComponent(rawUrl))];
-  // deduplicate and skip active proxy (already first in list effectively)
-  const unique = [...new Set(strategies)];
-
-  for (let i = 0; i < unique.length; i++) {
-    const src = unique[i];
-    const ok = await new Promise(resolve => {
-      el.onload = el.oncanplay = () => resolve(true);
-      el.onerror = () => resolve(false);
-      el.src = src;
-    });
-    if (ok) {
-      el.onload = el.oncanplay = el.onerror = null;
-      return;
-    }
-  }
-
-  // All strategies failed — show error UI
-  el.style.display = 'none';
-  const errDiv = document.createElement('div');
-  errDiv.className = 'card-media-err';
-  errDiv.innerHTML = `
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-      <circle cx="12" cy="12" r="10"/>
-      <line x1="12" y1="8" x2="12" y2="12"/>
-      <line x1="12" y1="16" x2="12.01" y2="16"/>
-    </svg>
-    <span class="card-media-err-title">CORS blocked</span>
-    <span class="card-media-err-sub">All proxies failed.<br>Set SELF_HOSTED_PROXY to fix.</span>`;
-  el.parentElement?.appendChild(errDiv);
+  el.onerror = () => {
+    el.onerror = null;
+    el.style.display = 'none';
+    const d = document.createElement('div');
+    d.className = 'card-media-err';
+    d.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg><span class="card-media-err-title">Failed to load</span><span class="card-media-err-sub">Media unavailable.</span>';
+    el.parentElement?.appendChild(d);
+  };
+  el.src = p(rawUrl);
 }
 
 // ══════════════════════════════════════
@@ -712,10 +634,10 @@ async function loadMore() {
   // Rule34 pid = post offset (not page number) — must multiply
   const pid = state.page * PAGE_SIZE;
   const apiUrl = `${API}&tags=${encodeURIComponent(tags)}&limit=${PAGE_SIZE}&pid=${pid}`;
-  const fetchUrl = _activeProxy ? _activeProxy + encodeURIComponent(apiUrl) : apiUrl;
+  const fetchUrl = p(apiUrl);
 
   try {
-    const res = await fetchWithTimeout(fetchUrl, PROXY_TIMEOUT_MS * 2);
+    const res = await fetchWithTimeout(fetchUrl, FETCH_TIMEOUT_MS);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const text = await res.text();
     let data;
@@ -794,7 +716,7 @@ function buildCard(post, idx) {
     const video = document.createElement('video');
     video.className = 'blurred';
     video.loop = true; video.muted = true; video.autoplay = true; video.playsInline = true;
-    attachMedia(video, post.file_url, card);
+    attachMedia(video, post.file_url);
     card.appendChild(video);
   } else {
     const img = document.createElement('img');
@@ -802,7 +724,7 @@ function buildCard(post, idx) {
     img.loading = 'lazy';
     img.alt = '';
     // Use preview_url first (smaller, faster), fall back to sample, then full
-    attachMedia(img, thumbUrl, card);
+    attachMedia(img, thumbUrl);
     card.appendChild(img);
   }
 
@@ -899,12 +821,12 @@ function renderViewer() {
   if (isVideo) {
     const v = document.createElement('video');
     v.controls = true; v.loop = true; v.autoplay = true; v.muted = false;
-    attachMedia(v, post.file_url, vm);
+    attachMedia(v, post.file_url);
     vm.prepend(v);
   } else {
     const img = document.createElement('img');
     img.alt = '';
-    attachMedia(img, post.file_url || post.sample_url, vm);
+    attachMedia(img, post.file_url || post.sample_url);
     vm.prepend(img);
   }
 
@@ -1064,7 +986,7 @@ function openOriginal() {
 function downloadCurrent() {
   const post = getFiltered()[state.viewerIdx];
   if (!post?.file_url) return;
-  const url = _activeProxy ? _activeProxy + encodeURIComponent(post.file_url) : post.file_url;
+  const url = p(post.file_url);
   const a = document.createElement('a');
   a.href = url;
   a.download = `phx_${post.id}`;
