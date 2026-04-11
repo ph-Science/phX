@@ -6,27 +6,21 @@
 <title>phX</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-<!-- Firebase -->
 <script type="module">
   import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
   import { getDatabase, ref, set, get, push, onValue, remove, runTransaction }
     from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js';
 
-  // ════════════════════════════════════════════════
-  //  🔥 PASTE YOUR FIREBASE CONFIG HERE
-  //  Go to: console.firebase.google.com
-  //  → Project Settings → Your apps → SDK setup
-  // ════════════════════════════════════════════════
-  const firebaseConfig = {
-    apiKey: "AIzaSyDhqMq7W3sWNgnl-iLl4NhXtGI5ZZgGe3k",
-    authDomain: "phx-site.firebaseapp.com",
-    databaseURL: "https://phx-site-default-rtdb.firebaseio.com",
-    projectId: "phx-site",
-    storageBucket: "phx-site.firebasestorage.app",
-    messagingSenderId: "570143967768",
-    appId: "1:570143967768:web:ff792855663ad38a85916d",
-    measurementId: "G-VWB296B787"
-  };
+                                                                                                                                                                                                                                                                        const firebaseConfig = {
+                                                                                                                                                                                                                                                                          apiKey: "AIzaSyDhqMq7W3sWNgnl-iLl4NhXtGI5ZZgGe3k",
+                                                                                                                                                                                                                                                                          authDomain: "phx-site.firebaseapp.com",
+                                                                                                                                                                                                                                                                          databaseURL: "https://phx-site-default-rtdb.firebaseio.com",
+                                                                                                                                                                                                                                                                          projectId: "phx-site",
+                                                                                                                                                                                                                                                                          storageBucket: "phx-site.firebasestorage.app",
+                                                                                                                                                                                                                                                                          messagingSenderId: "570143967768",
+                                                                                                                                                                                                                                                                          appId: "1:570143967768:web:ff792855663ad38a85916d",
+                                                                                                                                                                                                                                                                          measurementId: "G-VWB296B787"
+                                                                                                                                                                                                                                                                        };
 
   let db = null;
   let firebaseOk = false;
