@@ -5,16 +5,17 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>phX</title>
 <link rel="icon" href="https://elections.harrisx.com/favicon.ico">
-<!-- PERF: dns-prefetch for all external CDNs -->
 <link rel="dns-prefetch" href="https://api.rule34.xxx">
 <link rel="dns-prefetch" href="https://us.rule34.xxx">
 <link rel="dns-prefetch" href="https://wimg.rule34.xxx">
+<link rel="dns-prefetch" href="https://video.rule34.xxx">
+<link rel="dns-prefetch" href="https://v.rule34.xxx">
+<link rel="preconnect" href="https://us.rule34.xxx" crossorigin>
+<link rel="preconnect" href="https://wimg.rule34.xxx" crossorigin>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<!-- PERF: font loads async, never blocks render -->
 <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" onload="this.onload=null;this.rel='stylesheet'">
 <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap"></noscript>
-<!-- Firebase non-blocking -->
 <script type="module">
   import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
   import { getDatabase, ref, set, get, push, onValue, remove, runTransaction }
@@ -783,6 +784,22 @@ const revealedIds = new Set();
 let currentController = null;
 // PERF: Image preload cache — keeps Image objects alive so browser caches them
 const imgPreloadCache = new Map();
+// PERF: Video preload cache — HTMLVideoElement objects kept alive to warm connections
+const vidPreloadCache = new Map();
+
+// PERF: IntersectionObserver for mobile video warm-up (no hover on touch screens).
+// Fires preload=metadata when a video card scrolls into view with 200px margin.
+window._vidObserver = new IntersectionObserver(entries => {
+  entries.forEach(entry => {
+    if (!entry.isIntersecting) return;
+    const v = entry.target;
+    if (v.dataset.warmed) { window._vidObserver.unobserve(v); return; }
+    v.dataset.warmed = '1';
+    v.preload = 'metadata';
+    if (!v.src || v.src === window.location.href) v.src = v.dataset.src;
+    window._vidObserver.unobserve(v);
+  });
+}, { rootMargin: '300px' });
 
 // ─── SETTINGS ───
 function saveSettings() { localStorage.setItem('phx_settings', JSON.stringify(settings)); }
@@ -898,10 +915,29 @@ function buildCard(post, idx) {
 
   if (isVid) {
     const v = document.createElement('video');
-    v.muted = true; v.loop = true; v.playsInline = true; v.preload = 'none';
+    v.muted = true; v.loop = true; v.playsInline = true;
     if (!isRevealed) v.className = 'blurred';
     if (thumbUrl) v.poster = thumbUrl;
-    if (isRevealed) { v.src = post.file_url; v.autoplay = true; }
+    if (isRevealed) {
+      // Already revealed — buffer immediately
+      v.preload = 'auto';
+      v.src = post.file_url;
+      v.autoplay = true;
+    } else {
+      // PERF: preload=none until hover, then set src + metadata so the browser
+      // opens the TCP connection and fetches the first chunk before user clicks Reveal.
+      v.preload = 'none';
+      v.dataset.src = post.file_url;
+      const warmUp = () => {
+        if (v.dataset.warmed) return;
+        v.dataset.warmed = '1';
+        v.preload = 'metadata';
+        if (!v.src) v.src = post.file_url; // open connection + get headers/keyframe
+      };
+      card.addEventListener('mouseenter', warmUp, { once: true, passive: true });
+      // Mobile: warm on scroll into view
+      if (window._vidObserver) window._vidObserver.observe(v);
+    }
     card.appendChild(v);
   } else {
     const img = document.createElement('img');
@@ -952,7 +988,9 @@ function buildCard(post, idx) {
     card.classList.add('revealed');
     const vid = card.querySelector('video');
     if (vid) {
-      if (!vid.src) vid.src = post.file_url;
+      // PERF: src is already set from hover warm-up — just upgrade preload + play
+      if (!vid.src || vid.src === window.location.href) vid.src = post.file_url;
+      vid.preload = 'auto';
       vid.play().catch(()=>{});
     }
   });
@@ -1036,6 +1074,8 @@ function setTags(tags) {
   ST.tags = tags; ST.page = 0; ST.posts = []; ST.done = false; ST.loading = false;
   revealedIds.clear();
   imgPreloadCache.clear();
+  vidPreloadCache.forEach(v => { v.pause(); v.src = ''; try { v.remove(); } catch(e){} });
+  vidPreloadCache.clear();
   document.getElementById('grid').innerHTML = '';
   document.getElementById('tbCount').textContent = '';
   document.getElementById('sentinel').innerHTML = '<div class="spin"></div>';
@@ -1137,6 +1177,9 @@ function closeViewer() {
   document.removeEventListener('keydown', vKey);
   document.getElementById('vMedia').querySelectorAll('video').forEach(v => { v.pause(); v.src = ''; v.load(); });
   if (typeof ratingUnsub === 'function') { ratingUnsub(); ratingUnsub = null; }
+  // PERF: clean up background preload elements
+  vidPreloadCache.forEach(v => { v.pause(); v.src = ''; v.load(); try { v.remove(); } catch(e){} });
+  vidPreloadCache.clear();
 }
 
 function vKey(e) {
@@ -1166,16 +1209,31 @@ function renderViewer() {
   const loader = document.getElementById('vLoading');
   vm.querySelectorAll('img,video,.media-err').forEach(el => el.remove());
 
-  // PERF: Show loading spinner immediately, hide on load
   loader.classList.add('show');
 
   if (/\.(webm|mp4)$/i.test(post.file_url||'')) {
-    const v = document.createElement('video');
+    // PERF: Check if we have a prewarmed video element in the cache
+    let v = vidPreloadCache.get(post.id);
+    if (v && v.src === post.file_url && v.readyState >= 2) {
+      // Cache hit — video already buffered, swap it in instantly
+      loader.classList.remove('show');
+      vidPreloadCache.delete(post.id);
+    } else {
+      v = document.createElement('video');
+      v.src = post.file_url;
+      v.preload = 'auto';
+      v.onloadeddata = () => loader.classList.remove('show');
+      v.onerror = () => loader.classList.remove('show');
+    }
     v.controls = true; v.loop = true; v.autoplay = true; v.playsInline = true;
-    v.onloadeddata = () => loader.classList.remove('show');
-    v.onerror = () => loader.classList.remove('show');
-    v.src = post.file_url;
+    v.muted = false;
+    v.style.cssText = '';
     vm.prepend(v);
+    v.play().catch(()=>{});
+
+    // PERF: Immediately start buffering the next video in the background
+    scheduleVideoPreload(f, ST.vIdx);
+
   } else {
     const img = document.createElement('img'); img.alt = ''; img.decoding = 'async';
     img.fetchPriority = 'high';
@@ -1188,7 +1246,6 @@ function renderViewer() {
       d.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg><div class="media-err-title">Failed to load</div><div class="media-err-sub">Media unavailable</div>';
       vm.prepend(d);
     };
-    // PERF: Use cached preload if available
     if (imgPreloadCache.has(post.id) && imgPreloadCache.get(post.id).complete) {
       loader.classList.remove('show');
     }
@@ -1217,7 +1274,7 @@ function renderViewer() {
   document.getElementById('vFavBtn').className = 'v-act' + (favs.includes(post.id) ? ' on' : '');
   renderVBody(post);
 
-  // PERF: Preload next/prev viewer images
+  // PERF: Preload next/prev images
   [f[ST.vIdx+1], f[ST.vIdx-1]].forEach(np => {
     if (!np || imgPreloadCache.has(np.id)) return;
     if (!/\.(webm|mp4)$/i.test(np.file_url||'')) {
@@ -1226,6 +1283,33 @@ function renderViewer() {
       pre.src = np.sample_url || np.file_url;
       imgPreloadCache.set(np.id, pre);
     }
+  });
+}
+
+// PERF: Preload the next N videos in the background using hidden video elements.
+// Keeps them in vidPreloadCache so renderViewer can swap them in instantly.
+function scheduleVideoPreload(posts, currentIdx) {
+  const schedule = window.requestIdleCallback || (fn => setTimeout(fn, 100));
+  schedule(() => {
+    // Preload next 2, prev 1
+    [currentIdx + 1, currentIdx + 2, currentIdx - 1].forEach(i => {
+      const np = posts[i];
+      if (!np || !np.file_url || !/\.(webm|mp4)$/i.test(np.file_url)) return;
+      if (vidPreloadCache.has(np.id)) return;
+      if (vidPreloadCache.size >= 4) {
+        // Evict oldest to stay memory-friendly
+        vidPreloadCache.delete(vidPreloadCache.keys().next().value);
+      }
+      const pv = document.createElement('video');
+      pv.src = np.file_url;
+      pv.preload = 'auto';
+      pv.muted = true;
+      pv.style.cssText = 'position:absolute;width:1px;height:1px;opacity:0;pointer-events:none;z-index:-1';
+      // Attach to DOM briefly so browser actually buffers it (detached elements may not buffer)
+      document.body.appendChild(pv);
+      pv.load();
+      vidPreloadCache.set(np.id, pv);
+    });
   });
 }
 
