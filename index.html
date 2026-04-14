@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>phX</title>
-<!-- DNS prefetch + preconnect for speed -->
 <link rel="dns-prefetch" href="https://api.rule34.xxx">
 <link rel="dns-prefetch" href="https://wimg.rule34.xxx">
 <link rel="dns-prefetch" href="https://us.rule34.xxx">
@@ -14,7 +13,7 @@
 <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@300;400;500&display=swap"></noscript>
 <script type="module">
   import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
-  import { getDatabase, ref, set, get, push, onValue, remove } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js';
+  import { getDatabase, ref, set, get, push, onValue, remove, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js';
   const firebaseConfig = {
     apiKey: "AIzaSyDhqMq7W3sWNgnl-iLl4NhXtGI5ZZgGe3k",
     authDomain: "phx-site.firebaseapp.com",
@@ -26,14 +25,13 @@
   };
   let db = null, ok = false;
   try { const app = initializeApp(firebaseConfig); db = getDatabase(app); ok = true; } catch(e){ console.warn('Firebase init failed:', e); }
-  window.__FB = { db, ok, ref, set, get, push, onValue, remove };
+  window.__FB = { db, ok, ref, set, get, push, onValue, remove, serverTimestamp };
   window.__FB_READY = true;
   window.dispatchEvent(new Event('fb-ready'));
 </script>
 <style>
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
 :root{
-  /* Core dark palette — deep purple-black */
   --bg:#04030d;
   --s0:#06050f;
   --s1:#09081a;
@@ -41,47 +39,32 @@
   --s3:#131130;
   --s4:#19163c;
   --s5:#221f4d;
-
-  /* Neon red accent */
   --acc:#ff1a45;
   --acc2:#ff3d62;
   --acc3:#cc1234;
   --accbg:rgba(255,26,69,.08);
   --accborder:rgba(255,26,69,.3);
-
-  /* Purple accent */
   --pur:#8b2aff;
   --pur2:#a04dff;
   --purbg:rgba(139,42,255,.08);
   --purborder:rgba(139,42,255,.28);
-
-  /* Gradient — purple to neon red */
   --grad:linear-gradient(135deg,#8b2aff 0%,#d4145a 50%,#ff1a45 100%);
   --grad2:linear-gradient(90deg,#8b2aff,#ff1a45);
   --grad3:linear-gradient(135deg,rgba(139,42,255,.15),rgba(255,26,69,.15));
-
-  /* Text */
   --t0:#f4f0ff;
   --t1:#ccc8ee;
   --t2:#8880b8;
   --t3:#4a4478;
   --t4:#2e2a52;
-
-  /* Borders/overlays */
   --b0:rgba(139,42,255,.04);
   --b1:rgba(139,42,255,.1);
   --b2:rgba(139,42,255,.18);
   --b3:rgba(139,42,255,.3);
-
-  /* Status colors */
   --green:#00ffb3;
   --gold:#ffd93d;
   --red:#ff1a45;
-
-  /* Glow effects */
   --glow-red:0 0 60px rgba(255,26,69,.12),0 0 120px rgba(255,26,69,.06);
   --glow-pur:0 0 60px rgba(139,42,255,.12);
-
   --sid:258px;
   --rad:10px;
   --gap:6px;
@@ -91,29 +74,9 @@
   --mono:'JetBrains Mono',monospace;
   --trans:.14s cubic-bezier(.4,0,.2,1);
 }
-
 html,body{height:100%;overflow:hidden}
-body{
-  background:var(--bg);
-  color:var(--t1);
-  font-family:var(--font);
-  font-size:13px;
-  display:flex;
-  -webkit-font-smoothing:antialiased;
-  letter-spacing:-.01em;
-}
-
-/* Subtle noise texture overlay */
-body::before{
-  content:'';
-  position:fixed;
-  inset:0;
-  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.025'/%3E%3C/svg%3E");
-  pointer-events:none;
-  z-index:9999999;
-  opacity:.4;
-}
-
+body{background:var(--bg);color:var(--t1);font-family:var(--font);font-size:13px;display:flex;-webkit-font-smoothing:antialiased;letter-spacing:-.01em;}
+body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.025'/%3E%3C/svg%3E");pointer-events:none;z-index:9999999;opacity:.4;}
 ::-webkit-scrollbar{width:3px;height:3px}
 ::-webkit-scrollbar-track{background:transparent}
 ::-webkit-scrollbar-thumb{background:rgba(139,42,255,.25);border-radius:4px}
@@ -136,23 +99,8 @@ body::before{
 /* ── AGE GATE ── */
 .age-gate{position:fixed;inset:0;z-index:99999;background:var(--bg);display:flex;align-items:center;justify-content:center;padding:20px}
 .age-gate.gone{display:none}
-.age-gate::before{
-  content:'';position:absolute;inset:0;
-  background:
-    radial-gradient(ellipse 70% 60% at 20% 30%, rgba(139,42,255,.12) 0%,transparent 60%),
-    radial-gradient(ellipse 60% 60% at 80% 70%, rgba(255,26,69,.1) 0%,transparent 60%);
-}
-.age-box{
-  position:relative;
-  background:var(--s1);
-  border:1px solid var(--b2);
-  border-radius:20px;
-  width:100%;max-width:380px;
-  padding:44px 36px 32px;
-  text-align:center;
-  box-shadow:0 40px 100px rgba(0,0,0,.95),var(--glow-pur);
-  animation:gateIn .4s cubic-bezier(.34,1.4,.64,1);
-}
+.age-gate::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 70% 60% at 20% 30%,rgba(139,42,255,.12) 0%,transparent 60%),radial-gradient(ellipse 60% 60% at 80% 70%,rgba(255,26,69,.1) 0%,transparent 60%);}
+.age-box{position:relative;background:var(--s1);border:1px solid var(--b2);border-radius:20px;width:100%;max-width:380px;padding:44px 36px 32px;text-align:center;box-shadow:0 40px 100px rgba(0,0,0,.95),var(--glow-pur);animation:gateIn .4s cubic-bezier(.34,1.4,.64,1);}
 @keyframes gateIn{from{opacity:0;transform:translateY(24px) scale(.94)}to{opacity:1;transform:none}}
 .gate-topline{position:absolute;top:0;left:0;right:0;height:1px;background:var(--grad2);border-radius:20px 20px 0 0}
 .gate-wordmark{font-size:52px;font-weight:700;color:var(--t0);letter-spacing:-4px;margin-bottom:8px;line-height:1}
@@ -163,13 +111,7 @@ body::before{
 .gate-title{font-size:18px;font-weight:600;color:var(--t0);margin-bottom:8px}
 .gate-sub{font-size:12px;color:var(--t3);line-height:1.75;margin-bottom:28px}
 .gate-sub b{color:var(--t2)}
-.gate-enter{
-  width:100%;padding:14px;border-radius:12px;border:none;cursor:pointer;
-  font-family:var(--font);font-size:14px;font-weight:600;margin-bottom:9px;
-  background:var(--grad);color:#fff;
-  transition:all .2s;
-  box-shadow:0 4px 24px rgba(255,26,69,.35),0 4px 40px rgba(139,42,255,.2);
-}
+.gate-enter{width:100%;padding:14px;border-radius:12px;border:none;cursor:pointer;font-family:var(--font);font-size:14px;font-weight:600;margin-bottom:9px;background:var(--grad);color:#fff;transition:all .2s;box-shadow:0 4px 24px rgba(255,26,69,.35),0 4px 40px rgba(139,42,255,.2);}
 .gate-enter:hover{transform:translateY(-1px);box-shadow:0 8px 32px rgba(255,26,69,.5),0 8px 50px rgba(139,42,255,.3)}
 .gate-leave{width:100%;padding:12px;border-radius:10px;background:transparent;border:1px solid var(--b2);color:var(--t3);font-family:var(--font);font-size:13px;cursor:pointer;transition:all var(--trans)}
 .gate-leave:hover{background:var(--s3);color:var(--t2)}
@@ -180,33 +122,14 @@ body::before{
 .sb-overlay.show{display:block}
 
 /* ── SIDEBAR ── */
-.sidebar{
-  width:var(--sid);flex-shrink:0;
-  background:var(--s0);
-  border-right:1px solid var(--b1);
-  display:flex;flex-direction:column;
-  height:100vh;z-index:200;
-  position:relative;
-  transition:transform .22s cubic-bezier(.4,0,.2,1);
-}
-.sidebar::after{
-  content:'';position:absolute;top:0;right:-1px;bottom:0;width:1px;
-  background:linear-gradient(to bottom,transparent,var(--pur),var(--acc),transparent);
-  opacity:.2;
-}
-
+.sidebar{width:var(--sid);flex-shrink:0;background:var(--s0);border-right:1px solid var(--b1);display:flex;flex-direction:column;height:100vh;z-index:200;position:relative;transition:transform .22s cubic-bezier(.4,0,.2,1);}
+.sidebar::after{content:'';position:absolute;top:0;right:-1px;bottom:0;width:1px;background:linear-gradient(to bottom,transparent,var(--pur),var(--acc),transparent);opacity:.2;}
 .sb-logo{padding:14px 13px 12px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--b1);flex-shrink:0}
-.sb-logo-icon{
-  width:28px;height:28px;border-radius:7px;
-  background:var(--grad);
-  display:flex;align-items:center;justify-content:center;flex-shrink:0;
-  box-shadow:0 2px 16px rgba(255,26,69,.4),0 2px 16px rgba(139,42,255,.3);
-}
+.sb-logo-icon{width:28px;height:28px;border-radius:7px;background:var(--grad);display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 2px 16px rgba(255,26,69,.4),0 2px 16px rgba(139,42,255,.3);}
 .sb-logo-icon svg{width:11px;height:11px;color:#fff}
 .sb-wordmark{font-size:19px;font-weight:700;color:var(--t0);letter-spacing:-1.5px}
 .sb-wordmark em{font-style:normal;background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
 .sb-ver{font-family:var(--mono);font-size:8px;color:var(--t4);background:var(--s3);border:1px solid var(--b1);padding:2px 6px;border-radius:4px;margin-left:auto}
-
 .sb-user{padding:7px;border-bottom:1px solid var(--b1);flex-shrink:0}
 .sb-user-card{display:flex;align-items:center;gap:9px;padding:8px 10px;background:var(--s2);border:1px solid var(--b1);border-radius:9px;cursor:pointer;transition:all var(--trans)}
 .sb-user-card:hover{background:var(--s3);border-color:var(--b2)}
@@ -214,7 +137,6 @@ body::before{
 .sb-uname{font-size:12px;font-weight:500;color:var(--t1);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .sb-online{width:6px;height:6px;border-radius:50%;background:var(--green);flex-shrink:0;box-shadow:0 0 8px var(--green)}
 .owner-crown{font-size:11px;flex-shrink:0}
-
 .sb-search{padding:7px 7px 4px;flex-shrink:0}
 .sb-search-inner{display:flex;align-items:center;gap:6px;background:var(--s2);border:1px solid var(--b1);border-radius:9px;padding:0 10px;transition:all var(--trans)}
 .sb-search-inner:focus-within{border-color:var(--accborder);box-shadow:0 0 0 3px var(--accbg),0 0 0 3px var(--purbg)}
@@ -227,12 +149,7 @@ body::before{
 
 /* ── FILTER SECTION ── */
 .sb-filters{padding:5px 7px 2px;flex-shrink:0}
-.sb-filter-ai-btn{
-  width:100%;display:flex;align-items:center;justify-content:space-between;
-  padding:7px 10px;background:var(--s2);border:1px solid var(--b1);border-radius:8px;
-  cursor:pointer;transition:all var(--trans);font-family:var(--font);font-size:11px;
-  font-weight:600;color:var(--t3);user-select:none;gap:7px;
-}
+.sb-filter-ai-btn{width:100%;display:flex;align-items:center;justify-content:space-between;padding:7px 10px;background:var(--s2);border:1px solid var(--b1);border-radius:8px;cursor:pointer;transition:all var(--trans);font-family:var(--font);font-size:11px;font-weight:600;color:var(--t3);user-select:none;gap:7px;}
 .sb-filter-ai-btn:hover{background:var(--s3);border-color:var(--b2);color:var(--t2)}
 .sb-filter-ai-btn.active{background:var(--purbg);border-color:var(--purborder);color:var(--pur2);box-shadow:0 0 10px rgba(139,42,255,.1)}
 .sb-filter-ai-left{display:flex;align-items:center;gap:7px}
@@ -241,16 +158,23 @@ body::before{
 .sb-filter-ai-pill{font-family:var(--mono);font-size:8px;padding:2px 6px;border-radius:999px;background:var(--s4);color:var(--t4);transition:all var(--trans)}
 .sb-filter-ai-btn.active .sb-filter-ai-pill{background:rgba(139,42,255,.2);color:var(--pur2)}
 
+/* Blacklist dropdown */
 .sb-blacklist-wrap{overflow:hidden;max-height:0;transition:max-height .24s cubic-bezier(.4,0,.2,1),opacity .2s;opacity:0}
-.sb-blacklist-wrap.open{max-height:260px;opacity:1}
+.sb-blacklist-wrap.open{max-height:320px;opacity:1}
 .sb-blacklist-inner{margin-top:4px;background:var(--s1);border:1px solid var(--b2);border-radius:8px;overflow:hidden}
 .sb-blacklist-head{display:flex;align-items:center;justify-content:space-between;padding:7px 10px 6px;border-bottom:1px solid var(--b1)}
 .sb-blacklist-title{font-family:var(--mono);font-size:8px;color:var(--t4);text-transform:uppercase;letter-spacing:.18em;display:flex;align-items:center;gap:5px}
 .sb-blacklist-title svg{width:9px;height:9px}
-.sb-blacklist-toggle-arrow{cursor:pointer;width:18px;height:18px;border-radius:4px;background:var(--s3);border:1px solid var(--b1);display:flex;align-items:center;justify-content:center;transition:all var(--trans)}
-.sb-blacklist-toggle-arrow:hover{background:var(--s4)}
-.sb-blacklist-toggle-arrow svg{width:8px;height:8px;color:var(--t3);transition:transform .2s}
-.sb-blacklist-wrap.open .sb-blacklist-toggle-arrow svg{transform:rotate(180deg)}
+.sb-bl-toggle-row{display:flex;align-items:center;justify-content:space-between;padding:6px 10px 5px;border-bottom:1px solid var(--b1);background:var(--s2);cursor:pointer;user-select:none;transition:background var(--trans)}
+.sb-bl-toggle-row:hover{background:var(--s3)}
+.sb-bl-toggle-label{font-size:10px;color:var(--t3);font-weight:500;display:flex;align-items:center;gap:5px}
+.sb-bl-toggle-label svg{width:9px;height:9px;opacity:.5}
+.sb-bl-toggle-arrow{width:16px;height:16px;border-radius:4px;background:var(--s4);border:1px solid var(--b1);display:flex;align-items:center;justify-content:center;transition:all var(--trans)}
+.sb-bl-toggle-row:hover .sb-bl-toggle-arrow{background:var(--s5)}
+.sb-bl-toggle-arrow svg{width:8px;height:8px;color:var(--t3);transition:transform .2s}
+.sb-bl-toggle-row.open .sb-bl-toggle-arrow svg{transform:rotate(180deg)}
+.sb-bl-items-wrap{overflow:hidden;max-height:0;transition:max-height .2s ease}
+.sb-bl-items-wrap.open{max-height:200px}
 .sb-bl-item{display:flex;align-items:center;gap:8px;padding:7px 10px;border-bottom:1px solid var(--b1);cursor:pointer;transition:background var(--trans);user-select:none}
 .sb-bl-item:last-child{border-bottom:none}
 .sb-bl-item:hover{background:var(--b0)}
@@ -278,7 +202,6 @@ body::before{
 .sb-tag.active{color:var(--pur2);background:var(--purbg)}
 .sb-tag-dot{width:3px;height:3px;border-radius:50%;background:var(--s5);flex-shrink:0;transition:background var(--trans)}
 .sb-tag.active .sb-tag-dot{background:var(--pur)}
-
 .sb-footer{padding:7px;border-top:1px solid var(--b1);flex-shrink:0;display:flex;gap:5px}
 .sb-foot-btn{flex:1;padding:8px;border-radius:8px;font-family:var(--font);font-size:12px;font-weight:600;cursor:pointer;transition:all var(--trans);border:none}
 .btn-ghost{background:var(--s3);color:var(--t2);border:1px solid var(--b1)}
@@ -288,17 +211,8 @@ body::before{
 
 /* ── MAIN ── */
 .main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0}
-
-.topbar{
-  height:var(--topbar);flex-shrink:0;
-  display:flex;align-items:center;gap:5px;padding:0 10px;
-  background:var(--s0);border-bottom:1px solid var(--b1);
-  position:relative;z-index:100;
-}
-.topbar::after{
-  content:'';position:absolute;bottom:0;left:0;right:0;height:1px;
-  background:var(--grad2);opacity:.25;
-}
+.topbar{height:var(--topbar);flex-shrink:0;display:flex;align-items:center;gap:5px;padding:0 10px;background:var(--s0);border-bottom:1px solid var(--b1);position:relative;z-index:100;}
+.topbar::after{content:'';position:absolute;bottom:0;left:0;right:0;height:1px;background:var(--grad2);opacity:.25;}
 .tb-menu{width:28px;height:28px;border-radius:7px;background:var(--s2);border:1px solid var(--b1);display:none;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;transition:all var(--trans)}
 .tb-menu:hover{background:var(--s3)}
 .tb-menu svg{width:12px;height:12px;color:var(--t2)}
@@ -306,22 +220,18 @@ body::before{
 .tb-sep{width:1px;height:13px;background:var(--b2);flex-shrink:0;margin:0 2px}
 .tb-count{font-size:10px;font-family:var(--mono);color:var(--t4);white-space:nowrap;flex-shrink:0}
 .spacer{flex:1}
-
 .tb-tabs{display:flex;background:var(--s2);border:1px solid var(--b1);border-radius:7px;padding:2px;gap:1px}
 .tb-tab{padding:4px 10px;border-radius:5px;font-size:11px;font-weight:500;color:var(--t3);cursor:pointer;transition:all var(--trans);border:none;background:transparent;font-family:var(--font)}
 .tb-tab:hover{color:var(--t2)}
 .tb-tab.active{background:var(--s4);color:var(--t0)}
-
 .tb-cols-btns{display:flex;background:var(--s2);border:1px solid var(--b1);border-radius:7px;overflow:hidden}
 .tb-col-btn{width:26px;height:26px;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:9px;color:var(--t3);cursor:pointer;border:none;background:transparent;transition:all var(--trans)}
 .tb-col-btn:hover{background:var(--s3);color:var(--t2)}
 .tb-col-btn.active{background:var(--s5);color:var(--t0)}
-
 .tb-sort{display:flex;background:var(--s2);border:1px solid var(--b1);border-radius:7px;padding:2px;gap:1px}
 .tb-sort-btn{padding:4px 9px;border-radius:5px;font-size:11px;font-weight:500;color:var(--t3);background:transparent;border:none;font-family:var(--font);cursor:pointer;transition:all var(--trans)}
 .tb-sort-btn:hover{color:var(--t2)}
 .tb-sort-btn.active{background:var(--s4);color:var(--t0)}
-
 .tb-icon{width:28px;height:28px;border-radius:7px;background:var(--s2);border:1px solid var(--b1);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all var(--trans);flex-shrink:0;position:relative}
 .tb-icon:hover{background:var(--s3);border-color:var(--b2)}
 .tb-icon svg{width:12px;height:12px;color:var(--t2)}
@@ -330,30 +240,54 @@ body::before{
 .tb-icon.authed::after{content:'';position:absolute;top:4px;right:4px;width:5px;height:5px;border-radius:50%;background:var(--green);border:1.5px solid var(--s0)}
 .tb-icon.owner-btn svg{color:var(--gold)}
 
+/* Notification badge on bell */
+.tb-notif-badge{position:absolute;top:3px;right:3px;min-width:14px;height:14px;border-radius:999px;background:var(--red);border:1.5px solid var(--s0);font-family:var(--mono);font-size:7px;font-weight:700;color:#fff;display:flex;align-items:center;justify-content:center;padding:0 3px;pointer-events:none;animation:badgePop .3s cubic-bezier(.34,1.56,.64,1)}
+@keyframes badgePop{from{transform:scale(0)}to{transform:scale(1)}}
+
 /* ── CONTENT ── */
 .content{flex:1;overflow-y:auto;overflow-x:hidden;background:var(--bg);scroll-behavior:smooth}
 .grid-wrap{padding:8px}
 .masonry{columns:var(--cols);column-gap:var(--gap)}
 
-/* ── CARDS ── */
+/* ── CARDS — FIX FLICKER ── */
 .card{
   break-inside:avoid;margin-bottom:var(--gap);
   border-radius:var(--rad);overflow:hidden;
   background:var(--s1);cursor:pointer;
   position:relative;display:block;
-  transition:transform .22s cubic-bezier(.34,1.2,.64,1),box-shadow .22s,border-color .22s;
+  /* FIX FLICKER: Use contain + will-change correctly */
+  contain:layout style;
   border:1px solid var(--b1);
+  transition:box-shadow .22s ease,border-color .22s ease;
+  /* NO transform on card itself — causes flicker with image transforms */
 }
 .card:hover{
-  transform:translateY(-3px) scale(1.005);
   box-shadow:0 16px 48px rgba(0,0,0,.85),0 0 0 1px rgba(139,42,255,.25),0 0 20px rgba(139,42,255,.08);
   border-color:rgba(139,42,255,.25);
 }
-.card img,.card video{width:100%;display:block;transition:transform .45s cubic-bezier(.25,.46,.45,.94);will-change:transform}
-.card:hover img,.card:hover video{transform:scale(1.04)}
-.card img.blurred{filter:blur(20px);transform:scale(1.1) !important}
+/* FIX FLICKER: Lift the card with a separate pseudo element approach */
+.card::before{
+  content:'';
+  position:absolute;inset:0;
+  border-radius:var(--rad);
+  z-index:0;
+  pointer-events:none;
+  transform:translateZ(0);
+  transition:transform .22s cubic-bezier(.34,1.2,.64,1);
+}
+.card:hover::before{
+  transform:translateY(-3px) scale(1.005) translateZ(0);
+}
+/* Media inside cards: no hover transform — prevents the flicker */
+.card img,.card video{
+  width:100%;display:block;
+  /* FIX: remove transition from media itself — it was re-triggering on every render */
+  will-change:auto;
+  transform:translateZ(0);
+}
+.card img.blurred{filter:blur(20px);transform:scale(1.1) translateZ(0)}
 .card video.blurred{filter:blur(20px)}
-body.auto-reveal .card img.blurred,body.auto-reveal .card video.blurred{filter:none !important;transform:none !important}
+body.auto-reveal .card img.blurred,body.auto-reveal .card video.blurred{filter:none !important;transform:translateZ(0) !important}
 body.auto-reveal .card .shield{display:none !important}
 .card.bl-hidden{display:none}
 
@@ -417,7 +351,6 @@ body.auto-reveal .card:hover .card-glass{opacity:1;pointer-events:all}
 .viewer.open{display:flex}
 .v-shell{display:flex;width:100%;max-width:1340px;height:min(92vh,920px);background:var(--s1);border:1px solid var(--b2);border-radius:14px;overflow:hidden;box-shadow:0 48px 120px rgba(0,0,0,.98),var(--glow-pur),var(--glow-red);animation:vIn .24s cubic-bezier(.16,1,.3,1)}
 @keyframes vIn{from{opacity:0;scale:.96;translate:0 10px}to{opacity:1;scale:1;translate:0 0}}
-
 .v-media{flex:1;min-width:0;background:#000;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden}
 .v-media img,.v-media video{max-width:100%;max-height:100%;object-fit:contain;display:block}
 .v-media video{width:100%;height:100%}
@@ -430,19 +363,16 @@ body.auto-reveal .card:hover .card-glass{opacity:1;pointer-events:all}
 .v-zoom-hint{position:absolute;bottom:10px;left:50%;transform:translateX(-50%);font-family:var(--mono);font-size:8px;color:rgba(180,170,255,.15);background:rgba(4,3,13,.7);padding:3px 9px;border-radius:4px;pointer-events:none;opacity:0;transition:opacity .4s}
 .v-zoom-hint.show{opacity:1}
 .v-media img.zoomed{object-fit:none;max-width:none;max-height:none;cursor:move}
-
 .v-panel{width:268px;flex-shrink:0;border-left:1px solid var(--b1);display:flex;flex-direction:column;background:var(--s0)}
 .v-panel-head{padding:10px 12px 9px;border-bottom:1px solid var(--b1);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;gap:8px}
 .v-panel-id{font-family:var(--mono);font-size:9px;color:var(--t4);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .v-close{width:24px;height:24px;border-radius:6px;background:var(--s2);border:1px solid var(--b1);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--t3);transition:all var(--trans);flex-shrink:0}
 .v-close:hover{background:var(--accbg);border-color:var(--accborder);color:var(--acc)}
 .v-close svg{width:10px;height:10px}
-
 .v-stats{padding:9px 12px;border-bottom:1px solid var(--b1);display:grid;grid-template-columns:repeat(3,1fr);gap:5px;flex-shrink:0}
 .v-stat{background:var(--s2);border:1px solid var(--b1);border-radius:8px;padding:7px 8px}
 .v-stat-num{font-size:11px;font-weight:600;color:var(--t0);font-family:var(--mono)}
 .v-stat-lbl{font-size:8px;color:var(--t4);margin-top:2px;text-transform:uppercase;letter-spacing:.1em;font-family:var(--mono)}
-
 .v-rating{padding:9px 12px;border-bottom:1px solid var(--b1);flex-shrink:0}
 .v-rating-lbl{font-family:var(--mono);font-size:8px;color:var(--t4);text-transform:uppercase;letter-spacing:.15em;margin-bottom:7px}
 .stars{display:flex;gap:3px;margin-bottom:5px}
@@ -457,25 +387,21 @@ body.auto-reveal .card:hover .card-glass{opacity:1;pointer-events:all}
 .rating-ct{font-size:9px;color:var(--t4);font-family:var(--mono)}
 .my-rating{font-size:10px;color:var(--t3);margin-top:4px}
 .my-rating span{color:var(--gold);font-weight:600}
-
 .v-actions{padding:7px 10px;border-bottom:1px solid var(--b1);display:flex;gap:4px;flex-shrink:0}
 .v-act{flex:1;padding:6px 3px;border-radius:7px;background:var(--s2);border:1px solid var(--b1);font-family:var(--font);font-size:10px;font-weight:500;color:var(--t2);cursor:pointer;transition:all var(--trans);display:flex;align-items:center;justify-content:center;gap:3px}
 .v-act:hover{background:var(--s3);color:var(--t1);border-color:var(--b2)}
 .v-act.on{background:var(--accbg);border-color:var(--accborder);color:var(--acc)}
 .v-act svg{width:10px;height:10px}
-
 .v-tabs{display:flex;padding:6px 10px 0;gap:2px;flex-shrink:0}
 .v-tab{flex:1;padding:5px 3px;border-radius:6px;font-size:10px;font-weight:500;color:var(--t3);background:transparent;border:none;font-family:var(--font);cursor:pointer;transition:all var(--trans);display:flex;align-items:center;justify-content:center;gap:3px}
 .v-tab:hover{color:var(--t2);background:var(--b0)}
 .v-tab.active{background:var(--s3);color:var(--t0)}
 .v-tab-ct{font-size:8px;font-family:var(--mono);background:var(--s4);padding:1px 5px;border-radius:3px}
 .v-tab.active .v-tab-ct{background:var(--s5)}
-
 .v-body{flex:1;overflow-y:auto;padding:8px 10px 12px}
 .v-tags-list{display:flex;flex-wrap:wrap;gap:3px;padding-top:4px}
 .v-tag{padding:3px 9px;background:var(--s2);border:1px solid var(--b1);border-radius:999px;font-size:10px;color:var(--t3);cursor:pointer;transition:all var(--trans);white-space:nowrap}
 .v-tag:hover{background:var(--purbg);color:var(--pur2);border-color:var(--purborder)}
-
 .comments-wrap{display:flex;flex-direction:column;gap:0;padding-top:3px}
 .comment-form{background:var(--s2);border:1px solid var(--b1);border-radius:8px;padding:8px;margin-bottom:8px}
 .comment-form textarea{width:100%;background:transparent;border:none;outline:none;font-family:var(--font);font-size:11.5px;color:var(--t1);resize:none;line-height:1.55;min-height:46px}
@@ -497,7 +423,6 @@ body.auto-reveal .card:hover .card-glass{opacity:1;pointer-events:all}
 .comment-text{font-size:11.5px;color:var(--t2);line-height:1.6}
 .comments-empty{text-align:center;padding:18px;font-size:11px;color:var(--t4);font-family:var(--mono)}
 .comments-loading{text-align:center;padding:14px;display:flex;align-items:center;justify-content:center;gap:7px;font-size:10px;color:var(--t4);font-family:var(--mono)}
-
 .v-foot{padding:6px 10px;border-top:1px solid var(--b1);font-size:10px;font-family:var(--mono);color:var(--t4);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;gap:6px}
 .v-prog-bar{flex:1;height:2px;background:var(--s4);border-radius:1px;overflow:hidden}
 .v-prog-fill{height:100%;background:var(--grad2);border-radius:1px;transition:width .25s}
@@ -577,20 +502,20 @@ body.auto-reveal .card:hover .card-glass{opacity:1;pointer-events:all}
 /* ── OWNER PANEL ── */
 .owner-panel{position:fixed;inset:0;z-index:99990;background:rgba(0,0,0,.94);backdrop-filter:blur(18px);display:none;align-items:center;justify-content:center;padding:20px}
 .owner-panel.open{display:flex}
-.owner-box{background:var(--s1);border:1px solid rgba(245,200,66,.16);border-radius:16px;width:100%;max-width:420px;overflow:hidden;box-shadow:0 30px 80px rgba(0,0,0,.98),0 0 50px rgba(245,200,66,.03)}
-.owner-box::before{content:'';display:block;height:1px;background:linear-gradient(90deg,transparent,var(--gold),#ff8c00,transparent)}
-.owner-head{padding:20px 20px 12px;display:flex;align-items:center;gap:10px}
+.owner-box{background:var(--s1);border:1px solid rgba(245,200,66,.16);border-radius:16px;width:100%;max-width:480px;overflow:hidden;box-shadow:0 30px 80px rgba(0,0,0,.98),0 0 50px rgba(245,200,66,.03);max-height:90vh;display:flex;flex-direction:column}
+.owner-box::before{content:'';display:block;height:1px;background:linear-gradient(90deg,transparent,var(--gold),#ff8c00,transparent);flex-shrink:0}
+.owner-head{padding:20px 20px 12px;display:flex;align-items:center;gap:10px;flex-shrink:0}
 .owner-head-title{font-size:14px;font-weight:700;color:var(--gold)}
 .owner-close{margin-left:auto;width:24px;height:24px;border-radius:6px;background:var(--s3);border:1px solid var(--b1);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--t3);transition:all var(--trans)}
 .owner-close:hover{background:var(--s4);color:var(--t1)}
 .owner-close svg{width:10px;height:10px}
-.owner-body{padding:0 16px 20px;display:flex;flex-direction:column;gap:7px}
+.owner-body{padding:0 16px 20px;display:flex;flex-direction:column;gap:7px;overflow-y:auto}
 .owner-section{font-family:var(--mono);font-size:8px;color:var(--gold);text-transform:uppercase;letter-spacing:.2em;opacity:.6;margin-top:4px}
 .owner-stat-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:5px}
 .owner-stat{background:var(--s2);border:1px solid var(--b1);border-radius:9px;padding:10px 12px}
 .owner-stat-val{font-size:17px;font-weight:700;color:var(--t0);font-family:var(--mono)}
 .owner-stat-lbl{font-size:9px;color:var(--t4);font-family:var(--mono);margin-top:2px}
-.owner-banned-list{background:var(--s2);border:1px solid var(--b1);border-radius:9px;padding:9px;max-height:160px;overflow-y:auto}
+.owner-banned-list{background:var(--s2);border:1px solid var(--b1);border-radius:9px;padding:9px;max-height:140px;overflow-y:auto}
 .owner-ban-item{display:flex;align-items:center;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--b1);font-size:11px}
 .owner-ban-item:last-child{border-bottom:none}
 .owner-ban-id{font-family:var(--mono);font-size:9px;color:var(--t2)}
@@ -598,6 +523,46 @@ body.auto-reveal .card:hover .card-glass{opacity:1;pointer-events:all}
 .owner-unban{font-size:9px;font-family:var(--mono);color:var(--green);cursor:pointer;padding:2px 6px;border-radius:3px;border:1px solid rgba(0,255,179,.16);transition:all var(--trans)}
 .owner-unban:hover{background:rgba(0,255,179,.05)}
 .owner-err{font-size:11px;color:var(--red);font-family:var(--mono);padding:8px;text-align:center;background:rgba(255,26,69,.05);border-radius:6px}
+
+/* Owner notification composer */
+.owner-notif-form{background:var(--s2);border:1px solid rgba(245,200,66,.15);border-radius:9px;padding:12px;display:flex;flex-direction:column;gap:7px}
+.owner-notif-row{display:flex;gap:6px}
+.owner-notif-input{flex:1;background:var(--s3);border:1px solid var(--b2);border-radius:7px;padding:7px 10px;color:var(--t1);font-family:var(--font);font-size:11px;outline:none;transition:all var(--trans)}
+.owner-notif-input:focus{border-color:rgba(245,200,66,.3);box-shadow:0 0 0 3px rgba(245,200,66,.06)}
+.owner-notif-input::placeholder{color:var(--t4)}
+.owner-notif-sel{background:var(--s3);border:1px solid var(--b2);border-radius:7px;padding:7px 10px;color:var(--t1);font-family:var(--font);font-size:11px;outline:none;cursor:pointer}
+.owner-notif-textarea{width:100%;background:var(--s3);border:1px solid var(--b2);border-radius:7px;padding:7px 10px;color:var(--t1);font-family:var(--font);font-size:11px;outline:none;resize:none;min-height:56px;transition:all var(--trans)}
+.owner-notif-textarea:focus{border-color:rgba(245,200,66,.3);box-shadow:0 0 0 3px rgba(245,200,66,.06)}
+.owner-notif-textarea::placeholder{color:var(--t4)}
+.owner-send-btn{padding:8px 16px;border-radius:7px;background:linear-gradient(135deg,var(--gold),#ff8c00);border:none;color:#000;font-family:var(--font);font-size:11px;font-weight:700;cursor:pointer;transition:all var(--trans);white-space:nowrap}
+.owner-send-btn:hover{filter:brightness(1.1);transform:translateY(-1px)}
+.owner-send-btn:disabled{opacity:.4;cursor:not-allowed;transform:none}
+
+/* ── NOTIFICATIONS PANEL ── */
+.notif-panel{position:fixed;right:10px;top:56px;width:300px;max-width:calc(100vw - 20px);max-height:calc(100vh - 70px);background:var(--s1);border:1px solid var(--b2);border-radius:13px;z-index:9000;display:none;flex-direction:column;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.9),var(--glow-pur);animation:panelIn .2s cubic-bezier(.16,1,.3,1)}
+.notif-panel.open{display:flex}
+.notif-panel::before{content:'';display:block;height:1px;background:var(--grad2);flex-shrink:0}
+.notif-head{padding:11px 12px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--b1);flex-shrink:0}
+.notif-head-left{display:flex;align-items:center;gap:7px}
+.notif-title{font-size:12px;font-weight:700;color:var(--t0)}
+.notif-count-badge{background:var(--accbg);border:1px solid var(--accborder);color:var(--acc);font-family:var(--mono);font-size:8px;padding:2px 6px;border-radius:999px}
+.notif-mark-all{font-size:9px;font-family:var(--mono);color:var(--t4);cursor:pointer;padding:3px 7px;border-radius:5px;transition:all var(--trans);border:1px solid var(--b1)}
+.notif-mark-all:hover{color:var(--t2);background:var(--s3)}
+.notif-body{flex:1;overflow-y:auto;padding:5px 6px}
+.notif-empty{padding:24px;text-align:center;font-size:11px;color:var(--t4);font-family:var(--mono)}
+.notif-item{display:flex;gap:9px;padding:9px 10px;border-radius:8px;margin-bottom:3px;cursor:pointer;transition:all var(--trans);border:1px solid transparent;position:relative}
+.notif-item:hover{background:var(--b0);border-color:var(--b1)}
+.notif-item.unread{background:var(--grad3);border-color:rgba(139,42,255,.15)}
+.notif-item.unread::before{content:'';position:absolute;left:0;top:50%;transform:translateY(-50%);width:2px;height:60%;background:var(--grad2);border-radius:1px}
+.notif-icon{width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:14px}
+.notif-icon.type-info{background:rgba(139,42,255,.12);border:1px solid var(--purborder)}
+.notif-icon.type-warn{background:rgba(255,210,61,.08);border:1px solid rgba(255,210,61,.2)}
+.notif-icon.type-alert{background:rgba(255,26,69,.08);border:1px solid var(--accborder)}
+.notif-icon.type-event{background:rgba(0,255,179,.07);border:1px solid rgba(0,255,179,.18)}
+.notif-content{flex:1;min-width:0}
+.notif-item-title{font-size:11px;font-weight:600;color:var(--t0);margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.notif-item-body{font-size:10px;color:var(--t3);line-height:1.55;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.notif-item-time{font-size:8px;font-family:var(--mono);color:var(--t4);margin-top:3px}
 
 /* ── AUTO-REVEAL MODAL ── */
 .ar-wrap{position:fixed;inset:0;z-index:999999;background:rgba(0,0,0,.96);backdrop-filter:blur(22px);display:none;align-items:center;justify-content:center;padding:20px}
@@ -614,7 +579,7 @@ body.auto-reveal .card:hover .card-glass{opacity:1;pointer-events:all}
 .ar-note{margin-top:9px;font-size:9px;color:var(--t4);font-family:var(--mono)}
 
 /* ── HISTORY PANEL ── */
-.hist-panel{position:fixed;right:10px;top:62px;width:210px;background:var(--s1);border:1px solid var(--b2);border-radius:11px;z-index:8888;box-shadow:0 16px 48px rgba(0,0,0,.85);display:none;flex-direction:column;overflow:hidden;animation:panelIn .18s cubic-bezier(.16,1,.3,1)}
+.hist-panel{position:fixed;right:46px;top:62px;width:210px;background:var(--s1);border:1px solid var(--b2);border-radius:11px;z-index:8888;box-shadow:0 16px 48px rgba(0,0,0,.85);display:none;flex-direction:column;overflow:hidden;animation:panelIn .18s cubic-bezier(.16,1,.3,1)}
 .hist-panel.open{display:flex}
 .hist-head{padding:9px 11px;border-bottom:1px solid var(--b1);display:flex;align-items:center;justify-content:space-between}
 .hist-title{font-size:10px;font-weight:600;color:var(--t1)}
@@ -648,11 +613,6 @@ body.hide-scores .score-chip{display:none}
 
 #vidPreloadBin{position:fixed;top:-9999px;left:-9999px;width:1px;height:1px;overflow:hidden;pointer-events:none;z-index:-1}
 
-/* SPEED: image loading indicator */
-.card img[data-loading]{opacity:0;transition:opacity .2s}
-.card img.loaded{opacity:1}
-
-/* ── RESPONSIVE ── */
 @media(min-width:1800px){:root{--cols:6}}
 @media(min-width:2200px){:root{--cols:7}}
 @media(max-width:1450px){:root{--cols:4}}
@@ -675,6 +635,7 @@ body.hide-scores .score-chip{display:none}
   .settings-overlay{padding:0;align-items:flex-end;justify-content:center}
   .settings-panel{width:100%;max-width:100%;border-radius:14px 14px 0 0;max-height:85vh}
   .v-keys{display:none}
+  .notif-panel{right:0;left:0;width:100%;border-radius:14px 14px 0 0;top:auto;bottom:0;max-height:70vh}
 }
 @media(max-width:480px){:root{--cols:2;--gap:5px}.grid-wrap{padding:5px}}
 </style>
@@ -727,7 +688,7 @@ body.hide-scores .score-chip{display:none}
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3"/></svg>
     </div>
     <span class="sb-wordmark">ph<em>X</em></span>
-    <span class="sb-ver">v6.0</span>
+    <span class="sb-ver">v7.0</span>
   </div>
   <div class="sb-user">
     <div class="sb-user-card" id="sbCard" onclick="handleUserCard()">
@@ -748,6 +709,7 @@ body.hide-scores .score-chip{display:none}
     </div>
   </div>
 
+  <!-- FILTER AI BUTTON -->
   <div class="sb-filters">
     <button class="sb-filter-ai-btn" id="filterAiBtn" onclick="toggleFilterAI()">
       <span class="sb-filter-ai-left">
@@ -756,28 +718,32 @@ body.hide-scores .score-chip{display:none}
       </span>
       <span class="sb-filter-ai-pill" id="filterAiPill">OFF</span>
     </button>
+
+    <!-- SHOW BLACKLISTED dropdown -->
     <div class="sb-blacklist-wrap" id="blacklistWrap">
       <div class="sb-blacklist-inner">
-        <div class="sb-blacklist-head">
-          <span class="sb-blacklist-title">
+        <div class="sb-bl-toggle-row" id="blToggleRow" onclick="toggleBlacklistDropdown()">
+          <span class="sb-bl-toggle-label">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
-            Blacklist Filters
+            Show Blacklisted
           </span>
-          <div class="sb-blacklist-toggle-arrow" id="blArrow" onclick="toggleBlacklistDropdown()">
+          <div class="sb-bl-toggle-arrow" id="blArrow">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
           </div>
         </div>
-        <div class="sb-bl-item" id="blScat" onclick="toggleBlItem('scat',this)">
-          <div class="sb-bl-dot"></div>
-          <span class="sb-bl-label">Filter Scat</span>
-          <span class="sb-bl-badge">scat</span>
-          <span class="sb-bl-check">✓</span>
-        </div>
-        <div class="sb-bl-item" id="blPoop" onclick="toggleBlItem('poop',this)">
-          <div class="sb-bl-dot"></div>
-          <span class="sb-bl-label">Filter Poop</span>
-          <span class="sb-bl-badge">poop</span>
-          <span class="sb-bl-check">✓</span>
+        <div class="sb-bl-items-wrap" id="blItemsWrap">
+          <div class="sb-bl-item" id="blScat" onclick="toggleBlItem('scat',this)">
+            <div class="sb-bl-dot"></div>
+            <span class="sb-bl-label">Filter Scat</span>
+            <span class="sb-bl-badge">scat</span>
+            <span class="sb-bl-check">✓</span>
+          </div>
+          <div class="sb-bl-item" id="blLoli" onclick="toggleBlItem('loli',this)">
+            <div class="sb-bl-dot"></div>
+            <span class="sb-bl-label">Filter Loli</span>
+            <span class="sb-bl-badge">loli</span>
+            <span class="sb-bl-check">✓</span>
+          </div>
         </div>
       </div>
     </div>
@@ -857,6 +823,10 @@ body.hide-scores .score-chip{display:none}
     <div class="tb-icon" id="tbHistBtn" onclick="toggleHistory()" title="Search history">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
     </div>
+    <!-- NOTIFICATIONS BELL -->
+    <div class="tb-icon" id="tbNotifBtn" onclick="toggleNotifPanel()" title="Notifications" style="position:relative">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+    </div>
     <div class="tb-icon" id="tbOwnerBtn" style="display:none" onclick="openOwnerPanel()" title="Owner panel">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
     </div>
@@ -879,6 +849,20 @@ body.hide-scores .score-chip{display:none}
     <span class="hist-clear" onclick="clearHistory()">Clear all</span>
   </div>
   <div class="hist-body" id="histBody"></div>
+</div>
+
+<!-- NOTIFICATIONS PANEL -->
+<div class="notif-panel" id="notifPanel">
+  <div class="notif-head">
+    <div class="notif-head-left">
+      <span class="notif-title">Notifications</span>
+      <span class="notif-count-badge" id="notifUnreadCount" style="display:none">0</span>
+    </div>
+    <span class="notif-mark-all" onclick="markAllNotifRead()">Mark all read</span>
+  </div>
+  <div class="notif-body" id="notifBody">
+    <div class="notif-empty">No notifications yet</div>
+  </div>
 </div>
 
 <!-- VIEWER -->
@@ -1037,6 +1021,23 @@ body.hide-scores .score-chip{display:none}
         <div class="owner-stat"><div class="owner-stat-val" id="ownerStatComments">—</div><div class="owner-stat-lbl">Comments</div></div>
         <div class="owner-stat"><div class="owner-stat-val" id="ownerStatRatings">—</div><div class="owner-stat-lbl">Ratings</div></div>
       </div>
+
+      <!-- SEND NOTIFICATION -->
+      <div class="owner-section" style="margin-top:6px">📢 Send Notification</div>
+      <div class="owner-notif-form">
+        <div class="owner-notif-row">
+          <input class="owner-notif-input" id="ownerNotifTitle" placeholder="Title (e.g. Site Update)" maxlength="60">
+          <select class="owner-notif-sel" id="ownerNotifType">
+            <option value="info">ℹ️ Info</option>
+            <option value="warn">⚠️ Warning</option>
+            <option value="alert">🚨 Alert</option>
+            <option value="event">🎉 Event</option>
+          </select>
+        </div>
+        <textarea class="owner-notif-textarea" id="ownerNotifBody" placeholder="Notification message…" maxlength="300" rows="2"></textarea>
+        <button class="owner-send-btn" id="ownerSendBtn" onclick="ownerSendNotification()">📨 Send to All Users</button>
+      </div>
+
       <div class="owner-section" style="margin-top:4px">Active Bans</div>
       <div class="owner-banned-list" id="ownerBanList"><div style="font-size:10px;color:var(--t4);font-family:var(--mono);padding:6px">Loading…</div></div>
       <div style="display:flex;gap:6px;margin-top:4px">
@@ -1076,13 +1077,13 @@ const MAX_HISTORY = 20;
 const OWNER_USERNAME = 'ricky';
 const VID_CACHE_MAX = 8;
 const POPULAR_TAGS = ['solo','animated','hentai','3d','uncensored','big_breasts','ass','cosplay','duo','futanari','monster_girl','yuri','tentacles','gangbang'];
-// Fetch 3 pages ahead instead of 2 for speed
 const PREFETCH_AHEAD = 3;
 const AI_TAGS = ['ai_generated','ai_art','stable_diffusion','midjourney','novelai','nai_diffusion','dall-e','diffusion','ai-generated','artificial_intelligence'];
 const BLACKLIST_DEFS = {
   scat: ['scat','feces','defecation','coprophilia'],
-  poop: ['poop','pooping','shit','shitting'],
+  loli: ['loli','lolicon','lolis'],
 };
+const NOTIF_ICONS = { info:'ℹ️', warn:'⚠️', alert:'🚨', event:'🎉' };
 
 // ── DEVICE ID ──
 function getDeviceId() {
@@ -1100,9 +1101,9 @@ let FB = null;
 if (window.__FB_READY) FB = window.__FB;
 window.addEventListener('fb-ready', () => { FB = window.__FB; });
 
-// ── SPEED: Connection pool / request queue ──
-// Use a fetch pool to avoid overwhelming the proxy
-const FETCH_CONCURRENCY = 4;
+// ── CONCURRENCY FETCH POOL ──
+// Increased concurrency for faster parallel loads
+const FETCH_CONCURRENCY = 8;
 let _fetchActive = 0;
 const _fetchQueue = [];
 function pooledFetch(url, opts) {
@@ -1180,13 +1181,17 @@ function toggleFilterAI() {
   const pill = document.getElementById('filterAiPill');
   btn.classList.toggle('active', filterAI);
   pill.textContent = filterAI ? 'ON' : 'OFF';
+  // Show blacklist wrap when AI filter is on
+  document.getElementById('blacklistWrap').classList.toggle('open', filterAI);
   applyCardFilters();
   toast(filterAI ? 'AI posts hidden' : 'AI posts shown', filterAI ? 'red' : 'green');
 }
+
 let blacklistDropOpen = false;
 function toggleBlacklistDropdown() {
   blacklistDropOpen = !blacklistDropOpen;
-  document.getElementById('blacklistWrap').classList.toggle('open', blacklistDropOpen);
+  document.getElementById('blItemsWrap').classList.toggle('open', blacklistDropOpen);
+  document.getElementById('blToggleRow').classList.toggle('open', blacklistDropOpen);
 }
 function toggleBlItem(key, el) {
   blacklistActive[key] = !blacklistActive[key];
@@ -1195,12 +1200,8 @@ function toggleBlItem(key, el) {
   applyCardFilters();
   toast(blacklistActive[key] ? `Filtering "${key}"` : `Showing "${key}"`, blacklistActive[key] ? 'red' : 'green');
 }
-function ensureBlacklistVisible() {
-  if (!blacklistDropOpen) { blacklistDropOpen = true; document.getElementById('blacklistWrap').classList.add('open'); }
-}
 function applyCardFilters() {
-  const cards = document.querySelectorAll('#grid .card');
-  cards.forEach(card => {
+  document.querySelectorAll('#grid .card').forEach(card => {
     const postId = parseInt(card.dataset.postId);
     const post = ST.posts.find(p => p.id === postId);
     if (!post) return;
@@ -1211,16 +1212,125 @@ function applyCardFilters() {
   });
 }
 function restoreFilterUI() {
-  const btn = document.getElementById('filterAiBtn');
-  const pill = document.getElementById('filterAiPill');
-  btn.classList.toggle('active', filterAI);
-  pill.textContent = filterAI ? 'ON' : 'OFF';
+  document.getElementById('filterAiBtn').classList.toggle('active', filterAI);
+  document.getElementById('filterAiPill').textContent = filterAI ? 'ON' : 'OFF';
+  if (filterAI) document.getElementById('blacklistWrap').classList.add('open');
   Object.entries(blacklistActive).forEach(([key, val]) => {
-    const elId = 'bl' + key.charAt(0).toUpperCase() + key.slice(1);
-    const el = document.getElementById(elId);
+    const idMap = { scat: 'blScat', loli: 'blLoli' };
+    const el = document.getElementById(idMap[key]);
     if (el && val) el.classList.add('toggled');
   });
-  if (Object.values(blacklistActive).some(Boolean)) ensureBlacklistVisible();
+}
+
+// ── NOTIFICATIONS ──
+let notifications = JSON.parse(localStorage.getItem('phx_notifs') || '[]');
+let notifUnsub = null;
+let notifPanelOpen = false;
+
+function getUnreadCount() {
+  return notifications.filter(n => !n.read).length;
+}
+function updateNotifBadge() {
+  const btn = document.getElementById('tbNotifBtn');
+  const existing = btn.querySelector('.tb-notif-badge');
+  const count = getUnreadCount();
+  if (count > 0) {
+    if (existing) { existing.textContent = count > 99 ? '99+' : count; }
+    else {
+      const badge = document.createElement('div');
+      badge.className = 'tb-notif-badge';
+      badge.textContent = count > 99 ? '99+' : count;
+      btn.appendChild(badge);
+    }
+    const ub = document.getElementById('notifUnreadCount');
+    if (ub) { ub.style.display = ''; ub.textContent = count; }
+  } else {
+    if (existing) existing.remove();
+    const ub = document.getElementById('notifUnreadCount');
+    if (ub) ub.style.display = 'none';
+  }
+}
+function renderNotifPanel() {
+  const body = document.getElementById('notifBody');
+  if (!notifications.length) {
+    body.innerHTML = '<div class="notif-empty">No notifications yet 🔔</div>';
+    return;
+  }
+  body.innerHTML = '';
+  // Newest first
+  [...notifications].reverse().forEach(n => {
+    const el = document.createElement('div');
+    el.className = 'notif-item' + (n.read ? '' : ' unread');
+    el.innerHTML = `
+      <div class="notif-icon type-${n.type||'info'}">${NOTIF_ICONS[n.type||'info']||'📌'}</div>
+      <div class="notif-content">
+        <div class="notif-item-title">${esc(n.title||'Notification')}</div>
+        <div class="notif-item-body">${esc(n.body||'')}</div>
+        <div class="notif-item-time">${timeAgo(n.ts)}</div>
+      </div>`;
+    el.onclick = () => { n.read = true; saveNotifs(); updateNotifBadge(); el.classList.remove('unread'); };
+    body.appendChild(el);
+  });
+}
+function saveNotifs() { localStorage.setItem('phx_notifs', JSON.stringify(notifications)); }
+function markAllNotifRead() {
+  notifications.forEach(n => n.read = true);
+  saveNotifs(); updateNotifBadge(); renderNotifPanel();
+}
+function toggleNotifPanel() {
+  notifPanelOpen = !notifPanelOpen;
+  document.getElementById('notifPanel').classList.toggle('open', notifPanelOpen);
+  if (notifPanelOpen) { renderNotifPanel(); markAllNotifRead(); }
+}
+function closeNotifPanel() { notifPanelOpen = false; document.getElementById('notifPanel').classList.remove('open'); }
+
+// Subscribe to Firebase notifications
+function subscribeNotifications() {
+  if (!FB?.ok) return;
+  const { ref, onValue, db } = FB;
+  if (notifUnsub) notifUnsub();
+  notifUnsub = onValue(ref(db, 'notifications'), snap => {
+    if (!snap.exists()) return;
+    const data = snap.val();
+    const serverNotifs = Object.entries(data)
+      .map(([k, v]) => ({ id: k, ...v }))
+      .sort((a, b) => a.ts - b.ts);
+    // Merge: add new ones that aren't in local storage
+    const existingIds = new Set(notifications.map(n => n.id));
+    let added = 0;
+    serverNotifs.forEach(sn => {
+      if (!existingIds.has(sn.id)) {
+        notifications.push({ ...sn, read: false });
+        added++;
+      }
+    });
+    if (added) {
+      saveNotifs();
+      updateNotifBadge();
+      if (added > 0) toast(`📬 ${added} new notification${added>1?'s':''}`, 'green');
+    }
+  });
+}
+
+// Owner: send notification
+async function ownerSendNotification() {
+  if (!FB?.ok) { toast('Firebase not connected', 'red'); return; }
+  const title = document.getElementById('ownerNotifTitle').value.trim();
+  const body = document.getElementById('ownerNotifBody').value.trim();
+  const type = document.getElementById('ownerNotifType').value;
+  if (!title || !body) { toast('Fill in title and message', 'red'); return; }
+  const btn = document.getElementById('ownerSendBtn');
+  btn.disabled = true; btn.textContent = 'Sending…';
+  try {
+    const { ref, push, db } = FB;
+    await push(ref(db, 'notifications'), { title, body, type, ts: Date.now(), by: OWNER_USERNAME });
+    document.getElementById('ownerNotifTitle').value = '';
+    document.getElementById('ownerNotifBody').value = '';
+    toast('Notification sent to all users! 📨', 'green');
+  } catch(e) {
+    toast('Failed to send', 'red');
+  }
+  btn.disabled = false; btn.textContent = '📨 Send to All Users';
 }
 
 // ── STATE ──
@@ -1261,20 +1371,6 @@ function clearVidCache() {
   vidCache.forEach(v => { try { v.pause(); v.src = ''; v.load(); v.remove(); } catch(e) {} });
   vidCache.clear();
 }
-
-// ── LAZY VIDEO OBSERVER ──
-const _vObsSeen = new Set();
-window._vObs = new IntersectionObserver(entries => {
-  entries.forEach(e => {
-    if (!e.isIntersecting) return;
-    const v = e.target;
-    const uid = v.dataset.postId || v.dataset.src || '';
-    if (_vObsSeen.has(uid)) { window._vObs.unobserve(v); return; }
-    _vObsSeen.add(uid); v.preload = 'metadata';
-    if (!v.src || v.src === location.href) v.src = v.dataset.src || '';
-    window._vObs.unobserve(v);
-  });
-}, { rootMargin: '1400px' });
 
 // ── SETTINGS ──
 function saveSettings() { localStorage.setItem('phx_settings', JSON.stringify(settings)); }
@@ -1355,14 +1451,14 @@ function renderHistory() {
   });
 }
 let histOpen = false;
-function toggleHistory() { histOpen = !histOpen; document.getElementById('histPanel').classList.toggle('open', histOpen); if (histOpen) renderHistory(); }
+function toggleHistory() { histOpen = !histOpen; document.getElementById('histPanel').classList.toggle('open', histOpen); if (histOpen) { renderHistory(); closeNotifPanel(); } }
 function closeHistPanel() { histOpen = false; document.getElementById('histPanel').classList.remove('open'); }
 function updateFavCount() {
   const p = document.getElementById('sbFavPill'); if (p) p.textContent = favs.length;
   const s = document.getElementById('spFavCt'); if (s) s.textContent = `${favs.length} saved`;
 }
 
-// ── OWNER PANEL — FIXED ──
+// ── OWNER PANEL ──
 function openOwnerPanel() {
   document.getElementById('ownerPanel').classList.add('open');
   refreshOwnerStats();
@@ -1370,7 +1466,6 @@ function openOwnerPanel() {
 function closeOwnerPanel() { document.getElementById('ownerPanel').classList.remove('open'); }
 
 async function safeFirebaseGet(path) {
-  // Returns { val, exists } — never throws to the caller
   if (!FB?.ok) throw new Error('Firebase not ready');
   const { ref, get, db } = FB;
   const snap = await get(ref(db, path));
@@ -1382,68 +1477,47 @@ async function refreshOwnerStats() {
   const cmtEl = document.getElementById('ownerStatComments');
   const ratEl = document.getElementById('ownerStatRatings');
   const banList = document.getElementById('ownerBanList');
-
   banEl.textContent = '…'; cmtEl.textContent = '…'; ratEl.textContent = '…';
   banList.innerHTML = '<div style="font-size:10px;color:var(--t4);font-family:var(--mono);padding:6px">Loading…</div>';
-
   if (!FB?.ok) {
     banEl.textContent = '?'; cmtEl.textContent = '?'; ratEl.textContent = '?';
-    banList.innerHTML = '<div class="owner-err">Firebase unavailable. Check config.</div>';
+    banList.innerHTML = '<div class="owner-err">Firebase unavailable.</div>';
     return;
   }
-
   try {
-    // Fetch all three paths independently so one missing path doesn't break the others
     const [bansResult, commentsResult, ratingsResult] = await Promise.allSettled([
       safeFirebaseGet('bans'),
       safeFirebaseGet('comments'),
       safeFirebaseGet('ratings'),
     ]);
-
-    // ── BANS ──
     let activeBans = [];
     if (bansResult.status === 'fulfilled' && bansResult.value.exists) {
-      const bansObj = bansResult.value.val;
-      activeBans = Object.values(bansObj).filter(b => b.active !== false && b.until > Date.now());
+      activeBans = Object.values(bansResult.value.val).filter(b => b.active !== false && b.until > Date.now());
     }
     banEl.textContent = activeBans.length;
-
-    // ── COMMENTS ──
     let totalComments = 0;
     if (commentsResult.status === 'fulfilled' && commentsResult.value.exists) {
-      Object.values(commentsResult.value.val).forEach(pc => {
-        if (pc && typeof pc === 'object') totalComments += Object.keys(pc).length;
-      });
+      Object.values(commentsResult.value.val).forEach(pc => { if (pc && typeof pc === 'object') totalComments += Object.keys(pc).length; });
     }
     cmtEl.textContent = totalComments;
-
-    // ── RATINGS ──
     let totalRatings = 0;
     if (ratingsResult.status === 'fulfilled' && ratingsResult.value.exists) {
-      Object.values(ratingsResult.value.val).forEach(pr => {
-        if (pr && typeof pr === 'object') totalRatings += Object.keys(pr).length;
-      });
+      Object.values(ratingsResult.value.val).forEach(pr => { if (pr && typeof pr === 'object') totalRatings += Object.keys(pr).length; });
     }
     ratEl.textContent = totalRatings;
-
-    // ── BAN LIST ──
     if (!activeBans.length) {
       banList.innerHTML = '<div style="font-size:10px;color:var(--t4);font-family:var(--mono);padding:6px;text-align:center">No active bans 🎉</div>';
     } else {
       banList.innerHTML = activeBans.map(b =>
         `<div class="owner-ban-item">
-          <div>
-            <div class="owner-ban-id">${esc((b.device||'?').substring(0,16))}…</div>
-            <div class="owner-ban-reason">${esc(b.reason||'Unknown')}</div>
-          </div>
+          <div><div class="owner-ban-id">${esc((b.device||'?').substring(0,16))}…</div><div class="owner-ban-reason">${esc(b.reason||'Unknown')}</div></div>
           <div class="owner-unban" onclick="ownerUnban('${esc(b.device||'')}')">Unban</div>
         </div>`).join('');
     }
   } catch(e) {
     console.error('Owner stats error:', e);
     banEl.textContent = '!'; cmtEl.textContent = '!'; ratEl.textContent = '!';
-    banList.innerHTML = `<div class="owner-err">Error: ${esc(e.message||'Unknown error')}</div>`;
-    toast('Error loading owner stats — check console','red');
+    banList.innerHTML = `<div class="owner-err">Error: ${esc(e.message||'Unknown')}</div>`;
   }
 }
 
@@ -1453,8 +1527,7 @@ async function ownerUnban(deviceId) {
   try {
     await set(ref(db, `bans/${deviceId}/active`), false);
     await set(ref(db, `bans/${deviceId}/until`), Date.now() - 1000);
-    toast('Unbanned ✓', 'green');
-    refreshOwnerStats();
+    toast('Unbanned ✓', 'green'); refreshOwnerStats();
   } catch(e) { toast('Error unbanning','red'); }
 }
 async function ownerUnbanAll() {
@@ -1464,8 +1537,7 @@ async function ownerUnbanAll() {
     if (!exists || !val) { toast('No bans to clear','green'); return; }
     const { ref, set, db } = FB;
     await Promise.all(Object.keys(val).map(k => set(ref(db, `bans/${k}/active`), false)));
-    toast('All bans lifted ✓', 'green');
-    refreshOwnerStats();
+    toast('All bans lifted ✓', 'green'); refreshOwnerStats();
   } catch(e) { toast('Error','red'); }
 }
 
@@ -1537,7 +1609,7 @@ const ZOOM_SVG = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" str
 function buildCard(post, idx) {
   const card = document.createElement('div');
   card.className = 'card card-new';
-  card.style.animationDelay = Math.min(idx * 5, 80) + 'ms';
+  card.style.animationDelay = Math.min(idx * 4, 60) + 'ms';
   card.dataset.postId = post.id;
 
   const isVid = /\.(webm|mp4)$/i.test(post.file_url||'');
@@ -1548,7 +1620,6 @@ function buildCard(post, idx) {
   const isRevealed = revealedIds.has(post.id) || !!settings.autoReveal;
   if (isRevealed) card.classList.add('revealed');
 
-  // Type badges
   if (isVid) {
     const badge = document.createElement('div');
     badge.className = 'card-type-badge badge-vid';
@@ -1570,13 +1641,13 @@ function buildCard(post, idx) {
 
   if (isVid) {
     const thumbImg = document.createElement('img');
-    thumbImg.loading = idx < 16 ? 'eager' : 'lazy';
+    // FIX FLICKER: Don't use lazy loading for first rows — use eager
+    thumbImg.loading = idx < 20 ? 'eager' : 'lazy';
     thumbImg.alt = ''; thumbImg.decoding = 'async';
     if (!isRevealed) thumbImg.className = 'blurred';
     if (thumb) thumbImg.src = thumb;
-    thumbImg.style.cssText = 'width:100%;display:block;';
+    thumbImg.style.cssText = 'width:100%;display:block;transform:translateZ(0)';
     thumbImg.onerror = () => { thumbImg.style.display = 'none'; };
-    thumbImg.dataset.isThumb = '1';
     card.appendChild(thumbImg);
 
     let vidEl = null;
@@ -1584,38 +1655,49 @@ function buildCard(post, idx) {
       if (vidEl) return vidEl;
       vidEl = document.createElement('video');
       vidEl.muted = true; vidEl.loop = true; vidEl.playsInline = true;
-      vidEl.preload = 'none'; // Don't preload until hover — saves bandwidth
+      // FIX SPEED: Use metadata instead of none so browser knows dimensions faster
+      vidEl.preload = 'metadata';
       vidEl.src = post.file_url;
       vidEl.dataset.postId = String(post.id);
-      vidEl.style.cssText = 'width:100%;display:none;';
+      vidEl.style.cssText = 'width:100%;display:none;transform:translateZ(0)';
       const vl = document.createElement('div');
       vl.className = 'vid-loading';
       vl.innerHTML = '<div class="spin"></div>';
-      vidEl.addEventListener('waiting', () => vl.classList.add('show'));
-      vidEl.addEventListener('playing', () => vl.classList.remove('show'));
-      vidEl.addEventListener('canplay', () => vl.classList.remove('show'));
+      vidEl.addEventListener('waiting', () => vl.classList.add('show'), {passive:true});
+      vidEl.addEventListener('playing', () => vl.classList.remove('show'), {passive:true});
+      vidEl.addEventListener('canplay', () => vl.classList.remove('show'), {passive:true});
       card.insertBefore(vl, card.querySelector('.shield') || null);
       card.insertBefore(vidEl, card.querySelector('.shield') || null);
       return vidEl;
     };
-    const onEnter = () => {
+
+    // FIX FLICKER: Use a stable mouseenter/mouseleave without re-registering
+    let hovered = false;
+    card.addEventListener('mouseenter', () => {
+      hovered = true;
       if (!card.classList.contains('revealed') && !settings.autoReveal) return;
       const v = ensureVideo();
       thumbImg.style.display = 'none'; v.style.display = 'block';
-      v.preload = 'auto'; v.play().catch(() => {});
-    };
-    const onLeave = () => {
+      v.preload = 'auto';
+      v.play().catch(() => {});
+    }, { passive: true });
+    card.addEventListener('mouseleave', () => {
+      hovered = false;
       if (!vidEl) return;
-      vidEl.pause(); vidEl.style.display = 'none'; thumbImg.style.display = 'block';
-    };
-    card.addEventListener('mouseenter', onEnter, { passive: true });
-    card.addEventListener('mouseleave', onLeave, { passive: true });
+      // Small delay to avoid rapid toggle flicker
+      setTimeout(() => {
+        if (!hovered && vidEl) {
+          vidEl.pause(); vidEl.style.display = 'none'; thumbImg.style.display = 'block';
+        }
+      }, 80);
+    }, { passive: true });
   } else {
     const img = document.createElement('img');
-    // SPEED: Use eager loading for first 20 cards, lazy for rest
     img.loading = idx < 20 ? 'eager' : 'lazy';
     img.alt = ''; img.decoding = idx < 12 ? 'sync' : 'async';
     if (idx < 12) img.fetchPriority = 'high';
+    // FIX FLICKER: No CSS transition on the image element itself
+    img.style.cssText = 'width:100%;display:block;transform:translateZ(0)';
     if (!isRevealed) img.className = 'blurred';
     img.onerror = () => {
       if (img.src !== post.sample_url && post.sample_url) { img.src = post.sample_url; return; }
@@ -1635,7 +1717,7 @@ function buildCard(post, idx) {
       <div class="shield-box">
         <div class="shield-icon">🔞</div>
         <div class="shield-title">Adult Content</div>
-        <div class="shield-desc">Hover to reveal</div>
+        <div class="shield-desc">Click to reveal</div>
         <div class="shield-btns">
           <button class="sh-btn yes">Reveal</button>
           <button class="sh-btn no">Skip</button>
@@ -1655,10 +1737,8 @@ function buildCard(post, idx) {
 
   overlayWrap.querySelector('.sh-btn.yes').addEventListener('click', e => {
     e.stopPropagation();
-    revealedIds.add(post.id);
-    card.classList.add('revealed');
+    revealedIds.add(post.id); card.classList.add('revealed');
     card.querySelectorAll('.blurred').forEach(el => el.classList.remove('blurred'));
-    if (isVid) card.dispatchEvent(new Event('mouseenter'));
   });
   overlayWrap.querySelector('.sh-btn.no').addEventListener('click', e => e.stopPropagation());
 
@@ -1679,7 +1759,7 @@ function buildCard(post, idx) {
     }
   });
 
-  // SPEED: Preload adjacent images on hover
+  // Prefetch neighbors on hover
   card.addEventListener('mouseenter', () => {
     const f = getFiltered();
     const myIdx = f.findIndex(p => p.id === post.id);
@@ -1728,20 +1808,23 @@ function setSort(s, el) {
   setTagsR34(ST.tags);
 }
 
-// ── R34 DATA LOADING — SPEED OPTIMIZED ──
+// ── R34 DATA LOADING — SPEED FIXES ──
 let prefetchCache = new Map();
 let prefetchInFlight = new Set();
 let currentTagKey = '';
 
-// SPEED: warm up connection immediately on page load
+// SPEED FIX: warm up browser connections to R34 CDN immediately
 function warmConnections() {
-  // Fire a tiny HEAD/OPTIONS-like request to warm TCP connections
-  ['https://api.rule34.xxx', 'https://wimg.rule34.xxx'].forEach(origin => {
-    try {
-      const img = new Image();
-      img.src = origin + '/favicon.ico?' + Date.now();
-    } catch(e) {}
+  // Use link preconnect dynamically for additional hosts found at runtime
+  ['https://wimg.rule34.xxx', 'https://us.rule34.xxx', 'https://rule34.xxx'].forEach(origin => {
+    const l = document.createElement('link');
+    l.rel = 'preconnect'; l.href = origin; l.crossOrigin = 'anonymous';
+    document.head.appendChild(l);
   });
+  // Fire a tiny probe fetch to open the TCP connection
+  fetch('https://api.rule34.xxx/index.php?page=dapi&s=post&q=index&json=1&tags=rating%3Aexplicit&limit=1', {
+    method: 'GET', cache: 'no-store', signal: AbortSignal.timeout(5000)
+  }).catch(() => {});
 }
 
 function buildTagQuery() {
@@ -1775,31 +1858,34 @@ function setTagsR34(tags) {
 
 function resetGrid() {
   ST.savedView = false;
-  revealedIds.clear(); imgCache.clear(); clearVidCache(); _vObsSeen.clear();
+  revealedIds.clear(); imgCache.clear(); clearVidCache();
   document.getElementById('grid').innerHTML = '';
   document.getElementById('tbCount').textContent = '';
   document.getElementById('sentinel').innerHTML = '<div class="spin"></div>';
   showSkeletons(PAGE_SIZE);
 }
 
-// SPEED: fetch with timeout + retry
-async function fetchWithTimeout(url, signal, timeoutMs = 12000) {
-  const timeoutCtrl = new AbortController();
-  const tid = setTimeout(() => timeoutCtrl.abort(), timeoutMs);
-  // Combine signals
-  const combinedSignal = signal ? anySignal([signal, timeoutCtrl.signal]) : timeoutCtrl.signal;
-  try {
-    const res = await pooledFetch(url, { signal: combinedSignal, cache: 'default' });
-    clearTimeout(tid);
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    return await res.json();
-  } catch(e) {
-    clearTimeout(tid);
-    throw e;
+// SPEED FIX: fetch with retry on network error (handles GitHub Pages CDN issues)
+async function fetchWithRetry(url, signal, retries = 2, timeoutMs = 10000) {
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    const timeoutCtrl = new AbortController();
+    const tid = setTimeout(() => timeoutCtrl.abort(), timeoutMs);
+    const combined = signal ? anySignal([signal, timeoutCtrl.signal]) : timeoutCtrl.signal;
+    try {
+      const res = await pooledFetch(url, { signal: combined, cache: 'default', mode: 'cors' });
+      clearTimeout(tid);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      return await res.json();
+    } catch(e) {
+      clearTimeout(tid);
+      if (e.name === 'AbortError') throw e;
+      if (attempt === retries) throw e;
+      // Wait before retry: 500ms, 1000ms
+      await new Promise(r => setTimeout(r, 500 * (attempt + 1)));
+    }
   }
 }
 
-// Helper to combine multiple abort signals
 function anySignal(signals) {
   const ctrl = new AbortController();
   signals.forEach(s => { if (s) s.addEventListener('abort', () => ctrl.abort(), { once: true }); });
@@ -1808,14 +1894,13 @@ function anySignal(signals) {
 
 async function fetchPage(tags, page, signal) {
   const url = buildUrl(tags, page);
-  const data = await fetchWithTimeout(url, signal);
+  const data = await fetchWithRetry(url, signal);
   return Array.isArray(data) ? data : [];
 }
 
 async function loadMoreR34() {
   if (ST.loading || ST.done || ST.savedView) return;
   ST.loading = true;
-
   const ctrl = new AbortController();
   currentCtrl = ctrl;
   const tagKey = currentTagKey;
@@ -1824,26 +1909,22 @@ async function loadMoreR34() {
 
   try {
     const tags = buildTagQuery();
-    const pageA = ST.page;
-    const pageB = ST.page + 1;
-
-    let postsA = prefetchCache.get(pageA);
-    let postsB = prefetchCache.get(pageB);
-
-    const fetchesNeeded = [];
-    if (!postsA) fetchesNeeded.push(fetchPage(tags, pageA, ctrl.signal).then(r => { postsA = r; prefetchCache.set(pageA, r); }));
-    if (!postsB) fetchesNeeded.push(fetchPage(tags, pageB, ctrl.signal).then(r => { postsB = r; prefetchCache.set(pageB, r); }));
-
-    await Promise.all(fetchesNeeded);
+    // SPEED FIX: Fetch 3 pages at once instead of 2
+    const pagesToFetch = [ST.page, ST.page + 1, ST.page + 2];
+    const results = await Promise.all(pagesToFetch.map(p => {
+      if (prefetchCache.has(p)) return Promise.resolve(prefetchCache.get(p));
+      return fetchPage(tags, p, ctrl.signal).then(r => { prefetchCache.set(p, r); return r; });
+    }));
     if (tagKey !== currentTagKey) return;
 
-    const combined = [...(postsA||[]), ...(postsB||[])].filter(p => {
+    const combined = results.flat().filter(p => {
       if (_seenPostIds.has(p.id)) return false;
       _seenPostIds.add(p.id); return true;
     });
 
-    if ((postsA||[]).length > 0 && (postsB||[]).length > 0) ST.page += 2;
-    else if ((postsA||[]).length > 0) ST.page += 1;
+    // Advance page by how many we actually fetched with results
+    const fetchedPages = results.filter(r => r.length > 0).length;
+    ST.page += Math.max(1, fetchedPages);
 
     if (!combined.length && ST.posts.length === 0) {
       ST.done = true;
@@ -1851,22 +1932,22 @@ async function loadMoreR34() {
       showErr('No results', 'Try different tags.');
       return;
     }
-    if ((postsA||[]).length === 0) {
+    if (results[0].length === 0) {
       ST.done = true; sentinel.innerHTML = '<span>— end of results —</span>';
       if (!combined.length) return;
     }
 
     const prevLen = getFiltered().length;
     ST.posts.push(...combined);
-    if (ST.page <= 2) document.getElementById('grid').innerHTML = '';
+    if (ST.page <= 3) document.getElementById('grid').innerHTML = '';
     appendNewCards(prevLen);
     document.getElementById('tbCount').textContent = `${ST.posts.length.toLocaleString()} posts`;
     sentinel.innerHTML = '<div class="spin"></div>';
 
     requestAnimationFrame(() => applyCardFilters());
 
-    // SPEED: Aggressively prefetch ahead
-    setTimeout(() => prefetchAhead(tags, tagKey), 50);
+    // Prefetch even further ahead
+    setTimeout(() => prefetchAhead(tags, tagKey), 30);
 
   } catch(err) {
     if (err.name === 'AbortError') return;
@@ -1874,7 +1955,8 @@ async function loadMoreR34() {
     sentinel.innerHTML = '<span style="color:var(--red)">Error — retrying…</span>';
     if (!ST.posts.length) showErr('Could not load', 'Check your connection.', true);
     else toast('Failed to load more','red');
-    setTimeout(() => { if (!ST.done && !ST.savedView) { ST.loading = false; loadMoreR34(); } }, 2500);
+    // Auto-retry after 2s
+    setTimeout(() => { if (!ST.done && !ST.savedView) { ST.loading = false; loadMoreR34(); } }, 2000);
     return;
   } finally {
     ST.loading = false;
@@ -1884,7 +1966,6 @@ async function loadMoreR34() {
 
 async function prefetchAhead(tags, tagKey) {
   if (ST.done) return;
-  // Prefetch PREFETCH_AHEAD pages ahead
   const pagesToFetch = [];
   for (let i = 0; i < PREFETCH_AHEAD; i++) {
     const p = ST.page + i;
@@ -1892,7 +1973,8 @@ async function prefetchAhead(tags, tagKey) {
   }
   if (!pagesToFetch.length) return;
   pagesToFetch.forEach(p => prefetchInFlight.add(p));
-  await Promise.all(pagesToFetch.map(async p => {
+  // SPEED FIX: Use Promise.allSettled so one failure doesn't block others
+  await Promise.allSettled(pagesToFetch.map(async p => {
     try {
       const posts = await fetchPage(tags, p, new AbortController().signal);
       if (tagKey === currentTagKey) prefetchCache.set(p, posts);
@@ -2054,7 +2136,7 @@ async function renderViewer() {
 }
 
 function scheduleVidPreload(posts, idx) {
-  const sched = window.requestIdleCallback || (fn => setTimeout(fn, 120));
+  const sched = window.requestIdleCallback || (fn => setTimeout(fn, 100));
   sched(() => {
     [idx+1, idx+2, idx-1].forEach(i => {
       const np = posts[i];
@@ -2289,6 +2371,8 @@ async function submitAuth(){
   btn.disabled=false; btn.textContent=authMode==='login'?'Sign in':'Create account';
   closeAuth(); updateUserUI();
   toast(`Welcome${isOwner?' back, boss':''}, ${u}! ${isOwner?'👑':'🎉'}`, 'green');
+  // Subscribe to notifications after login
+  subscribeNotifications();
 }
 function signOut(){ user=null; localStorage.removeItem('phx_user'); updateUserUI(); toast('Signed out'); }
 function updateUserUI(){
@@ -2321,7 +2405,6 @@ try { const s=localStorage.getItem('phx_user'); if(s){ user=JSON.parse(s); updat
 
 // ── STARTUP ──
 async function startup() {
-  // SPEED: warm connections right away
   warmConnections();
 
   const tagsEl = document.getElementById('sbTags');
@@ -2342,13 +2425,14 @@ async function startup() {
 
   updateFavCount();
   restoreFilterUI();
+  updateNotifBadge();
 
   const localBan = JSON.parse(localStorage.getItem('phx_ban')||'null');
   if (localBan?.active !== false && localBan?.until > Date.now()) { showBanScreen(localBan); return; }
 
   if (ageOk) { document.getElementById('ageGate').classList.add('gone'); applySettings(); loadMoreR34(); }
 
-  // Firebase ban check — non-blocking
+  // Firebase setup — non-blocking
   Promise.race([
     new Promise(resolve => {
       if (window.__FB_READY) { FB = window.__FB; resolve(); }
@@ -2357,6 +2441,7 @@ async function startup() {
     new Promise(resolve => setTimeout(resolve, 3000))
   ]).then(async () => {
     if (!FB?.ok) return;
+    // Ban check
     try {
       const { val, exists } = await safeFirebaseGet(`bans/${DEVICE_ID}`);
       if (exists && val && val.active !== false && val.until > Date.now()) {
@@ -2364,8 +2449,11 @@ async function startup() {
         if (currentCtrl) { currentCtrl.abort(); currentCtrl = null; }
         document.getElementById('ageGate').classList.add('gone');
         showBanScreen(val);
+        return;
       }
     } catch(e) { console.warn('Ban check failed:', e); }
+    // Subscribe to notifications
+    subscribeNotifications();
   });
 }
 
@@ -2374,14 +2462,20 @@ function ageConfirm() {
   document.getElementById('ageGate').classList.add('gone');
   _seenPostIds.clear();
   applySettings(); loadMoreR34();
+  // Subscribe notifications after age confirm too
+  Promise.race([
+    new Promise(r => { if (window.__FB_READY) { FB = window.__FB; r(); } else window.addEventListener('fb-ready', () => { FB = window.__FB; r(); }, {once:true}); }),
+    new Promise(r => setTimeout(r, 3000))
+  ]).then(() => { if (FB?.ok) subscribeNotifications(); });
 }
 
 startup();
 
 // ── INFINITE SCROLL ──
+// FIX: Use larger rootMargin for earlier loading trigger
 new IntersectionObserver(entries => {
   if (entries[0].isIntersecting && ageOk && !ST.savedView) loadMoreR34();
-}, { rootMargin: '2400px' }).observe(document.getElementById('sentinel'));
+}, { rootMargin: '3000px' }).observe(document.getElementById('sentinel'));
 
 // ── SCROLL ──
 document.getElementById('content').addEventListener('scroll', function() {
@@ -2395,6 +2489,8 @@ document.getElementById('ownerPanel').addEventListener('click', e => { if (e.tar
 document.addEventListener('click', e => {
   const hp=document.getElementById('histPanel'), hb=document.getElementById('tbHistBtn');
   if (histOpen && !hp.contains(e.target) && !hb.contains(e.target)) closeHistPanel();
+  const np=document.getElementById('notifPanel'), nb=document.getElementById('tbNotifBtn');
+  if (notifPanelOpen && !np.contains(e.target) && !nb.contains(e.target)) closeNotifPanel();
 });
 
 // ── KEYBOARD ──
@@ -2405,6 +2501,7 @@ document.addEventListener('keydown', e => {
     if (document.getElementById('arModal').classList.contains('open')) cancelAR();
     if (document.getElementById('ownerPanel').classList.contains('open')) closeOwnerPanel();
     if (histOpen) closeHistPanel();
+    if (notifPanelOpen) closeNotifPanel();
   }
   if (e.key==='/' && !e.target.matches('input,textarea,select') && !document.getElementById('viewer').classList.contains('open')) {
     e.preventDefault(); document.getElementById('searchInput').focus();
