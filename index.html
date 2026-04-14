@@ -63,6 +63,11 @@
   --topbar:54px;
   --font:'DM Sans',sans-serif;
   --mono:'DM Mono',monospace;
+  /* Invincible gradient */
+  --inv1:#ff1a45;
+  --inv2:#ff6b00;
+  --inv3:#8b2aff;
+  --grad:linear-gradient(135deg,var(--inv1) 0%,var(--inv2) 50%,var(--inv3) 100%);
 }
 html,body{height:100%;overflow:hidden}
 body{background:var(--bg);color:var(--t1);font-family:var(--font);font-size:13px;display:flex;-webkit-font-smoothing:antialiased}
@@ -237,7 +242,7 @@ body.auto-reveal .card .shield{display:none !important}
 .badge-gif{background:rgba(100,60,200,.8);color:#fff}
 
 /* Tag preview pill on card hover */
-.card-tags-preview{position:absolute;bottom:0;left:0;right:0;z-index:11;padding:6px 8px;display:flex;gap:3px;flex-wrap:nowrap;overflow:hidden;pointer-events:none;opacity:0;transition:opacity .18s;transform:translateY(4px);transition:opacity .18s,transform .18s}
+.card-tags-preview{position:absolute;bottom:0;left:0;right:0;z-index:11;padding:6px 8px;display:flex;gap:3px;flex-wrap:nowrap;overflow:hidden;pointer-events:none;opacity:0;transform:translateY(4px);transition:opacity .18s,transform .18s}
 .card:hover .card-tags-preview{opacity:1;transform:translateY(0)}
 .ctp-tag{background:rgba(8,8,22,.8);border:1px solid rgba(255,255,255,.07);backdrop-filter:blur(8px);color:rgba(200,200,255,.7);font-size:9px;padding:2px 7px;border-radius:999px;white-space:nowrap;font-family:var(--mono)}
 
@@ -485,6 +490,17 @@ body.auto-reveal .card:hover .card-glass{opacity:1;pointer-events:all}
 .sp-danger .sp-row-label{color:var(--red)}
 .sp-danger .sp-row-desc{color:rgba(232,25,60,.5)}
 
+/* ── INVINCIBLE ROW — logo version ── */
+#invincibleRow{cursor:default;overflow:hidden;position:relative}
+#invincibleRow::before{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(135deg,rgba(255,26,69,.06) 0%,rgba(255,107,0,.06) 50%,rgba(139,42,255,.06) 100%);
+  border-radius:9px;pointer-events:none
+}
+.inv-logo-img{width:44px;height:44px;object-fit:contain;flex-shrink:0;border-radius:6px;filter:drop-shadow(0 2px 8px rgba(255,26,69,.5))}
+.inv-label-text{font-size:11.5px;font-weight:700;color:var(--t0);letter-spacing:.04em}
+.inv-label-sub{font-size:9.5px;color:var(--t4);margin-top:1px}
+
 /* ── OWNER PANEL ── */
 .owner-panel{position:fixed;inset:0;z-index:99990;background:rgba(0,0,0,.94);backdrop-filter:blur(18px);display:none;align-items:center;justify-content:center;padding:20px}
 .owner-panel.open{display:flex}
@@ -509,7 +525,7 @@ body.auto-reveal .card:hover .card-glass{opacity:1;pointer-events:all}
 .owner-unban{font-size:9px;font-family:var(--mono);color:var(--green);cursor:pointer;padding:2px 7px;border-radius:4px;border:1px solid rgba(0,229,160,.2);transition:all .11s}
 .owner-unban:hover{background:rgba(0,229,160,.07)}
 
-/* Notification Composer — inside owner panel */
+/* Notification Composer */
 .notif-compose{background:var(--s2);border:1px solid var(--b1);border-radius:10px;padding:12px;display:flex;flex-direction:column;gap:7px}
 .notif-compose-row{display:flex;gap:6px}
 .notif-compose input,.notif-compose textarea,.notif-compose select{background:var(--s3);border:1px solid var(--b1);border-radius:8px;padding:8px 10px;color:var(--t1);font-family:var(--font);font-size:11.5px;outline:none;width:100%;transition:border-color .14s}
@@ -597,64 +613,86 @@ body.hide-scores .score-chip{display:none}
 }
 @media(max-width:480px){:root{--cols:2;--gap:5px}.grid-wrap{padding:5px}}
 
-/* ══════════════════════════════════
-   INVINCIBLE MODE 💥
-   On hover: instant violent wobble
-   that slowly calms to still.
-══════════════════════════════════ */
+/* ══════════════════════════════════════════════
+   INVINCIBLE MODE 💥 — ULTRA VIOLENT WOBBLE
+   On hover: explosive violent shake that slowly
+   calms to stillness. Bigger, meaner, weirder.
+══════════════════════════════════════════════ */
+
+/* CARD — full violent launch then damped settle */
 @keyframes invWobbleCard {
-  0%    { transform: rotate(0deg)   scale(1)     translateZ(0) }
-  1.5%  { transform: rotate(-22deg) scale(1.11)  translateZ(0) }
-  3%    { transform: rotate(26deg)  scale(1.14)  translateZ(0) }
-  4.5%  { transform: rotate(-22deg) scale(1.12)  translateZ(0) }
-  6%    { transform: rotate(20deg)  scale(1.11)  translateZ(0) }
-  8%    { transform: rotate(-17deg) scale(1.09)  translateZ(0) }
-  10%   { transform: rotate(15deg)  scale(1.08)  translateZ(0) }
-  12.5% { transform: rotate(-12deg) scale(1.07)  translateZ(0) }
-  15.5% { transform: rotate(10deg)  scale(1.06)  translateZ(0) }
-  19%   { transform: rotate(-8deg)  scale(1.05)  translateZ(0) }
-  23%   { transform: rotate(6.5deg) scale(1.04)  translateZ(0) }
-  28%   { transform: rotate(-5deg)  scale(1.03)  translateZ(0) }
-  34%   { transform: rotate(3.8deg) scale(1.025) translateZ(0) }
-  41%   { transform: rotate(-2.8deg)scale(1.018) translateZ(0) }
-  49%   { transform: rotate(2deg)   scale(1.012) translateZ(0) }
-  58%   { transform: rotate(-1.3deg)scale(1.007) translateZ(0) }
-  68%   { transform: rotate(.8deg)  scale(1.003) translateZ(0) }
-  79%   { transform: rotate(-.4deg) scale(1.001) translateZ(0) }
-  90%   { transform: rotate(.15deg) scale(1)     translateZ(0) }
-  100%  { transform: rotate(0deg)   scale(1)     translateZ(0) }
+  0%    { transform: rotate(0deg)    scale(1)     skewX(0deg)  translateZ(0) }
+  0.8%  { transform: rotate(-28deg)  scale(1.18)  skewX(-6deg) translateZ(0) }
+  2%    { transform: rotate(34deg)   scale(1.22)  skewX(7deg)  translateZ(0) }
+  3.2%  { transform: rotate(-29deg)  scale(1.19)  skewX(-5deg) translateZ(0) }
+  4.5%  { transform: rotate(26deg)   scale(1.16)  skewX(4deg)  translateZ(0) }
+  6%    { transform: rotate(-23deg)  scale(1.13)  skewX(-3deg) translateZ(0) }
+  7.8%  { transform: rotate(20deg)   scale(1.11)  skewX(2deg)  translateZ(0) }
+  10%   { transform: rotate(-17deg)  scale(1.09)  skewX(-2deg) translateZ(0) }
+  12.5% { transform: rotate(14deg)   scale(1.07)  skewX(1.5deg)translateZ(0) }
+  15.5% { transform: rotate(-11deg)  scale(1.06)  skewX(-1deg) translateZ(0) }
+  19%   { transform: rotate(9deg)    scale(1.05)  skewX(.8deg) translateZ(0) }
+  23%   { transform: rotate(-7deg)   scale(1.04)  skewX(0deg)  translateZ(0) }
+  28%   { transform: rotate(5.5deg)  scale(1.03)  translateZ(0) }
+  34%   { transform: rotate(-4deg)   scale(1.02)  translateZ(0) }
+  41%   { transform: rotate(3deg)    scale(1.015) translateZ(0) }
+  49%   { transform: rotate(-2deg)   scale(1.01)  translateZ(0) }
+  58%   { transform: rotate(1.3deg)  scale(1.005) translateZ(0) }
+  68%   { transform: rotate(-.8deg)  scale(1.002) translateZ(0) }
+  79%   { transform: rotate(.4deg)   scale(1)     translateZ(0) }
+  90%   { transform: rotate(-.15deg) scale(1)     translateZ(0) }
+  100%  { transform: rotate(0deg)    scale(1)     translateZ(0) }
 }
+
+/* SMALL UI — lighter but still punchy */
 @keyframes invWobbleSm {
   0%    { transform: rotate(0deg)   translateZ(0) }
-  2%    { transform: rotate(-17deg) translateZ(0) }
-  4%    { transform: rotate(20deg)  translateZ(0) }
-  6.5%  { transform: rotate(-16deg) translateZ(0) }
-  9%    { transform: rotate(13deg)  translateZ(0) }
-  12%   { transform: rotate(-10deg) translateZ(0) }
-  16%   { transform: rotate(8deg)   translateZ(0) }
-  21%   { transform: rotate(-6deg)  translateZ(0) }
-  27%   { transform: rotate(4.5deg) translateZ(0) }
-  34%   { transform: rotate(-3deg)  translateZ(0) }
-  42%   { transform: rotate(2deg)   translateZ(0) }
-  52%   { transform: rotate(-1.3deg)translateZ(0) }
-  63%   { transform: rotate(.7deg)  translateZ(0) }
-  75%   { transform: rotate(-.3deg) translateZ(0) }
-  88%   { transform: rotate(.1deg)  translateZ(0) }
+  1.5%  { transform: rotate(-22deg) translateZ(0) }
+  3%    { transform: rotate(26deg)  translateZ(0) }
+  4.8%  { transform: rotate(-20deg) translateZ(0) }
+  6.8%  { transform: rotate(16deg)  translateZ(0) }
+  9%    { transform: rotate(-13deg) translateZ(0) }
+  11.8% { transform: rotate(10deg)  translateZ(0) }
+  15%   { transform: rotate(-8deg)  translateZ(0) }
+  19%   { transform: rotate(6deg)   translateZ(0) }
+  24%   { transform: rotate(-4.5deg)translateZ(0) }
+  30%   { transform: rotate(3deg)   translateZ(0) }
+  37%   { transform: rotate(-2deg)  translateZ(0) }
+  45%   { transform: rotate(1.3deg) translateZ(0) }
+  55%   { transform: rotate(-.8deg) translateZ(0) }
+  66%   { transform: rotate(.4deg)  translateZ(0) }
+  78%   { transform: rotate(-.2deg) translateZ(0) }
+  90%   { transform: rotate(.08deg) translateZ(0) }
   100%  { transform: rotate(0deg)   translateZ(0) }
 }
 
-/* Card wobble — needs overflow visible to show outside bounds */
+/* Extra spicy shake for the Invincible row logo itself */
+@keyframes invLogoShake {
+  0%,100%{ transform: rotate(0deg) scale(1) }
+  10%    { transform: rotate(-18deg) scale(1.15) }
+  20%    { transform: rotate(22deg)  scale(1.18) }
+  30%    { transform: rotate(-16deg) scale(1.14) }
+  40%    { transform: rotate(14deg)  scale(1.12) }
+  50%    { transform: rotate(-11deg) scale(1.09) }
+  60%    { transform: rotate(8deg)   scale(1.06) }
+  70%    { transform: rotate(-5deg)  scale(1.04) }
+  80%    { transform: rotate(3deg)   scale(1.02) }
+  90%    { transform: rotate(-1deg)  scale(1.01) }
+}
+
+/* Card wobble — needs overflow visible */
 body.invincible-mode .masonry,
 body.invincible-mode .grid-wrap,
 body.invincible-mode .content { overflow: visible !important; }
+
 body.invincible-mode .card:hover {
-  animation: invWobbleCard 1.1s cubic-bezier(.36,.07,.19,.97) both !important;
-  transform-origin: center 60% !important;
+  animation: invWobbleCard 1.3s cubic-bezier(.36,.07,.19,.97) both !important;
+  transform-origin: center 65% !important;
   z-index: 55 !important;
   overflow: visible !important;
 }
 
-/* Small UI elements — lighter wobble */
+/* Small UI elements — punchy wobble */
 body.invincible-mode .sb-nav-item:hover,
 body.invincible-mode .sb-tag:hover,
 body.invincible-mode .tb-icon:hover,
@@ -677,17 +715,27 @@ body.invincible-mode .owner-unban:hover,
 body.invincible-mode .comment-del:hover,
 body.invincible-mode .sp-row:hover,
 body.invincible-mode .sp-danger:hover,
-body.invincible-mode .sb-filter-ai-btn:hover,
-body.invincible-mode .sb-bl-item:hover,
 body.invincible-mode .err-retry:hover,
 body.invincible-mode .back-top:hover {
-  animation: invWobbleSm 1s cubic-bezier(.36,.07,.19,.97) both !important;
+  animation: invWobbleSm 1.1s cubic-bezier(.36,.07,.19,.97) both !important;
   transform-origin: center center !important;
+}
+
+/* Invincible logo in settings — goes extra crazy on hover */
+body.invincible-mode #invincibleRow:hover .inv-logo-img {
+  animation: invLogoShake .8s cubic-bezier(.36,.07,.19,.97) both !important;
 }
 
 /* Cursor hint when active */
 body.invincible-mode { cursor: crosshair; }
 
+/* Red chromatic-aberration glow on cards in invincible mode */
+body.invincible-mode .card:hover {
+  box-shadow: 0 16px 44px rgba(0,0,0,.9),
+    0 0 0 2px rgba(232,25,60,.5),
+    -3px 0 12px rgba(232,25,60,.3),
+    3px 0 12px rgba(139,42,255,.3) !important;
+}
 </style>
 </head>
 <body>
@@ -738,7 +786,7 @@ body.invincible-mode { cursor: crosshair; }
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3"/></svg>
     </div>
     <span class="sb-wordmark">ph<em>X</em></span>
-    <span class="sb-ver">v5.0</span>
+    <span class="sb-ver">v5.1</span>
   </div>
   <div class="sb-user">
     <div class="sb-user-card" id="sbCard" onclick="handleUserCard()">
@@ -831,7 +879,6 @@ body.invincible-mode { cursor: crosshair; }
     <div class="tb-icon" id="tbHistBtn" onclick="toggleHistory()" title="Search history">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
     </div>
-    <!-- NOTIFICATIONS BELL -->
     <div class="tb-icon" id="tbNotifBtn" onclick="toggleNotifPanel()" title="Notifications" style="position:relative">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
       <div class="notif-badge" id="notifBadge"></div>
@@ -844,7 +891,6 @@ body.invincible-mode { cursor: crosshair; }
     </div>
   </div>
 
-  <!-- TRENDING TAGS BAR -->
   <div class="trending-bar">
     <div class="trending-scroll" id="trendingScroll"></div>
   </div>
@@ -1006,16 +1052,21 @@ body.invincible-mode { cursor: crosshair; }
         <label class="sp-toggle"><input type="checkbox" id="hqToggle" onchange="handleHQToggle(this)"><div class="sp-toggle-track"></div><div class="sp-toggle-thumb"></div></label>
       </div>
 
-      <div class="sp-row" id="invincibleRow" style="cursor:default">
-        <div class="sp-row-icon" style="background:linear-gradient(135deg,rgba(255,26,69,.14) 0%,rgba(139,42,255,.14) 100%);border-color:rgba(139,42,255,.3)">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" style="color:var(--pur2)"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
-        </div>
+      <!-- INVINCIBLE ROW — logo image replaces text -->
+      <div class="sp-row" id="invincibleRow" style="cursor:default;border-color:rgba(255,26,69,.18)">
+        <img
+          class="inv-logo-img"
+          src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRZNjCtcxHRSCftO8Y_pMA6gGEZeVmJFqYqSw&s"
+          alt="Invincible"
+          onerror="this.style.display='none'"
+        >
         <div class="sp-row-text">
-          <div class="sp-row-label" style="background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;font-weight:700;letter-spacing:.02em">INVINCIBLE</div>
-          <div class="sp-row-desc">wobbles.</div>
+          <div class="inv-label-text">INVINCIBLE MODE</div>
+          <div class="inv-label-sub">Everything wobbles. Hard.</div>
         </div>
         <label class="sp-toggle"><input type="checkbox" id="invincibleToggle" onchange="handleInvincibleToggle(this)"><div class="sp-toggle-track"></div><div class="sp-toggle-thumb"></div></label>
       </div>
+
       <div class="sp-section">Account</div>
       <div class="sp-row" style="cursor:pointer" onclick="closeSettings();openSavedView()">
         <div class="sp-row-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></div>
@@ -1053,8 +1104,6 @@ body.invincible-mode { cursor: crosshair; }
         <div class="owner-stat"><div class="owner-stat-val" id="ownerStatComments">—</div><div class="owner-stat-lbl">Comments</div></div>
         <div class="owner-stat"><div class="owner-stat-val" id="ownerStatRatings">—</div><div class="owner-stat-lbl">Ratings</div></div>
       </div>
-
-      <!-- NOTIFICATION COMPOSER -->
       <div class="owner-section" style="margin-top:4px">📣 Send Notification to All Users</div>
       <div class="notif-compose">
         <div class="notif-compose-row">
@@ -1072,7 +1121,6 @@ body.invincible-mode { cursor: crosshair; }
           <button class="notif-send-btn" id="notifSendBtn" onclick="sendNotification()">Send 🚀</button>
         </div>
       </div>
-
       <div class="owner-section" style="margin-top:4px">Active Bans</div>
       <div class="owner-banned-list" id="ownerBanList"><div style="font-size:10px;color:var(--t4);font-family:var(--mono);padding:6px">Loading…</div></div>
       <div style="display:flex;gap:6px;margin-top:4px">
@@ -1106,7 +1154,8 @@ body.invincible-mode { cursor: crosshair; }
 // ── CONFIG ──
 const BAN_DURATION_MS = 3 * 24 * 60 * 60 * 1000;
 const BANNED_TERMS = ['child','children','minor','minors','kid','kids','underage','teen','teens','loli','lolicon','shota','shotacon','pedo','preteen','jailbait','13','14','15','16','17','ageplay'];
-const R34_API = 'https://api.rule34.xxx/index.php?page=dapi&s=post&q=index&json=1';
+// Direct API call — no proxy needed. Works fine from browser with CORS.
+const R34_API_BASE = 'https://api.rule34.xxx/index.php';
 const R34_KEY = '7088fd909e8ffedca36a0be2e5a11655eabd8f42cd07be62d91617cfb853e4132d309ae15a752be201c4c2415414f049d968eb5d6ec3fcc3274d365b0d3f399b';
 const R34_USER = '6090245';
 const PAGE_SIZE = 50;
@@ -1178,7 +1227,7 @@ let ST = {
 let user = null;
 let favs = JSON.parse(localStorage.getItem('phx_favs') || '[]');
 let searchHistory = JSON.parse(localStorage.getItem('phx_hist') || '[]');
-let settings = JSON.parse(localStorage.getItem('phx_settings') || '{"autoReveal":false,"compact":false,"showScores":true,"hq":false}');
+let settings = JSON.parse(localStorage.getItem('phx_settings') || '{"autoReveal":false,"compact":false,"showScores":true,"hq":false,"invincible":false}');
 let ageOk = localStorage.getItem('phx_age') === '1';
 let ratingUnsub = null, commentUnsub = null, currentVTab = 'tags';
 const revealedIds = new Set();
@@ -1236,7 +1285,7 @@ function applySettings() {
   const st = document.getElementById('scoresToggle'); if (st) st.checked = settings.showScores !== false;
   document.body.classList.toggle('hide-scores', settings.showScores === false);
   const hq = document.getElementById('hqToggle'); if (hq) hq.checked = !!settings.hq;
-  if (typeof applyInvincible === 'function') applyInvincible();
+  applyInvincible();
 }
 function openSettings() {
   if (!user) { openAuth('login'); return; }
@@ -1393,7 +1442,6 @@ function renderNotifPanel() {
     item.className = 'notif-item' + (!n.read ? ' unread' : '');
     const typeIcon = NOTIF_TYPE_ICONS[n.type] || '📢';
     const typeClass = NOTIF_TYPE_CLASS[n.type] || 'type-announce';
-    // Simple markdown-style links [text](url)
     const bodyHtml = esc(n.body || '').replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener" style="color:var(--acc);text-decoration:none">$1</a>');
     item.innerHTML = `
       <div class="notif-icon-wrap ${typeClass}">${typeIcon}</div>
@@ -1433,7 +1481,6 @@ function clearAllNotifs() {
   toast('Notifications cleared');
 }
 
-// Owner: send notification
 async function sendNotification() {
   const title = document.getElementById('notifComposeTitle').value.trim();
   const body = document.getElementById('notifComposeBody').value.trim();
@@ -1624,7 +1671,6 @@ function buildCard(post, idx) {
     card.appendChild(img);
   }
 
-  // Tag preview (top 3 tags shown on hover)
   const tagList = (post.tags||'').split(' ').filter(Boolean).slice(0, 4);
   if (tagList.length) {
     const tagPrev = document.createElement('div');
@@ -1729,7 +1775,10 @@ function setSort(s, el) {
 }
 
 // ── R34 DATA LOADING ──
+// Fix: build URL properly, handle Vercel/CORS by using direct browser fetch.
+// The R34 API is accessible from the browser directly with no proxy needed.
 let prefetchCtrl = null, prefetchData = null, prefetchPage = -1, prefetchInFlight = false;
+
 function buildTagQuery() {
   let t = ST.tags;
   if (!t.includes('sort:') && !t.includes('order:')) {
@@ -1738,10 +1787,23 @@ function buildTagQuery() {
   }
   return t;
 }
+
 function buildUrl(tags, page) {
-  const params = new URLSearchParams({ page: 'dapi', s: 'post', q: 'index', json: '1', tags, limit: PAGE_SIZE, pid: page, api_key: R34_KEY, user_id: R34_USER });
-  return `https://api.rule34.xxx/index.php?${params}`;
+  // Use URLSearchParams for correct encoding
+  const params = new URLSearchParams({
+    page: 'dapi',
+    s: 'post',
+    q: 'index',
+    json: '1',
+    tags: tags,
+    limit: String(PAGE_SIZE),
+    pid: String(page),
+    api_key: R34_KEY,
+    user_id: R34_USER
+  });
+  return `${R34_API_BASE}?${params.toString()}`;
 }
+
 function setTagsR34(tags) {
   if (currentCtrl) { currentCtrl.abort(); currentCtrl = null; }
   if (prefetchCtrl) { prefetchCtrl.abort(); prefetchCtrl = null; prefetchInFlight = false; }
@@ -1749,6 +1811,7 @@ function setTagsR34(tags) {
   ST.tags = tags; ST.page = 0; ST.posts = []; ST.done = false; ST.loading = false;
   resetGrid(); loadMoreR34();
 }
+
 function resetGrid() {
   ST.savedView = false; revealedIds.clear(); imgCache.clear();
   clearVidCache(); _vObsSeen.clear(); _seenPostIds.clear();
@@ -1757,7 +1820,33 @@ function resetGrid() {
   document.getElementById('sentinel').innerHTML = '<div class="spin"></div>';
   showSkeletons(PAGE_SIZE);
 }
+
 const _seenPostIds = new Set();
+
+// Retry helper with exponential backoff
+async function fetchWithRetry(url, signal, maxAttempts = 3) {
+  let lastErr;
+  for (let attempt = 0; attempt < maxAttempts; attempt++) {
+    if (signal.aborted) throw new DOMException('Aborted', 'AbortError');
+    try {
+      const res = await fetch(url, { signal, cache: 'default' });
+      if (res.status === 429) {
+        // Rate limited — wait and retry
+        await new Promise(r => setTimeout(r, 1000 * (attempt + 1)));
+        continue;
+      }
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      return Array.isArray(data) ? data : [];
+    } catch(err) {
+      if (err.name === 'AbortError') throw err;
+      lastErr = err;
+      if (attempt < maxAttempts - 1) await new Promise(r => setTimeout(r, 600 * (attempt + 1)));
+    }
+  }
+  throw lastErr;
+}
+
 async function loadMoreR34() {
   if (ST.loading || ST.done || ST.savedView) return;
   ST.loading = true;
@@ -1771,13 +1860,15 @@ async function loadMoreR34() {
       prefetchData = null; prefetchPage = -1;
     } else {
       const url = buildUrl(buildTagQuery(), ST.page);
-      const res = await fetch(url, { signal: ctrl.signal, cache: 'default' });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const data = await res.json();
-      posts = Array.isArray(data) ? data : [];
+      posts = await fetchWithRetry(url, ctrl.signal);
     }
     posts = posts.filter(p => { if (_seenPostIds.has(p.id)) return false; _seenPostIds.add(p.id); return true; });
-    if (!posts.length && ST.page === 0) { ST.done = true; sentinel.innerHTML = '<span>— end of results —</span>'; showErr('No results', 'Try different tags.'); return; }
+    if (!posts.length && ST.page === 0) {
+      ST.done = true;
+      sentinel.innerHTML = '<span>— end of results —</span>';
+      showErr('No results', 'Try different tags.');
+      return;
+    }
     if (!posts.length) { ST.done = true; sentinel.innerHTML = '<span>— end of results —</span>'; return; }
     const prevLen = getFiltered().length;
     ST.posts.push(...posts);
@@ -1786,20 +1877,21 @@ async function loadMoreR34() {
     appendNewCards(prevLen);
     document.getElementById('tbCount').textContent = `${ST.posts.length.toLocaleString()} posts`;
     sentinel.innerHTML = '<div class="spin"></div>';
-    setTimeout(() => prefetchNext(), 250);
+    setTimeout(() => prefetchNext(), 300);
   } catch(err) {
     if (err.name === 'AbortError') return;
     console.error('R34 load error:', err);
-    sentinel.innerHTML = '<span style="color:var(--red)">Error — retrying…</span>';
-    if (!ST.posts.length) showErr('Could not load', `Check your connection. (${err.message})`, true);
-    else toast('Failed to load more — retrying…','red');
-    setTimeout(() => { if (!ST.done && !ST.savedView) { ST.loading = false; loadMoreR34(); } }, 2500);
+    sentinel.innerHTML = `<span style="color:var(--red)">Error — <span style="cursor:pointer;text-decoration:underline" onclick="ST.loading=false;loadMoreR34()">retry</span></span>`;
+    if (!ST.posts.length) showErr('Could not load', `${err.message}. Click retry.`, true);
+    else toast('Failed to load more — tap to retry', 'red');
+    // Don't auto-retry forever, let user retry manually
     return;
   } finally {
     ST.loading = false;
     if (currentCtrl === ctrl) currentCtrl = null;
   }
 }
+
 async function prefetchNext() {
   if (ST.done || prefetchPage === ST.page || prefetchInFlight) return;
   prefetchInFlight = true;
@@ -1816,6 +1908,7 @@ async function prefetchNext() {
     if (e.name !== 'AbortError') { prefetchData = null; prefetchPage = -1; }
   } finally { prefetchInFlight = false; prefetchCtrl = null; }
 }
+
 function appendNewCards(prevLen) {
   const newFiltered = getFiltered();
   if (newFiltered.length > prevLen) {
@@ -1824,6 +1917,7 @@ function appendNewCards(prevLen) {
     document.getElementById('grid').appendChild(frag);
   }
 }
+
 function showErr(title, sub, retry = false) {
   document.getElementById('grid').innerHTML = `<div class="err-state">
     <div class="err-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div>
@@ -2144,7 +2238,6 @@ function toast(msg, type='', dur=3000){
   setTimeout(()=>{ el.classList.add('out'); setTimeout(()=>el.remove(),220); }, dur);
 }
 
-
 // ── INVINCIBLE MODE ──
 function handleInvincibleToggle(el) {
   settings.invincible = el.checked;
@@ -2163,13 +2256,12 @@ function applyInvincible() {
   if (tog) tog.checked = on;
   const row = document.getElementById('invincibleRow');
   if (row) row.classList.toggle('active-row', on);
-  // Stylize the toggle track when on to match the gradient theme
   if (tog) {
     const track = tog.nextElementSibling;
     if (track) {
-      track.style.background = on ? 'var(--grad)' : '';
+      track.style.background = on ? 'linear-gradient(135deg,var(--inv1),var(--inv2))' : '';
       track.style.borderColor = on ? 'transparent' : '';
-      track.style.boxShadow   = on ? '0 0 10px rgba(255,26,69,.45),0 0 10px rgba(139,42,255,.35)' : '';
+      track.style.boxShadow   = on ? '0 0 10px rgba(255,26,69,.5),0 0 14px rgba(139,42,255,.35)' : '';
     }
   }
 }
