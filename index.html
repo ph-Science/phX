@@ -8,11 +8,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=DM+Mono:wght@300;400;500&display=swap" onload="this.onload=null;this.rel='stylesheet'">
 <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=DM+Mono:wght@300;400;500&display=swap"></noscript>
-
-<!-- ═══════════════════════════════════════════════════
-     FIREBASE — Real Auth (Anon + Email/Password + Google)
-     After first login, go to Firebase Console → Authentication → Users
-     and copy your UID, then replace OWNER_UID_PLACEHOLDER below.
+low.
 ═══════════════════════════════════════════════════ -->
 <script type="module">
   import { initializeApp }   from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
@@ -1035,7 +1031,6 @@ body.invincible-mode .tb-heading,body.invincible-mode .sb-wordmark,body.invincib
       <button class="modal-btn solid" onclick="submitAuth()" id="mSubmit">Sign in</button>
       <button class="modal-btn anon" onclick="continueAnon()">👤 Continue anonymously</button>
       <div class="modal-switch" id="mSwitch" onclick="toggleAuthMode()">No account? <span>Join free</span></div>
-      <!-- UID display after login — shown to owner -->
       <div class="modal-uid-box" id="mUidBox" style="display:none">
         <div class="modal-uid-label">👑 Your Firebase UID</div>
         <div class="modal-uid-val" id="mUidVal" onclick="copyUID()" title="Click to copy">—</div>
@@ -1115,7 +1110,6 @@ body.invincible-mode .tb-heading,body.invincible-mode .sb-wordmark,body.invincib
   </div>
 </div>
 
-<!-- OWNER PANEL -->
 <div class="owner-panel" id="ownerPanel">
   <div class="owner-box">
     <div class="owner-head">
@@ -1180,12 +1174,7 @@ body.invincible-mode .tb-heading,body.invincible-mode .sb-wordmark,body.invincib
 <script>
 'use strict';
 
-// ══════════════════════════════════════════════════════
-// OWNER CONFIG
-// After your first login, copy your UID from Firebase Console
-// → Authentication → Users and replace the value below.
-// ══════════════════════════════════════════════════════
-const OWNER_UID = 'OWNER_UID_PLACEHOLDER';
+const OWNER_UID = 'a6HhsIJx4VdwwZCSyDAWw34EKp93';
 
 // ── CONFIG ──
 const BAN_DURATION_MS  = 3 * 24 * 60 * 60 * 1000;
