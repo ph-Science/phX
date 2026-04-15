@@ -8,9 +8,29 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=DM+Mono:wght@300;400;500&display=swap" onload="this.onload=null;this.rel='stylesheet'">
 <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=DM+Mono:wght@300;400;500&display=swap"></noscript>
+
+<!-- ═══════════════════════════════════════════════════
+     FIREBASE  ─  uses Anonymous Auth so auth != null
+     satisfies your DB rules for ratings + comments.
+
+     UPDATE YOUR FIREBASE RULES TO:
+     "bans": {
+       "$deviceId": {
+         ".read": true,          ← allows ban-check to work
+         ".write": "auth != null"
+       }
+     },
+     "ratings":    { ".read": true, ".write": "auth != null" },
+     "comments":   { ".read": true, ".write": "auth != null" },
+     "notifications":{ ".read": true, ".write": "auth != null" }
+═══════════════════════════════════════════════════ -->
 <script type="module">
-  import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
-  import { getDatabase, ref, set, get, push, onValue, remove, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js';
+  import { initializeApp }   from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+  import { getDatabase, ref, set, get, push, onValue, remove, serverTimestamp }
+    from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js';
+  import { getAuth, signInAnonymously }
+    from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
+
   const firebaseConfig = {
     apiKey: "AIzaSyDhqMq7W3sWNgnl-iLl4NhXtGI5ZZgGe3k",
     authDomain: "phx-site.firebaseapp.com",
@@ -20,26 +40,34 @@
     messagingSenderId: "570143967768",
     appId: "1:570143967768:web:ff792855663ad38a85916d"
   };
-  let db = null, ok = false;
+
+  let db = null, auth = null, ok = false;
   try {
     const app = initializeApp(firebaseConfig);
-    db = getDatabase(app);
-    ok = true;
-  } catch(e) { console.warn('Firebase init failed:', e); }
-  window.__FB = { db, ok, ref, set, get, push, onValue, remove, serverTimestamp };
+    db   = getDatabase(app);
+    auth = getAuth(app);
+    ok   = true;
+    // Sign in anonymously so auth != null → DB rules satisfied
+    signInAnonymously(auth)
+      .then(() => console.log('[phX] Firebase anon auth OK'))
+      .catch(e  => console.warn('[phX] Anon auth failed (DB writes may fail):', e.message));
+  } catch(e) { console.warn('[phX] Firebase init failed:', e); }
+
+  window.__FB = { db, auth, ok, ref, set, get, push, onValue, remove, serverTimestamp };
   window.__FB_READY = true;
   window.dispatchEvent(new Event('fb-ready'));
 </script>
+
 <style>
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
 :root{
   --bg:#06060f;
-  --s0:#09091a;
-  --s1:#0d0d1e;
-  --s2:#121226;
-  --s3:#18182e;
-  --s4:#1e1e38;
-  --s5:#252545;
+  --s0:#08081a;
+  --s1:#0c0c1e;
+  --s2:#111122;
+  --s3:#171728;
+  --s4:#1c1c30;
+  --s5:#222238;
   --acc:#e8193c;
   --acc2:#ff2d55;
   --acc3:#c0102c;
@@ -47,9 +75,9 @@
   --accborder:rgba(232,25,60,.25);
   --t0:#f0f0ff;
   --t1:#c5c5e8;
-  --t2:#8080a8;
-  --t3:#505068;
-  --t4:#303048;
+  --t2:#8888b0;
+  --t3:#555575;
+  --t4:#333350;
   --green:#00e5a0;
   --gold:#f5c842;
   --blue:#4488ff;
@@ -59,8 +87,8 @@
   --b1:rgba(100,100,180,.09);
   --b2:rgba(100,100,180,.16);
   --b3:rgba(100,100,180,.28);
-  --glow:0 0 40px rgba(232,25,60,.10),0 0 80px rgba(232,25,60,.04);
-  --sid:248px;
+  --glow:0 0 50px rgba(232,25,60,.08),0 0 100px rgba(232,25,60,.03);
+  --sid:252px;
   --rad:10px;
   --gap:6px;
   --cols:5;
@@ -71,8 +99,8 @@
 html,body{height:100%;overflow:hidden}
 body{background:var(--bg);color:var(--t1);font-family:var(--font);font-size:13px;display:flex;-webkit-font-smoothing:antialiased}
 
-/* grain overlay */
-body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");background-size:256px;opacity:.018;pointer-events:none;z-index:9998}
+/* grain */
+body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");background-size:256px;opacity:.016;pointer-events:none;z-index:9998}
 
 ::-webkit-scrollbar{width:3px;height:3px}
 ::-webkit-scrollbar-track{background:transparent}
@@ -96,7 +124,7 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 /* ── AGE GATE ── */
 .age-gate{position:fixed;inset:0;z-index:99999;background:var(--bg);display:flex;align-items:center;justify-content:center;padding:20px}
 .age-gate.gone{display:none}
-.age-gate::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 70% 60% at 30% 40%,rgba(232,25,60,.08) 0%,transparent 60%),radial-gradient(ellipse 50% 50% at 70% 60%,rgba(100,50,232,.05) 0%,transparent 60%)}
+.age-gate::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 70% 60% at 30% 40%,rgba(232,25,60,.09) 0%,transparent 60%),radial-gradient(ellipse 50% 50% at 70% 60%,rgba(100,50,232,.06) 0%,transparent 60%)}
 .age-box{position:relative;background:var(--s1);border:1px solid var(--b2);border-radius:18px;width:100%;max-width:380px;padding:42px 32px 28px;text-align:center;box-shadow:0 40px 100px rgba(0,0,0,.95),var(--glow);animation:gateIn .4s cubic-bezier(.34,1.4,.64,1)}
 @keyframes gateIn{from{opacity:0;transform:translateY(20px) scale(.95)}to{opacity:1;transform:none}}
 .gate-topline{position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--acc),transparent);border-radius:18px 18px 0 0}
@@ -120,7 +148,7 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 
 /* ── SIDEBAR ── */
 .sidebar{width:var(--sid);flex-shrink:0;background:var(--s0);border-right:1px solid var(--b1);display:flex;flex-direction:column;height:100vh;z-index:200;position:relative;transition:transform .22s cubic-bezier(.4,0,.2,1)}
-.sidebar::after{content:'';position:absolute;top:0;right:0;width:1px;height:100%;background:linear-gradient(to bottom,transparent,rgba(232,25,60,.2) 40%,rgba(232,25,60,.2) 60%,transparent);pointer-events:none}
+.sidebar::after{content:'';position:absolute;top:0;right:0;width:1px;height:100%;background:linear-gradient(to bottom,transparent,rgba(232,25,60,.18) 40%,rgba(232,25,60,.18) 60%,transparent);pointer-events:none}
 
 .sb-logo{padding:13px 13px 11px;display:flex;align-items:center;gap:9px;border-bottom:1px solid var(--b1);flex-shrink:0}
 .sb-logo-icon{width:30px;height:30px;border-radius:7px;background:var(--acc);display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 2px 12px rgba(232,25,60,.45)}
@@ -185,7 +213,7 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 
 /* ── TOPBAR ── */
 .topbar{height:var(--topbar);flex-shrink:0;display:flex;align-items:center;gap:6px;padding:0 11px;background:var(--s0);border-bottom:1px solid var(--b1);position:relative;z-index:100}
-.topbar::after{content:'';position:absolute;bottom:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(232,25,60,.2) 30%,rgba(232,25,60,.2) 70%,transparent);opacity:.5}
+.topbar::after{content:'';position:absolute;bottom:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(232,25,60,.18) 30%,rgba(232,25,60,.18) 70%,transparent);opacity:.5}
 .tb-menu{width:30px;height:30px;border-radius:7px;background:var(--s2);border:1px solid var(--b1);display:none;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;transition:all .12s}
 .tb-menu:hover{background:var(--s3)}
 .tb-menu svg{width:12px;height:12px;color:var(--t2)}
@@ -221,7 +249,7 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 .notif-badge.show{display:flex}
 
 /* ── CONTENT ── */
-.content{flex:1;overflow-y:auto;overflow-x:hidden;background:var(--bg);scroll-behavior:smooth}
+.content{flex:1;overflow-y:auto;overflow-x:hidden;background:var(--bg);scroll-behavior:smooth;position:relative;z-index:1}
 .grid-wrap{padding:7px}
 .masonry{columns:var(--cols);column-gap:var(--gap)}
 
@@ -297,7 +325,6 @@ body.auto-reveal .card:hover .card-glass{opacity:1;pointer-events:all}
 .viewer.open{display:flex}
 .v-shell{display:flex;width:100%;max-width:1320px;height:min(92vh,900px);background:var(--s1);border:1px solid var(--b2);border-radius:13px;overflow:hidden;box-shadow:0 40px 100px rgba(0,0,0,.98),0 0 0 1px var(--b1),var(--glow);animation:vIn .22s cubic-bezier(.16,1,.3,1)}
 @keyframes vIn{from{opacity:0;scale:.97;translate:0 8px}to{opacity:1;scale:1;translate:0 0}}
-
 .v-media{flex:1;min-width:0;background:#000;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden}
 .v-media img,.v-media video{max-width:100%;max-height:100%;object-fit:contain;display:block}
 .v-loader{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(6,6,15,.4);z-index:5;opacity:0;pointer-events:none;transition:opacity .13s}
@@ -355,7 +382,7 @@ body.auto-reveal .card:hover .card-glass{opacity:1;pointer-events:all}
 .v-tag{padding:3px 8px;background:var(--s2);border:1px solid var(--b1);border-radius:999px;font-size:9.5px;color:var(--t3);cursor:pointer;transition:all .11s;white-space:nowrap}
 .v-tag:hover{background:var(--accbg);color:var(--acc);border-color:var(--accborder)}
 
-/* R34 Comments in viewer */
+/* R34 Comments */
 .r34-comments-section{padding-top:5px}
 .r34-comment{background:var(--s2);border:1px solid var(--b1);border-radius:8px;padding:8px 10px;margin-bottom:4px}
 .r34-comment-head{display:flex;align-items:center;gap:7px;margin-bottom:4px}
@@ -406,7 +433,7 @@ body.auto-reveal .card:hover .card-glass{opacity:1;pointer-events:all}
 .notif-mark-all{font-size:9px;font-family:var(--mono);color:var(--acc);cursor:pointer;padding:3px 7px;border-radius:4px;border:1px solid var(--accborder);background:var(--accbg);transition:all .11s}
 .notif-mark-all:hover{background:rgba(232,25,60,.14)}
 .notif-body{flex:1;overflow-y:auto;padding:5px}
-.notif-item{display:flex;gap:9px;padding:9px 9px;border-radius:8px;cursor:pointer;transition:all .12s;position:relative;margin-bottom:2px}
+.notif-item{display:flex;gap:9px;padding:9px;border-radius:8px;cursor:pointer;transition:all .12s;position:relative;margin-bottom:2px}
 .notif-item:hover{background:var(--s2)}
 .notif-item.unread{background:var(--accbg)}
 .notif-item.unread::before{content:'';position:absolute;left:5px;top:50%;transform:translateY(-50%);width:4px;height:4px;border-radius:50%;background:var(--acc)}
@@ -496,12 +523,38 @@ body.auto-reveal .card:hover .card-glass{opacity:1;pointer-events:all}
 .sp-danger .sp-row-desc{color:rgba(232,25,60,.45)}
 
 /* ── INVINCIBLE ROW ── */
-#invincibleRow{overflow:hidden;position:relative;flex-direction:row;align-items:center}
-#invincibleRow::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,26,69,.05) 0%,rgba(255,107,0,.05) 50%,rgba(139,42,255,.05) 100%);border-radius:8px;pointer-events:none}
-.inv-logo-container{display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0;gap:2px}
-.inv-logo-img{width:36px;height:36px;object-fit:contain;border-radius:5px;filter:drop-shadow(0 2px 7px rgba(255,26,69,.45))}
+#invincibleRow{
+  overflow:hidden;position:relative;
+  background:linear-gradient(135deg,rgba(255,26,69,.03) 0%,rgba(255,107,0,.03) 50%,rgba(139,42,255,.03) 100%);
+  border-color:rgba(255,26,69,.15) !important;
+}
+/* Vertical text block replacing the logo */
+.inv-vert-block{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  height:38px;
+  width:22px;
+  flex-shrink:0;
+}
+.inv-vert-text{
+  writing-mode:vertical-rl;
+  text-orientation:mixed;
+  transform:rotate(180deg);
+  font-family:var(--mono);
+  font-size:9px;
+  font-weight:900;
+  letter-spacing:.28em;
+  text-transform:uppercase;
+  background:linear-gradient(180deg,#ff1a45,#ff6b00,#9b27ff);
+  -webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;
+  background-clip:text;
+  white-space:nowrap;
+  line-height:1;
+}
 .inv-label-main{display:flex;flex-direction:column;align-items:flex-start;flex:1;min-width:0}
-.inv-label-text{font-size:10.5px;font-weight:700;color:var(--t0);letter-spacing:.04em;writing-mode:initial}
+.inv-label-text{font-size:10.5px;font-weight:700;color:var(--t0);letter-spacing:.04em}
 .inv-label-sub{font-size:8.5px;color:var(--t4)}
 
 /* ── OWNER PANEL ── */
@@ -582,7 +635,7 @@ body.auto-reveal .card:hover .card-glass{opacity:1;pointer-events:all}
 .back-top svg{width:11px;height:11px;color:var(--t2)}
 
 @keyframes cardIn{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
-.card-new{animation:cardIn .2s cubic-bezier(.16,1,.3,1) both}
+.card-new{animation:cardIn .18s cubic-bezier(.16,1,.3,1) both}
 body.hide-scores .score-chip{display:none}
 
 #vidPreloadBin{position:fixed;top:-9999px;left:-9999px;width:1px;height:1px;overflow:hidden;pointer-events:none;z-index:-1}
@@ -615,88 +668,103 @@ body.hide-scores .score-chip{display:none}
 }
 @media(max-width:480px){:root{--cols:2;--gap:5px}.grid-wrap{padding:5px}}
 
-/* ══════════════════════════════════════
-   INVINCIBLE MODE — INTENSE WOBBLE
-   No cursor change. Scroll still works.
-══════════════════════════════════════ */
+/* ══════════════════════════════════════════════
+   INVINCIBLE MODE
+   – No custom cursor
+   – Scroll preserved (overflow-y on .content untouched)
+   – Intense damped wobble on cards and UI elements
+   – Text shake on headings
+══════════════════════════════════════════════ */
 
-/* Main card wobble — violent, damped */
+/* Violent damped wobble — cards */
 @keyframes invWobbleCard {
-  0%    { transform: rotate(0deg) scale(1) skewX(0deg) }
-  1%    { transform: rotate(-30deg) scale(1.2) skewX(-7deg) }
-  2.2%  { transform: rotate(36deg) scale(1.24) skewX(8deg) }
-  3.6%  { transform: rotate(-31deg) scale(1.21) skewX(-6deg) }
-  5%    { transform: rotate(28deg) scale(1.18) skewX(5deg) }
-  6.8%  { transform: rotate(-25deg) scale(1.15) skewX(-4deg) }
-  8.8%  { transform: rotate(22deg) scale(1.12) skewX(3deg) }
-  11%   { transform: rotate(-19deg) scale(1.1) skewX(-2.5deg) }
-  13.5% { transform: rotate(16deg) scale(1.08) skewX(2deg) }
-  16.5% { transform: rotate(-13deg) scale(1.06) skewX(-1.5deg) }
-  20%   { transform: rotate(10deg) scale(1.05) skewX(1deg) }
-  24%   { transform: rotate(-8deg) scale(1.04) }
-  29%   { transform: rotate(6deg) scale(1.03) }
-  35%   { transform: rotate(-4.5deg) scale(1.02) }
-  42%   { transform: rotate(3deg) scale(1.01) }
-  50%   { transform: rotate(-2deg) scale(1.005) }
-  59%   { transform: rotate(1.2deg) scale(1) }
-  69%   { transform: rotate(-.7deg) scale(1) }
-  80%   { transform: rotate(.3deg) scale(1) }
-  91%   { transform: rotate(-.1deg) scale(1) }
-  100%  { transform: rotate(0deg) scale(1) }
+  0%    { transform: rotate(0deg)    scale(1)    skewX(0deg)   }
+  1%    { transform: rotate(-34deg)  scale(1.25) skewX(-9deg)  }
+  2.2%  { transform: rotate(40deg)   scale(1.28) skewX(10deg)  }
+  3.6%  { transform: rotate(-34deg)  scale(1.24) skewX(-8deg)  }
+  5%    { transform: rotate(30deg)   scale(1.20) skewX(6deg)   }
+  6.8%  { transform: rotate(-27deg)  scale(1.17) skewX(-5deg)  }
+  8.8%  { transform: rotate(24deg)   scale(1.14) skewX(4deg)   }
+  11%   { transform: rotate(-20deg)  scale(1.11) skewX(-3deg)  }
+  13.5% { transform: rotate(17deg)   scale(1.09) skewX(2.5deg) }
+  16.5% { transform: rotate(-14deg)  scale(1.07) skewX(-2deg)  }
+  20%   { transform: rotate(11deg)   scale(1.05) skewX(1.5deg) }
+  24%   { transform: rotate(-9deg)   scale(1.04) }
+  29%   { transform: rotate(7deg)    scale(1.03) }
+  35%   { transform: rotate(-5deg)   scale(1.02) }
+  42%   { transform: rotate(3.5deg)  scale(1.01) }
+  50%   { transform: rotate(-2deg)   scale(1)    }
+  59%   { transform: rotate(1.3deg)  scale(1)    }
+  69%   { transform: rotate(-.8deg)  scale(1)    }
+  80%   { transform: rotate(.3deg)   scale(1)    }
+  91%   { transform: rotate(-.1deg)  scale(1)    }
+  100%  { transform: rotate(0deg)    scale(1)    }
 }
 
-/* Small UI wobble */
+/* Smaller UI elements wobble */
 @keyframes invWobbleSm {
-  0%    { transform: rotate(0deg) }
-  2%    { transform: rotate(-24deg) }
-  4%    { transform: rotate(28deg) }
-  6.5%  { transform: rotate(-22deg) }
-  9%    { transform: rotate(18deg) }
-  12%   { transform: rotate(-15deg) }
-  15.5% { transform: rotate(12deg) }
-  19.5% { transform: rotate(-9deg) }
-  24%   { transform: rotate(7deg) }
-  29.5% { transform: rotate(-5deg) }
-  36%   { transform: rotate(3.5deg) }
-  44%   { transform: rotate(-2deg) }
-  53%   { transform: rotate(1.2deg) }
-  63%   { transform: rotate(-.6deg) }
-  74%   { transform: rotate(.3deg) }
+  0%    { transform: rotate(0deg)   }
+  2%    { transform: rotate(-28deg) }
+  4%    { transform: rotate(32deg)  }
+  6.5%  { transform: rotate(-25deg) }
+  9%    { transform: rotate(20deg)  }
+  12%   { transform: rotate(-16deg) }
+  15.5% { transform: rotate(13deg)  }
+  19.5% { transform: rotate(-10deg) }
+  24%   { transform: rotate(8deg)   }
+  29.5% { transform: rotate(-5.5deg)}
+  36%   { transform: rotate(4deg)   }
+  44%   { transform: rotate(-2.5deg)}
+  53%   { transform: rotate(1.5deg) }
+  63%   { transform: rotate(-.7deg) }
+  74%   { transform: rotate(.3deg)  }
   86%   { transform: rotate(-.1deg) }
-  100%  { transform: rotate(0deg) }
+  100%  { transform: rotate(0deg)   }
 }
 
-/* Text shake for headings / labels */
-@keyframes invTextWobble {
-  0%,100% { transform: skewX(0deg) skewY(0deg) }
-  8%      { transform: skewX(-8deg) skewY(-2deg) }
-  16%     { transform: skewX(10deg) skewY(3deg) }
-  24%     { transform: skewX(-7deg) skewY(-1deg) }
-  32%     { transform: skewX(5deg) skewY(1.5deg) }
-  40%     { transform: skewX(-4deg) skewY(-1deg) }
-  50%     { transform: skewX(3deg) skewY(.8deg) }
-  62%     { transform: skewX(-1.5deg) skewY(0deg) }
-  75%     { transform: skewX(.8deg) skewY(0deg) }
-  88%     { transform: skewX(-.3deg) skewY(0deg) }
+/* Text skew shake */
+@keyframes invTextShake {
+  0%,100% { transform: skewX(0deg)   skewY(0deg)   }
+  7%      { transform: skewX(-10deg) skewY(-3deg)  }
+  14%     { transform: skewX(12deg)  skewY(4deg)   }
+  21%     { transform: skewX(-9deg)  skewY(-2deg)  }
+  28%     { transform: skewX(7deg)   skewY(2deg)   }
+  36%     { transform: skewX(-5deg)  skewY(-1.5deg)}
+  45%     { transform: skewX(3.5deg) skewY(1deg)   }
+  55%     { transform: skewX(-2deg)  skewY(0deg)   }
+  66%     { transform: skewX(1.2deg) skewY(0deg)   }
+  78%     { transform: skewX(-.5deg) skewY(0deg)   }
+  90%     { transform: skewX(.2deg)  skewY(0deg)   }
 }
 
-/* Make masonry overflow-visible so wobbling cards don't clip */
+/* CRITICAL: keep content scrollable in invincible mode */
+body.invincible-mode .content{
+  overflow-y: scroll !important;
+  -webkit-overflow-scrolling: touch !important;
+}
+/* Allow cards to overflow their column without clipping */
 body.invincible-mode .masonry,
-body.invincible-mode .grid-wrap { overflow: visible !important; }
-/* Don't mess with scroll */
-body.invincible-mode .content { overflow-y: auto !important; }
+body.invincible-mode .grid-wrap{
+  overflow: visible !important;
+}
+/* Ensure pointer-events on scroll area are preserved */
+body.invincible-mode .grid-wrap{
+  pointer-events: auto !important;
+}
 
-body.invincible-mode .card:hover {
-  animation: invWobbleCard 1.4s cubic-bezier(.36,.07,.19,.97) both !important;
+/* Card wobble on hover */
+body.invincible-mode .card:hover{
+  animation: invWobbleCard 1.5s cubic-bezier(.36,.07,.19,.97) both !important;
   transform-origin: center 65% !important;
   z-index: 55 !important;
   box-shadow:
-    0 16px 44px rgba(0,0,0,.9),
-    0 0 0 2px rgba(232,25,60,.55),
-    -4px 0 14px rgba(232,25,60,.35),
-    4px 0 14px rgba(139,42,255,.35) !important;
+    0 18px 50px rgba(0,0,0,.9),
+    0 0 0 2px rgba(232,25,60,.6),
+    -5px 0 18px rgba(232,25,60,.4),
+    5px 0 18px rgba(139,42,255,.4) !important;
 }
 
+/* Small UI wobble */
 body.invincible-mode .sb-nav-item:hover,
 body.invincible-mode .sb-tag:hover,
 body.invincible-mode .tb-icon:hover,
@@ -720,26 +788,30 @@ body.invincible-mode .comment-del:hover,
 body.invincible-mode .sp-row:hover,
 body.invincible-mode .sp-danger:hover,
 body.invincible-mode .err-retry:hover,
-body.invincible-mode .back-top:hover {
+body.invincible-mode .back-top:hover,
+body.invincible-mode .gate-enter:hover,
+body.invincible-mode .modal-btn:hover{
   animation: invWobbleSm 1.1s cubic-bezier(.36,.07,.19,.97) both !important;
   transform-origin: center center !important;
 }
 
-/* Text elements shake on hover */
-body.invincible-mode .tb-heading:hover,
-body.invincible-mode .sb-wordmark:hover,
-body.invincible-mode .gate-wordmark:hover,
-body.invincible-mode .notif-title:hover,
-body.invincible-mode .v-panel-id:hover,
-body.invincible-mode .sp-row-label:hover,
-body.invincible-mode .sb-section-label:hover {
-  animation: invTextWobble .9s cubic-bezier(.36,.07,.19,.97) both !important;
+/* Text elements shake */
+body.invincible-mode .tb-heading,
+body.invincible-mode .sb-wordmark,
+body.invincible-mode .gate-wordmark,
+body.invincible-mode .notif-title,
+body.invincible-mode .v-panel-id,
+body.invincible-mode .sp-row-label,
+body.invincible-mode .sb-section-label,
+body.invincible-mode .owner-head-title,
+body.invincible-mode .modal-title{
+  animation: invTextShake 2.4s cubic-bezier(.36,.07,.19,.97) infinite !important;
   display: inline-block;
 }
-
-/* Invincible logo shake */
-body.invincible-mode #invincibleRow:hover .inv-logo-img {
-  animation: invWobbleSm .9s cubic-bezier(.36,.07,.19,.97) both !important;
+/* Invincible toggle row jiggle */
+body.invincible-mode #invincibleRow .inv-vert-text{
+  animation: invWobbleSm .8s cubic-bezier(.36,.07,.19,.97) infinite alternate !important;
+  display: inline-block;
 }
 </style>
 </head>
@@ -791,7 +863,7 @@ body.invincible-mode #invincibleRow:hover .inv-logo-img {
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3"/></svg>
     </div>
     <span class="sb-wordmark">ph<em>X</em></span>
-    <span class="sb-ver">v5.2</span>
+    <span class="sb-ver">v6.0</span>
   </div>
   <div class="sb-user">
     <div class="sb-user-card" id="sbCard" onclick="handleUserCard()">
@@ -1062,15 +1134,10 @@ body.invincible-mode #invincibleRow:hover .inv-logo-img {
         <label class="sp-toggle"><input type="checkbox" id="hqToggle" onchange="handleHQToggle(this)"><div class="sp-toggle-track"></div><div class="sp-toggle-thumb"></div></label>
       </div>
 
-      <!-- INVINCIBLE ROW — horizontal layout, vertical text label -->
+      <!-- INVINCIBLE ROW — vertical text, no image -->
       <div class="sp-row" id="invincibleRow" style="border-color:rgba(255,26,69,.15)">
-        <div class="inv-logo-container">
-          <img
-            class="inv-logo-img"
-            src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRZNjCtcxHRSCftO8Y_pMA6gGEZeVmJFqYqSw&s"
-            alt="Invincible"
-            onerror="this.style.display='none'"
-          >
+        <div class="inv-vert-block">
+          <span class="inv-vert-text">INVINCIBLE</span>
         </div>
         <div class="inv-label-main">
           <div class="inv-label-text">INVINCIBLE MODE</div>
@@ -1164,17 +1231,18 @@ body.invincible-mode #invincibleRow:hover .inv-logo-img {
 'use strict';
 
 // ── CONFIG ──
-const BAN_DURATION_MS = 3 * 24 * 60 * 60 * 1000;
-const BANNED_TERMS = ['child','children','minor','minors','kid','kids','underage','teen','teens','loli','lolicon','shota','shotacon','pedo','preteen','jailbait','13','14','15','16','17','ageplay'];
-const R34_API_BASE = 'https://api.rule34.xxx/index.php';
-const R34_KEY = '7088fd909e8ffedca36a0be2e5a11655eabd8f42cd07be62d91617cfb853e4132d309ae15a752be201c4c2415414f049d968eb5d6ec3fcc3274d365b0d3f399b';
-const R34_USER = '6090245';
-const R34_COMMENT_URL = 'https://api.rule34.xxx/index.php?page=dapi&s=comment&q=index&post_id=';
-const PAGE_SIZE = 50;
-const PRELOAD_THRESHOLD = 16;
-const MAX_HISTORY = 20;
-const OWNER_USERNAME = 'ricky';
-const VID_CACHE_MAX = 8;
+const BAN_DURATION_MS  = 3 * 24 * 60 * 60 * 1000;
+const BANNED_TERMS     = ['child','children','minor','minors','kid','kids','underage','teen','teens','loli','lolicon','shota','shotacon','pedo','preteen','jailbait','13','14','15','16','17','ageplay'];
+const R34_API_BASE     = 'https://api.rule34.xxx/index.php';
+const R34_KEY          = '7088fd909e8ffedca36a0be2e5a11655eabd8f42cd07be62d91617cfb853e4132d309ae15a752be201c4c2415414f049d968eb5d6ec3fcc3274d365b0d3f399b';
+const R34_USER         = '6090245';
+const R34_COMMENT_URL  = 'https://api.rule34.xxx/index.php?page=dapi&s=comment&q=index&post_id=';
+const PAGE_SIZE        = 50;
+const PRELOAD_THRESHOLD = 18;
+const MAX_HISTORY      = 20;
+const OWNER_USERNAME   = 'ricky';
+const VID_CACHE_MAX    = 8;
+
 const POPULAR_TAGS = ['solo','animated','hentai','3d','uncensored','big_breasts','ass','cosplay','duo','futanari','monster_girl','yuri','tentacles','gangbang','furry','latex'];
 const TRENDING_TAGS = [
   {tag:'big_breasts',ct:'428k'},{tag:'solo',ct:'312k'},{tag:'animated',ct:'199k'},
@@ -1213,7 +1281,7 @@ function setBan(reason) {
   localStorage.setItem('phx_ban', JSON.stringify(d));
   if (FB?.ok) {
     const { ref, set, db } = FB;
-    set(ref(db, `bans/${DEVICE_ID}`), d).catch(e => console.warn('ban write failed:', e));
+    set(ref(db, `bans/${DEVICE_ID}`), d).catch(e => console.warn('[phX] ban write:', e.message));
   }
   showBanScreen(d);
 }
@@ -1236,11 +1304,15 @@ function containsBanned(q) {
     const idx = s.indexOf(t);
     if (idx === -1) return false;
     const before = idx === 0 || /[\W_]/.test(s[idx-1]);
-    const after = idx + t.length >= s.length || /[\W_]/.test(s[idx+t.length]);
+    const after  = idx + t.length >= s.length || /[\W_]/.test(s[idx+t.length]);
     return before && after;
   });
 }
 async function checkBanStatus() {
+  // Check local first (fast)
+  const localBan = JSON.parse(localStorage.getItem('phx_ban') || 'null');
+  if (localBan?.active !== false && localBan?.until > Date.now()) { showBanScreen(localBan); return; }
+  // Then check Firebase (requires public read on bans/$deviceId — update your rules!)
   if (!FB?.ok) return;
   const { ref, get, db } = FB;
   try {
@@ -1249,31 +1321,33 @@ async function checkBanStatus() {
       const d = snap.val();
       if (d.active !== false && d.until > Date.now()) {
         localStorage.setItem('phx_ban', JSON.stringify(d));
-        document.getElementById('ageGate').classList.add('gone');
         showBanScreen(d);
       }
     }
-  } catch(e) { console.warn('Ban check failed:', e); }
+  } catch(e) {
+    // Silently ignore — likely "bans" read rule not yet public
+    // Update Firebase rules: "bans/$deviceId": { ".read": true }
+  }
 }
 
 // ── STATE ──
 let ST = {
-  tags: 'rating:explicit', page: 0, sort: 'latest', mediaFilter: 'all',
-  posts: [], loading: false, done: false, vIdx: -1, savedView: false
+  tags:'rating:explicit', page:0, sort:'latest', mediaFilter:'all',
+  posts:[], loading:false, done:false, vIdx:-1, savedView:false
 };
-let user = null;
-let favs = JSON.parse(localStorage.getItem('phx_favs') || '[]');
-let searchHistory = JSON.parse(localStorage.getItem('phx_hist') || '[]');
-let settings = JSON.parse(localStorage.getItem('phx_settings') || '{"autoReveal":false,"compact":false,"showScores":true,"hq":false,"invincible":false}');
-let ageOk = localStorage.getItem('phx_age') === '1';
+let user        = null;
+let favs        = JSON.parse(localStorage.getItem('phx_favs')     || '[]');
+let searchHistory = JSON.parse(localStorage.getItem('phx_hist')   || '[]');
+let settings    = JSON.parse(localStorage.getItem('phx_settings') || '{"autoReveal":false,"compact":false,"showScores":true,"hq":false,"invincible":false}');
+let ageOk       = localStorage.getItem('phx_age') === '1';
 let ratingUnsub = null, commentUnsub = null, currentVTab = 'tags';
-const revealedIds = new Set();
 let currentCtrl = null;
-const imgCache = new Map();
+const revealedIds = new Set();
+const imgCache    = new Map();
 
 // ── VIDEO CACHE ──
 const vidCache = new Map();
-const vidBin = document.getElementById('vidPreloadBin');
+const vidBin   = document.getElementById('vidPreloadBin');
 function vidCacheSet(id, v) {
   if (vidCache.has(id)) return;
   if (vidCache.size >= VID_CACHE_MAX) {
@@ -1295,12 +1369,11 @@ function clearVidCache() {
   vidCache.clear();
 }
 
-// Video intersection observer
 const _vObsSeen = new Set();
 window._vObs = new IntersectionObserver(entries => {
   entries.forEach(e => {
     if (!e.isIntersecting) return;
-    const v = e.target;
+    const v   = e.target;
     const uid = v.dataset.postId || v.dataset.src || '';
     if (_vObsSeen.has(uid)) { window._vObs.unobserve(v); return; }
     _vObsSeen.add(uid);
@@ -1308,60 +1381,61 @@ window._vObs = new IntersectionObserver(entries => {
     if (!v.src || v.src === location.href) v.src = v.dataset.src || '';
     window._vObs.unobserve(v);
   });
-}, { rootMargin: '1200px' });
+}, { rootMargin:'1200px' });
 
 // ── SETTINGS ──
-function saveSettings() { localStorage.setItem('phx_settings', JSON.stringify(settings)); }
+function saveSettings()  { localStorage.setItem('phx_settings', JSON.stringify(settings)); }
 function applySettings() {
   document.body.classList.toggle('auto-reveal', !!settings.autoReveal);
-  const at = document.getElementById('arToggle'); if (at) at.checked = !!settings.autoReveal;
-  const arRow = document.getElementById('arRow'); if (arRow) arRow.classList.toggle('active-row', !!settings.autoReveal);
-  const ct = document.getElementById('compactToggle'); if (ct) ct.checked = !!settings.compact;
+  const at  = document.getElementById('arToggle');         if (at)  at.checked  = !!settings.autoReveal;
+  const arRow = document.getElementById('arRow');          if (arRow) arRow.classList.toggle('active-row', !!settings.autoReveal);
+  const ct  = document.getElementById('compactToggle');    if (ct)  ct.checked  = !!settings.compact;
   if (settings.compact) document.documentElement.style.setProperty('--cols','7');
   else document.documentElement.style.removeProperty('--cols');
-  const st = document.getElementById('scoresToggle'); if (st) st.checked = settings.showScores !== false;
+  const st  = document.getElementById('scoresToggle');     if (st)  st.checked  = settings.showScores !== false;
   document.body.classList.toggle('hide-scores', settings.showScores === false);
-  const hq = document.getElementById('hqToggle'); if (hq) hq.checked = !!settings.hq;
+  const hq  = document.getElementById('hqToggle');         if (hq)  hq.checked  = !!settings.hq;
   applyInvincible();
 }
+
 function openSettings() {
   if (!user) { openAuth('login'); return; }
   const isOwner = user.username?.toLowerCase() === OWNER_USERNAME;
-  document.getElementById('spAv').textContent = user.username[0].toUpperCase();
-  document.getElementById('spAv').className = 'sp-user-av' + (isOwner ? ' owner-av' : '');
-  document.getElementById('spUserName').textContent = user.username + (isOwner ? ' 👑' : '');
-  document.getElementById('spUserSub').textContent = user.username;
-  document.getElementById('spBadge').className = 'sp-user-badge' + (isOwner ? ' owner' : '');
-  document.getElementById('spBadge').innerHTML = isOwner
+  document.getElementById('spAv').textContent    = user.username[0].toUpperCase();
+  document.getElementById('spAv').className      = 'sp-user-av' + (isOwner?' owner-av':'');
+  document.getElementById('spUserName').textContent = user.username + (isOwner?' 👑':'');
+  document.getElementById('spUserSub').textContent  = user.username;
+  document.getElementById('spBadge').className   = 'sp-user-badge' + (isOwner?' owner':'');
+  document.getElementById('spBadge').innerHTML   = isOwner
     ? '<span>👑</span>Owner'
     : '<span style="width:4px;height:4px;border-radius:50%;background:var(--green);display:inline-block"></span>Member';
   document.getElementById('spFavCt').textContent = `${favs.length} saved`;
   applySettings();
   document.getElementById('settingsOverlay').classList.add('open');
 }
-function closeSettings() { document.getElementById('settingsOverlay').classList.remove('open'); }
+function closeSettings()        { document.getElementById('settingsOverlay').classList.remove('open'); }
 function handleSettingsClick(e) { if (e.target === document.getElementById('settingsOverlay')) closeSettings(); }
-function signOutFromSettings() { closeSettings(); signOut(); }
-function clearFavorites() { if (!confirm('Clear all saved posts?')) return; favs=[]; localStorage.setItem('phx_favs','[]'); updateFavCount(); toast('Cleared saved posts'); }
-function handleCompactToggle(el) { settings.compact = el.checked; saveSettings(); applySettings(); }
+function signOutFromSettings()  { closeSettings(); signOut(); }
+function clearFavorites()       { if (!confirm('Clear all saved posts?')) return; favs=[]; localStorage.setItem('phx_favs','[]'); updateFavCount(); toast('Cleared saved posts'); }
+function handleCompactToggle(el){ settings.compact    = el.checked; saveSettings(); applySettings(); }
 function handleScoresToggle(el) { settings.showScores = el.checked; saveSettings(); applySettings(); }
-function handleHQToggle(el) { settings.hq = el.checked; saveSettings(); toast(el.checked ? 'HQ mode on' : 'Standard mode'); }
+function handleHQToggle(el)     { settings.hq         = el.checked; saveSettings(); toast(el.checked?'HQ on':'Standard mode'); }
 function handleARToggle(el) {
-  if (el.checked) { el.checked = false; document.getElementById('arModal').classList.add('open'); }
-  else { settings.autoReveal = false; saveSettings(); applySettings(); toast('Auto-Reveal disabled'); }
+  if (el.checked) { el.checked=false; document.getElementById('arModal').classList.add('open'); }
+  else { settings.autoReveal=false; saveSettings(); applySettings(); toast('Auto-Reveal disabled'); }
 }
-function confirmAR() { document.getElementById('arModal').classList.remove('open'); settings.autoReveal = true; saveSettings(); applySettings(); toast('Auto-Reveal enabled 🔞','green'); }
-function cancelAR() { document.getElementById('arModal').classList.remove('open'); document.getElementById('arToggle').checked = false; }
+function confirmAR() { document.getElementById('arModal').classList.remove('open'); settings.autoReveal=true; saveSettings(); applySettings(); toast('Auto-Reveal enabled 🔞','green'); }
+function cancelAR()  { document.getElementById('arModal').classList.remove('open'); document.getElementById('arToggle').checked=false; }
 
 // ── GRID CONTROLS ──
 function setCols(n) {
   document.documentElement.style.setProperty('--cols', n);
-  document.querySelectorAll('.tb-col-btn').forEach(b => b.classList.toggle('active', parseInt(b.textContent) === n));
+  document.querySelectorAll('.tb-col-btn').forEach(b => b.classList.toggle('active', parseInt(b.textContent)===n));
 }
 function toggleSidebar() {
-  const sb = document.getElementById('sidebar'), ov = document.getElementById('sbOverlay');
-  const open = sb.classList.toggle('open');
-  ov.classList.toggle('show', open);
+  const sb=document.getElementById('sidebar'), ov=document.getElementById('sbOverlay');
+  const open=sb.classList.toggle('open');
+  ov.classList.toggle('show',open);
 }
 function closeSidebar() {
   document.getElementById('sidebar').classList.remove('open');
@@ -1370,344 +1444,325 @@ function closeSidebar() {
 
 // ── HISTORY ──
 function addToHistory(q) {
-  searchHistory = searchHistory.filter(h => h !== q);
+  searchHistory = searchHistory.filter(h=>h!==q);
   searchHistory.unshift(q);
-  if (searchHistory.length > MAX_HISTORY) searchHistory.pop();
+  if (searchHistory.length>MAX_HISTORY) searchHistory.pop();
   localStorage.setItem('phx_hist', JSON.stringify(searchHistory));
   renderHistory();
 }
-function clearHistory() { searchHistory = []; localStorage.setItem('phx_hist','[]'); renderHistory(); }
+function clearHistory()  { searchHistory=[]; localStorage.setItem('phx_hist','[]'); renderHistory(); }
 function renderHistory() {
   const b = document.getElementById('histBody');
-  if (!searchHistory.length) { b.innerHTML = '<div class="hist-empty">No searches yet</div>'; return; }
-  b.innerHTML = '';
+  if (!searchHistory.length) { b.innerHTML='<div class="hist-empty">No searches yet</div>'; return; }
+  b.innerHTML='';
   searchHistory.slice(0,12).forEach(h => {
-    const el = document.createElement('div');
-    el.className = 'hist-item';
-    el.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>${esc(h)}`;
-    el.onclick = () => { closeHistPanel(); doSearchQuery(h); };
+    const el=document.createElement('div'); el.className='hist-item';
+    el.innerHTML=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>${esc(h)}`;
+    el.onclick=()=>{ closeHistPanel(); doSearchQuery(h); };
     b.appendChild(el);
   });
 }
-let histOpen = false;
-function toggleHistory() { histOpen = !histOpen; document.getElementById('histPanel').classList.toggle('open', histOpen); if (histOpen) renderHistory(); }
-function closeHistPanel() { histOpen = false; document.getElementById('histPanel').classList.remove('open'); }
+let histOpen=false;
+function toggleHistory()  { histOpen=!histOpen; document.getElementById('histPanel').classList.toggle('open',histOpen); if(histOpen) renderHistory(); }
+function closeHistPanel() { histOpen=false; document.getElementById('histPanel').classList.remove('open'); }
 function updateFavCount() {
-  const p = document.getElementById('sbFavPill'); if (p) p.textContent = favs.length;
-  const s = document.getElementById('spFavCt'); if (s) s.textContent = `${favs.length} saved`;
+  const p=document.getElementById('sbFavPill');     if(p) p.textContent=favs.length;
+  const s=document.getElementById('spFavCt');       if(s) s.textContent=`${favs.length} saved`;
 }
 
 // ── TRENDING BAR ──
 function buildTrendingBar() {
-  const scroll = document.getElementById('trendingScroll');
-  scroll.innerHTML = '';
-  TRENDING_TAGS.forEach(({tag, ct}) => {
-    const chip = document.createElement('div');
-    chip.className = 'trending-chip';
-    chip.innerHTML = `${esc(tag)}<span class="tc-ct">${ct}</span>`;
-    chip.onclick = () => {
-      document.querySelectorAll('.sb-nav-item,.sb-tag').forEach(i => i.classList.remove('active'));
-      document.getElementById('tbHeading').textContent = tag;
-      ST.savedView = false;
-      setTagsR34(tag + ' rating:explicit');
+  const scroll=document.getElementById('trendingScroll');
+  scroll.innerHTML='';
+  TRENDING_TAGS.forEach(({tag,ct})=>{
+    const chip=document.createElement('div'); chip.className='trending-chip';
+    chip.innerHTML=`${esc(tag)}<span class="tc-ct">${ct}</span>`;
+    chip.onclick=()=>{
+      document.querySelectorAll('.sb-nav-item,.sb-tag').forEach(i=>i.classList.remove('active'));
+      document.getElementById('tbHeading').textContent=tag;
+      ST.savedView=false;
+      setTagsR34(tag+' rating:explicit');
     };
     scroll.appendChild(chip);
   });
 }
 
 // ── NOTIFICATIONS ──
-let notifications = JSON.parse(localStorage.getItem('phx_notifs') || '[]');
-let notifPanelOpen = false;
-let notifUnsub = null;
+let notifications   = JSON.parse(localStorage.getItem('phx_notifs')||'[]');
+let notifPanelOpen  = false;
+let notifUnsub      = null;
 
 function initNotifListener() {
   if (!FB?.ok) return;
-  const { ref, onValue, db } = FB;
-  if (notifUnsub) try { notifUnsub(); } catch(e) {}
-  notifUnsub = onValue(ref(db, 'notifications'), snap => {
+  const {ref,onValue,db}=FB;
+  if (notifUnsub) try{notifUnsub();}catch(e){}
+  notifUnsub=onValue(ref(db,'notifications'), snap=>{
     if (!snap.exists()) return;
-    const data = snap.val();
-    const serverNotifs = Object.entries(data)
-      .map(([id, n]) => ({ id, ...n }))
-      .sort((a, b) => (b.ts||0) - (a.ts||0))
-      .slice(0, 50);
-    const readIds = JSON.parse(localStorage.getItem('phx_notif_read') || '[]');
-    notifications = serverNotifs.map(n => ({ ...n, read: readIds.includes(n.id) }));
-    localStorage.setItem('phx_notifs', JSON.stringify(notifications));
+    const data=snap.val();
+    const readIds=JSON.parse(localStorage.getItem('phx_notif_read')||'[]');
+    const serverNotifs=Object.entries(data)
+      .map(([id,n])=>({id,...n}))
+      .sort((a,b)=>(b.ts||0)-(a.ts||0))
+      .slice(0,50);
+    notifications=serverNotifs.map(n=>({...n,read:readIds.includes(n.id)}));
+    localStorage.setItem('phx_notifs',JSON.stringify(notifications));
     updateNotifBadge();
-    if (notifPanelOpen) renderNotifPanel();
+    if(notifPanelOpen) renderNotifPanel();
   });
 }
 
 function updateNotifBadge() {
-  const unread = notifications.filter(n => !n.read).length;
-  const badge = document.getElementById('notifBadge');
-  if (!badge) return;
-  if (unread > 0) {
-    badge.textContent = unread > 9 ? '9+' : unread;
-    badge.classList.add('show');
-  } else {
-    badge.classList.remove('show');
-  }
-  const hct = document.getElementById('notifHeadCt');
-  if (hct) hct.textContent = unread > 0 ? `${unread} unread` : 'All caught up';
+  const unread=notifications.filter(n=>!n.read).length;
+  const badge=document.getElementById('notifBadge');
+  if(!badge) return;
+  if(unread>0){badge.textContent=unread>9?'9+':unread;badge.classList.add('show');}
+  else badge.classList.remove('show');
+  const hct=document.getElementById('notifHeadCt');
+  if(hct) hct.textContent=unread>0?`${unread} unread`:'All caught up';
 }
 
-function toggleNotifPanel() {
-  notifPanelOpen = !notifPanelOpen;
-  document.getElementById('notifPanel').classList.toggle('open', notifPanelOpen);
-  if (notifPanelOpen) renderNotifPanel();
-}
-function closeNotifPanel() { notifPanelOpen = false; document.getElementById('notifPanel').classList.remove('open'); }
+function toggleNotifPanel()  { notifPanelOpen=!notifPanelOpen; document.getElementById('notifPanel').classList.toggle('open',notifPanelOpen); if(notifPanelOpen) renderNotifPanel(); }
+function closeNotifPanel()   { notifPanelOpen=false; document.getElementById('notifPanel').classList.remove('open'); }
 
-const NOTIF_TYPE_ICONS = { announce:'📢', promo:'🎉', alert:'🚨', update:'✅' };
-const NOTIF_TYPE_CLASS = { announce:'type-announce', promo:'type-promo', alert:'type-alert', update:'type-update' };
+const NOTIF_TYPE_ICONS  = {announce:'📢',promo:'🎉',alert:'🚨',update:'✅'};
+const NOTIF_TYPE_CLASS  = {announce:'type-announce',promo:'type-promo',alert:'type-alert',update:'type-update'};
 
 function renderNotifPanel() {
-  const body = document.getElementById('notifBody');
-  if (!body) return;
-  if (!notifications.length) {
-    body.innerHTML = `<div class="notif-empty"><div class="notif-empty-icon">🔔</div><div class="notif-empty-text">No notifications yet</div></div>`;
+  const body=document.getElementById('notifBody');
+  if(!body) return;
+  if(!notifications.length){
+    body.innerHTML=`<div class="notif-empty"><div class="notif-empty-icon">🔔</div><div class="notif-empty-text">No notifications yet</div></div>`;
     return;
   }
-  body.innerHTML = '';
-  notifications.forEach(n => {
-    const item = document.createElement('div');
-    item.className = 'notif-item' + (!n.read ? ' unread' : '');
-    const typeIcon = NOTIF_TYPE_ICONS[n.type] || '📢';
-    const typeClass = NOTIF_TYPE_CLASS[n.type] || 'type-announce';
-    const bodyHtml = esc(n.body||'').replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener" style="color:var(--acc);text-decoration:none">$1</a>');
-    item.innerHTML = `
-      <div class="notif-icon-wrap ${typeClass}">${typeIcon}</div>
+  body.innerHTML='';
+  notifications.forEach(n=>{
+    const item=document.createElement('div');
+    item.className='notif-item'+(!n.read?' unread':'');
+    const typeIcon=NOTIF_TYPE_ICONS[n.type]||'📢';
+    const typeClass=NOTIF_TYPE_CLASS[n.type]||'type-announce';
+    const bodyHtml=esc(n.body||'').replace(/\[([^\]]+)\]\(([^)]+)\)/g,'<a href="$2" target="_blank" rel="noopener" style="color:var(--acc);text-decoration:none">$1</a>');
+    item.innerHTML=`<div class="notif-icon-wrap ${typeClass}">${typeIcon}</div>
       <div class="notif-content">
         <div class="notif-title">${esc(n.title||'Notification')}</div>
         <div class="notif-text">${bodyHtml}</div>
         <div class="notif-time">${timeAgo(n.ts)}</div>
       </div>`;
-    item.onclick = () => markNotifRead(n.id);
+    item.onclick=()=>markNotifRead(n.id);
     body.appendChild(item);
   });
 }
 
 function markNotifRead(id) {
-  const readIds = JSON.parse(localStorage.getItem('phx_notif_read') || '[]');
-  if (!readIds.includes(id)) { readIds.push(id); localStorage.setItem('phx_notif_read', JSON.stringify(readIds)); }
-  notifications = notifications.map(n => n.id === id ? { ...n, read: true } : n);
+  const readIds=JSON.parse(localStorage.getItem('phx_notif_read')||'[]');
+  if(!readIds.includes(id)){readIds.push(id);localStorage.setItem('phx_notif_read',JSON.stringify(readIds));}
+  notifications=notifications.map(n=>n.id===id?{...n,read:true}:n);
   updateNotifBadge(); renderNotifPanel();
 }
 function markAllNotifRead() {
-  const ids = notifications.map(n => n.id);
-  localStorage.setItem('phx_notif_read', JSON.stringify(ids));
-  notifications = notifications.map(n => ({ ...n, read: true }));
-  updateNotifBadge(); renderNotifPanel();
-  toast('All marked as read', 'green');
+  const ids=notifications.map(n=>n.id);
+  localStorage.setItem('phx_notif_read',JSON.stringify(ids));
+  notifications=notifications.map(n=>({...n,read:true}));
+  updateNotifBadge(); renderNotifPanel(); toast('All marked as read','green');
 }
 function clearAllNotifs() {
-  notifications = [];
+  notifications=[];
   localStorage.removeItem('phx_notifs'); localStorage.removeItem('phx_notif_read');
-  updateNotifBadge(); renderNotifPanel();
-  toast('Notifications cleared');
+  updateNotifBadge(); renderNotifPanel(); toast('Notifications cleared');
 }
 async function sendNotification() {
-  const title = document.getElementById('notifComposeTitle').value.trim();
-  const body = document.getElementById('notifComposeBody').value.trim();
-  const type = document.getElementById('notifComposeType').value;
-  if (!title || !body) { toast('Fill in title and body', 'red'); return; }
-  if (!FB?.ok) { toast('Firebase unavailable', 'red'); return; }
-  const btn = document.getElementById('notifSendBtn');
-  btn.disabled = true; btn.textContent = 'Sending…';
+  const title=document.getElementById('notifComposeTitle').value.trim();
+  const body =document.getElementById('notifComposeBody').value.trim();
+  const type =document.getElementById('notifComposeType').value;
+  if(!title||!body){toast('Fill in title and body','red');return;}
+  if(!FB?.ok){toast('Firebase unavailable','red');return;}
+  const btn=document.getElementById('notifSendBtn');
+  btn.disabled=true; btn.textContent='Sending…';
   try {
-    const { ref, push, db } = FB;
-    await push(ref(db, 'notifications'), { title, body, type, ts: Date.now(), sentBy: user?.username || OWNER_USERNAME });
-    document.getElementById('notifComposeTitle').value = '';
-    document.getElementById('notifComposeBody').value = '';
-    toast('Notification sent! 🚀', 'green');
-  } catch(e) { toast('Failed: ' + e.message, 'red'); }
-  btn.disabled = false; btn.textContent = 'Send 🚀';
+    const{ref,push,db}=FB;
+    await push(ref(db,'notifications'),{title,body,type,ts:Date.now(),sentBy:user?.username||OWNER_USERNAME});
+    document.getElementById('notifComposeTitle').value='';
+    document.getElementById('notifComposeBody').value='';
+    toast('Notification sent! 🚀','green');
+  } catch(e){ toast('Failed: '+e.message,'red'); }
+  btn.disabled=false; btn.textContent='Send 🚀';
 }
 
 // ── OWNER PANEL ──
-function openOwnerPanel() { document.getElementById('ownerPanel').classList.add('open'); refreshOwnerStats(); }
+function openOwnerPanel()  { document.getElementById('ownerPanel').classList.add('open'); refreshOwnerStats(); }
 function closeOwnerPanel() { document.getElementById('ownerPanel').classList.remove('open'); }
 async function refreshOwnerStats() {
-  if (!FB?.ok) { toast('Firebase unavailable','red'); return; }
-  const { ref, get, db } = FB;
+  if(!FB?.ok){toast('Firebase unavailable','red');return;}
+  const{ref,get,db}=FB;
   try {
-    const [bansSnap, commentsSnap, ratingsSnap] = await Promise.all([
-      get(ref(db,'bans')), get(ref(db,'comments')), get(ref(db,'ratings'))
+    const[bansSnap,commentsSnap,ratingsSnap]=await Promise.all([
+      get(ref(db,'bans')),get(ref(db,'comments')),get(ref(db,'ratings'))
     ]);
-    const bans = bansSnap.exists() ? bansSnap.val() : {};
-    const activeBans = Object.values(bans).filter(b => b.active !== false && b.until > Date.now());
-    let totalComments = 0;
-    if (commentsSnap.exists()) Object.values(commentsSnap.val()).forEach(pc => { totalComments += Object.keys(pc).length; });
-    let totalRatings = 0;
-    if (ratingsSnap.exists()) Object.values(ratingsSnap.val()).forEach(pr => { totalRatings += Object.keys(pr).length; });
-    document.getElementById('ownerStatBans').textContent = activeBans.length;
-    document.getElementById('ownerStatComments').textContent = totalComments;
-    document.getElementById('ownerStatRatings').textContent = totalRatings;
-    const banList = document.getElementById('ownerBanList');
-    if (!activeBans.length) {
-      banList.innerHTML = '<div style="font-size:9.5px;color:var(--t4);font-family:var(--mono);padding:6px;text-align:center">No active bans</div>';
+    const bans=bansSnap.exists()?bansSnap.val():{};
+    const activeBans=Object.values(bans).filter(b=>b.active!==false&&b.until>Date.now());
+    let totalComments=0;
+    if(commentsSnap.exists()) Object.values(commentsSnap.val()).forEach(pc=>{totalComments+=Object.keys(pc).length;});
+    let totalRatings=0;
+    if(ratingsSnap.exists()) Object.values(ratingsSnap.val()).forEach(pr=>{totalRatings+=Object.keys(pr).length;});
+    document.getElementById('ownerStatBans').textContent=activeBans.length;
+    document.getElementById('ownerStatComments').textContent=totalComments;
+    document.getElementById('ownerStatRatings').textContent=totalRatings;
+    const banList=document.getElementById('ownerBanList');
+    if(!activeBans.length){
+      banList.innerHTML='<div style="font-size:9.5px;color:var(--t4);font-family:var(--mono);padding:6px;text-align:center">No active bans</div>';
     } else {
-      banList.innerHTML = activeBans.map(b =>
+      banList.innerHTML=activeBans.map(b=>
         `<div class="owner-ban-item">
           <div><div class="owner-ban-id">${esc((b.device||'?').substring(0,16))}…</div><div class="owner-ban-reason">${esc(b.reason||'?')}</div></div>
           <div class="owner-unban" onclick="ownerUnban('${esc(b.device||'')}')">Unban</div>
         </div>`).join('');
     }
-  } catch(e) { toast('Error loading stats: ' + e.message,'red'); console.error(e); }
+  } catch(e){toast('Error loading stats: '+e.message,'red');console.error(e);}
 }
 async function ownerUnban(deviceId) {
-  if (!FB?.ok) return;
-  const { ref, set, db } = FB;
-  try { await set(ref(db,`bans/${deviceId}/active`), false); await set(ref(db,`bans/${deviceId}/until`), Date.now()-1000); toast('Unbanned','green'); refreshOwnerStats(); }
-  catch(e) { toast('Error: '+e.message,'red'); }
+  if(!FB?.ok) return;
+  const{ref,set,db}=FB;
+  try{await set(ref(db,`bans/${deviceId}/active`),false);await set(ref(db,`bans/${deviceId}/until`),Date.now()-1000);toast('Unbanned','green');refreshOwnerStats();}
+  catch(e){toast('Error: '+e.message,'red');}
 }
 async function ownerUnbanAll() {
-  if (!FB?.ok || !confirm('Unban everyone?')) return;
-  const { ref, get, set, db } = FB;
+  if(!FB?.ok||!confirm('Unban everyone?')) return;
+  const{ref,get,set,db}=FB;
   try {
-    const snap = await get(ref(db,'bans'));
-    if (!snap.exists()) return;
-    await Promise.all(Object.keys(snap.val()).map(k => set(ref(db,`bans/${k}/active`), false)));
+    const snap=await get(ref(db,'bans'));
+    if(!snap.exists()) return;
+    await Promise.all(Object.keys(snap.val()).map(k=>set(ref(db,`bans/${k}/active`),false)));
     toast('All bans lifted','green'); refreshOwnerStats();
-  } catch(e) { toast('Error','red'); }
+  } catch(e){toast('Error','red');}
 }
 
 // ── SAVED VIEW ──
 function openSavedView() {
   closeSidebar();
-  if (!favs.length) { toast('No saved posts yet','red'); return; }
-  ST.savedView = true;
-  document.getElementById('tbHeading').textContent = 'Saved Posts';
-  document.querySelectorAll('.sb-nav-item,.sb-tag').forEach(i => i.classList.remove('active'));
-  ST.done = true; ST.loading = false;
-  document.getElementById('grid').innerHTML = '';
-  document.getElementById('sentinel').innerHTML = '<span style="font-size:10px;font-family:var(--mono);color:var(--t4)">— saved only —</span>';
-  const saved = ST.posts.filter(p => favs.includes(p.id));
-  if (saved.length) { ST.posts = saved; renderGrid(); }
+  if(!favs.length){toast('No saved posts yet','red');return;}
+  ST.savedView=true;
+  document.getElementById('tbHeading').textContent='Saved Posts';
+  document.querySelectorAll('.sb-nav-item,.sb-tag').forEach(i=>i.classList.remove('active'));
+  ST.done=true; ST.loading=false;
+  document.getElementById('grid').innerHTML='';
+  document.getElementById('sentinel').innerHTML='<span style="font-size:10px;font-family:var(--mono);color:var(--t4)">— saved only —</span>';
+  const saved=ST.posts.filter(p=>favs.includes(p.id));
+  if(saved.length){ST.posts=saved;renderGrid();}
   else {
-    document.getElementById('grid').innerHTML = '<div class="err-state"><div class="err-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></div><div class="err-title">No cached saved posts</div><div class="err-sub">Browse and save posts first.</div></div>';
+    document.getElementById('grid').innerHTML='<div class="err-state"><div class="err-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></div><div class="err-title">No cached saved posts</div><div class="err-sub">Browse and save posts first.</div></div>';
   }
 }
-function setMediaFilter(f, el) {
-  ST.mediaFilter = f;
-  document.querySelectorAll('.tb-tab').forEach(b => b.classList.remove('active'));
+function setMediaFilter(f,el) {
+  ST.mediaFilter=f;
+  document.querySelectorAll('.tb-tab').forEach(b=>b.classList.remove('active'));
   el.classList.add('active');
   renderGrid();
 }
 function getFiltered() {
-  return ST.posts.filter(p => {
-    const isVid = /\.(webm|mp4)$/i.test(p.file_url||'');
-    if (ST.mediaFilter === 'image') return !isVid;
-    if (ST.mediaFilter === 'video') return isVid;
+  return ST.posts.filter(p=>{
+    const isVid=/\.(webm|mp4)$/i.test(p.file_url||'');
+    if(ST.mediaFilter==='image') return !isVid;
+    if(ST.mediaFilter==='video') return isVid;
     return true;
   });
 }
 
 // ── GRID RENDER ──
 function renderGrid() {
-  const grid = document.getElementById('grid');
-  const frag = document.createDocumentFragment();
-  getFiltered().forEach((post, i) => frag.appendChild(buildCard(post, i)));
-  grid.innerHTML = '';
+  const grid=document.getElementById('grid');
+  const frag=document.createDocumentFragment();
+  getFiltered().forEach((post,i)=>frag.appendChild(buildCard(post,i)));
+  grid.innerHTML='';
   grid.appendChild(frag);
 }
-function showSkeletons(n = 24) {
-  const grid = document.getElementById('grid');
-  if (grid.querySelector('.card')) return;
-  const heights = [180,260,200,310,165,225,290,185,245,170,315,195];
-  const frag = document.createDocumentFragment();
-  for (let i = 0; i < n; i++) {
-    const s = document.createElement('div');
-    s.className = 'skel';
-    s.style.height = heights[i % heights.length] + 'px';
+function showSkeletons(n=24) {
+  const grid=document.getElementById('grid');
+  if(grid.querySelector('.card')) return;
+  const heights=[180,260,200,310,165,225,290,185,245,170,315,195];
+  const frag=document.createDocumentFragment();
+  for(let i=0;i<n;i++){
+    const s=document.createElement('div');
+    s.className='skel'; s.style.height=heights[i%heights.length]+'px';
     frag.appendChild(s);
   }
   grid.appendChild(frag);
 }
 
-const HEART_SVG = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>`;
-const ZOOM_SVG = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>`;
+const HEART_SVG=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>`;
+const ZOOM_SVG =`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>`;
 
 function buildCard(post, idx) {
-  const card = document.createElement('div');
-  card.className = 'card card-new';
-  card.style.animationDelay = Math.min(idx * 7, 90) + 'ms';
-  card.dataset.postId = post.id;
+  const card=document.createElement('div');
+  card.className='card card-new';
+  card.style.animationDelay=Math.min(idx*6,80)+'ms';
+  card.dataset.postId=post.id;
 
-  const isVid = /\.(webm|mp4)$/i.test(post.file_url||'');
-  const isGif = /\.gif$/i.test(post.file_url||'');
-  const thumb = post.preview_url || post.sample_url;
-  const isFaved = favs.includes(post.id);
-  const isRevealed = revealedIds.has(post.id) || !!settings.autoReveal;
-  if (isRevealed) card.classList.add('revealed');
+  const isVid=/\.(webm|mp4)$/i.test(post.file_url||'');
+  const isGif=/\.gif$/i.test(post.file_url||'');
+  const thumb=post.preview_url||post.sample_url;
+  const isFaved=favs.includes(post.id);
+  const isRevealed=revealedIds.has(post.id)||!!settings.autoReveal;
+  if(isRevealed) card.classList.add('revealed');
 
-  if (isVid || isGif) {
-    const badge = document.createElement('div');
-    badge.className = `card-type-badge ${isVid ? 'badge-vid' : 'badge-gif'}`;
-    badge.textContent = isVid ? 'VIDEO' : 'GIF';
+  if(isVid||isGif){
+    const badge=document.createElement('div');
+    badge.className=`card-type-badge ${isVid?'badge-vid':'badge-gif'}`;
+    badge.textContent=isVid?'VIDEO':'GIF';
     card.appendChild(badge);
   }
 
-  if (isVid) {
-    const v = document.createElement('video');
-    v.muted = true; v.loop = true; v.playsInline = true;
-    if (!isRevealed) v.className = 'blurred';
-    if (thumb) v.poster = thumb;
-    v.dataset.src = post.file_url;
-    v.dataset.postId = String(post.id);
-    v.preload = 'none';
-    card.addEventListener('mouseenter', () => {
-      if (!v.src || v.src === location.href) { v.src = post.file_url; v.preload = 'metadata'; }
-      if (card.classList.contains('revealed') || settings.autoReveal) { v.preload = 'auto'; v.play().catch(() => {}); }
-    }, { passive: true });
-    card.addEventListener('mouseleave', () => {
-      if (card.classList.contains('revealed') || settings.autoReveal) v.pause();
-    }, { passive: true });
-    const vl = document.createElement('div');
-    vl.className = 'vid-loading';
-    vl.innerHTML = '<div class="spin"></div>';
+  if(isVid){
+    const v=document.createElement('video');
+    v.muted=true; v.loop=true; v.playsInline=true;
+    if(!isRevealed) v.className='blurred';
+    if(thumb) v.poster=thumb;
+    v.dataset.src=post.file_url;
+    v.dataset.postId=String(post.id);
+    v.preload='none';
+    card.addEventListener('mouseenter',()=>{
+      if(!v.src||v.src===location.href){v.src=post.file_url;v.preload='metadata';}
+      if(card.classList.contains('revealed')||settings.autoReveal){v.preload='auto';v.play().catch(()=>{});}
+    },{passive:true});
+    card.addEventListener('mouseleave',()=>{
+      if(card.classList.contains('revealed')||settings.autoReveal) v.pause();
+    },{passive:true});
+    const vl=document.createElement('div'); vl.className='vid-loading';
+    vl.innerHTML='<div class="spin"></div>';
     card.appendChild(vl);
-    v.addEventListener('waiting', () => vl.classList.add('show'));
-    v.addEventListener('playing', () => vl.classList.remove('show'));
-    v.addEventListener('canplay', () => vl.classList.remove('show'));
+    v.addEventListener('waiting',()=>vl.classList.add('show'));
+    v.addEventListener('playing',()=>vl.classList.remove('show'));
+    v.addEventListener('canplay',()=>vl.classList.remove('show'));
     window._vObs?.observe(v);
     card.appendChild(v);
   } else {
-    const img = document.createElement('img');
-    img.loading = idx < 14 ? 'eager' : 'lazy';
-    img.alt = ''; img.decoding = idx < 8 ? 'sync' : 'async';
-    if (idx < 8) img.fetchPriority = 'high';
-    if (!isRevealed) img.className = 'blurred';
-    img.onerror = () => {
-      if (img.src !== post.sample_url && post.sample_url) { img.src = post.sample_url; return; }
-      if (img.src !== post.file_url && post.file_url) { img.src = post.file_url; return; }
-      img.style.display = 'none';
-      const d = document.createElement('div');
-      d.className = 'media-err';
-      d.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg><div class="media-err-txt">Unavailable</div>';
+    const img=document.createElement('img');
+    img.loading=idx<14?'eager':'lazy';
+    img.alt=''; img.decoding=idx<8?'sync':'async';
+    if(idx<8) img.fetchPriority='high';
+    if(!isRevealed) img.className='blurred';
+    img.onerror=()=>{
+      if(img.src!==post.sample_url&&post.sample_url){img.src=post.sample_url;return;}
+      if(img.src!==post.file_url&&post.file_url){img.src=post.file_url;return;}
+      img.style.display='none';
+      const d=document.createElement('div'); d.className='media-err';
+      d.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg><div class="media-err-txt">Unavailable</div>';
       card.appendChild(d);
     };
-    if (thumb) img.src = thumb;
+    if(thumb) img.src=thumb;
     card.appendChild(img);
   }
 
-  const tagList = (post.tags||'').split(' ').filter(Boolean).slice(0, 4);
-  if (tagList.length) {
-    const tagPrev = document.createElement('div');
-    tagPrev.className = 'card-tags-preview';
-    tagList.forEach(t => {
-      const tEl = document.createElement('span');
-      tEl.className = 'ctp-tag';
-      tEl.textContent = t;
+  const tagList=(post.tags||'').split(' ').filter(Boolean).slice(0,4);
+  if(tagList.length){
+    const tagPrev=document.createElement('div'); tagPrev.className='card-tags-preview';
+    tagList.forEach(t=>{
+      const tEl=document.createElement('span'); tEl.className='ctp-tag'; tEl.textContent=t;
       tagPrev.appendChild(tEl);
     });
     card.appendChild(tagPrev);
   }
 
-  const overlayWrap = document.createElement('div');
-  overlayWrap.innerHTML = `
+  const overlayWrap=document.createElement('div');
+  overlayWrap.innerHTML=`
     <div class="shield">
       <div class="shield-box">
         <div class="shield-icon">🔞</div>
@@ -1730,509 +1785,486 @@ function buildCard(post, idx) {
     </div>`;
   card.appendChild(overlayWrap);
 
-  overlayWrap.querySelector('.sh-btn.yes').addEventListener('click', e => {
+  overlayWrap.querySelector('.sh-btn.yes').addEventListener('click',e=>{
     e.stopPropagation();
     revealedIds.add(post.id);
     card.classList.add('revealed');
-    card.querySelectorAll('.blurred').forEach(el => el.classList.remove('blurred'));
-    const vid = card.querySelector('video');
-    if (vid) {
-      if (!vid.src || vid.src === location.href) vid.src = post.file_url;
-      vid.preload = 'auto';
-      vid.play().catch(() => {});
+    card.querySelectorAll('.blurred').forEach(el=>el.classList.remove('blurred'));
+    const vid=card.querySelector('video');
+    if(vid){
+      if(!vid.src||vid.src===location.href) vid.src=post.file_url;
+      vid.preload='auto'; vid.play().catch(()=>{});
     }
   });
-  overlayWrap.querySelector('.sh-btn.no').addEventListener('click', e => e.stopPropagation());
-  const acts = overlayWrap.querySelectorAll('.card-act');
-  acts[0].addEventListener('click', e => { e.stopPropagation(); toggleFav(post.id, acts[0]); });
-  acts[1].addEventListener('click', e => { e.stopPropagation(); openViewer(idx); });
-  card.addEventListener('click', () => {
-    if (card.classList.contains('revealed') || settings.autoReveal) openViewer(idx);
+  overlayWrap.querySelector('.sh-btn.no').addEventListener('click',e=>e.stopPropagation());
+  const acts=overlayWrap.querySelectorAll('.card-act');
+  acts[0].addEventListener('click',e=>{e.stopPropagation();toggleFav(post.id,acts[0]);});
+  acts[1].addEventListener('click',e=>{e.stopPropagation();openViewer(idx);});
+  card.addEventListener('click',()=>{
+    if(card.classList.contains('revealed')||settings.autoReveal) openViewer(idx);
   });
-  card.addEventListener('mouseenter', () => {
-    const f = getFiltered();
-    [f[idx+1], f[idx+2]].forEach(np => {
-      if (!np || imgCache.has(np.id) || /\.(webm|mp4)$/i.test(np.file_url||'')) return;
-      const pre = new Image(); pre.fetchPriority = 'low';
-      pre.src = np.preview_url || np.sample_url;
-      imgCache.set(np.id, pre);
-      if (imgCache.size > 80) imgCache.delete(imgCache.keys().next().value);
+  card.addEventListener('mouseenter',()=>{
+    const f=getFiltered();
+    [f[idx+1],f[idx+2]].forEach(np=>{
+      if(!np||imgCache.has(np.id)||/\.(webm|mp4)$/i.test(np.file_url||'')) return;
+      const pre=new Image(); pre.fetchPriority='low';
+      pre.src=np.preview_url||np.sample_url;
+      imgCache.set(np.id,pre);
+      if(imgCache.size>80) imgCache.delete(imgCache.keys().next().value);
     });
-  }, { passive: true });
+  },{passive:true});
 
   return card;
 }
 
 // ── NAV ──
 function navItem(el) {
-  document.querySelectorAll('.sb-nav-item,.sb-tag').forEach(i => i.classList.remove('active'));
+  document.querySelectorAll('.sb-nav-item,.sb-tag').forEach(i=>i.classList.remove('active'));
   el.classList.add('active');
-  document.getElementById('tbHeading').textContent = el.dataset.label || el.textContent.trim().replace(/NEW$|🔥$/g,'').trim();
-  ST.savedView = false;
-  setTagsR34(el.dataset.tags || 'rating:explicit');
+  document.getElementById('tbHeading').textContent=el.dataset.label||el.textContent.trim().replace(/NEW$|🔥$/g,'').trim();
+  ST.savedView=false;
+  setTagsR34(el.dataset.tags||'rating:explicit');
   closeSidebar();
 }
 
 // ── SEARCH ──
 function doSearchQuery(raw) {
-  if (!raw) return;
-  if (containsBanned(raw)) { setBan('Searching Banned Material'); return; }
+  if(!raw) return;
+  if(containsBanned(raw)){setBan('Searching Banned Material');return;}
   addToHistory(raw);
-  document.getElementById('tbHeading').textContent = raw;
-  document.querySelectorAll('.sb-nav-item,.sb-tag').forEach(i => i.classList.remove('active'));
-  ST.savedView = false;
-  setTagsR34(raw + ' rating:explicit');
+  document.getElementById('tbHeading').textContent=raw;
+  document.querySelectorAll('.sb-nav-item,.sb-tag').forEach(i=>i.classList.remove('active'));
+  ST.savedView=false;
+  setTagsR34(raw+' rating:explicit');
 }
 function doSearch() {
-  const raw = document.getElementById('searchInput').value.trim();
-  if (!raw) return;
-  document.getElementById('searchInput').value = '';
+  const raw=document.getElementById('searchInput').value.trim();
+  if(!raw) return;
+  document.getElementById('searchInput').value='';
   doSearchQuery(raw); closeSidebar();
 }
-function setSort(s, el) {
-  ST.sort = s;
-  document.querySelectorAll('.tb-sort-btn').forEach(b => b.classList.remove('active'));
+function setSort(s,el) {
+  ST.sort=s;
+  document.querySelectorAll('.tb-sort-btn').forEach(b=>b.classList.remove('active'));
   el.classList.add('active');
   setTagsR34(ST.tags);
 }
 
 // ── R34 DATA LOADING ──
-// Uses direct API (CORS-enabled from browser). No proxy needed.
-let prefetchCtrl = null, prefetchData = null, prefetchPage = -1, prefetchInFlight = false;
+let prefetchCtrl=null, prefetchData=null, prefetchPage=-1, prefetchInFlight=false;
 
 function buildTagQuery() {
-  let t = ST.tags;
-  if (!t.includes('sort:') && !t.includes('order:')) {
-    if (ST.sort === 'score') t += ' sort:score:desc';
-    else if (ST.sort === 'random') t += ' sort:random';
+  let t=ST.tags;
+  if(!t.includes('sort:')&&!t.includes('order:')){
+    if(ST.sort==='score')  t+=' sort:score:desc';
+    else if(ST.sort==='random') t+=' sort:random';
   }
   return t;
 }
 
-function buildApiUrl(tags, page) {
-  const params = new URLSearchParams({
-    page: 'dapi',
-    s: 'post',
-    q: 'index',
-    json: '1',
-    tags: tags,
-    limit: String(PAGE_SIZE),
-    pid: String(page),
-    api_key: R34_KEY,
-    user_id: R34_USER
+function buildApiUrl(tags,page) {
+  const params=new URLSearchParams({
+    page:'dapi',s:'post',q:'index',json:'1',
+    tags,limit:String(PAGE_SIZE),pid:String(page),
+    api_key:R34_KEY,user_id:R34_USER
   });
   return `${R34_API_BASE}?${params.toString()}`;
 }
 
 function setTagsR34(tags) {
-  if (currentCtrl) { currentCtrl.abort(); currentCtrl = null; }
-  if (prefetchCtrl) { prefetchCtrl.abort(); prefetchCtrl = null; prefetchInFlight = false; }
-  prefetchData = null; prefetchPage = -1;
-  ST.tags = tags; ST.page = 0; ST.posts = []; ST.done = false; ST.loading = false;
+  if(currentCtrl){currentCtrl.abort();currentCtrl=null;}
+  if(prefetchCtrl){prefetchCtrl.abort();prefetchCtrl=null;prefetchInFlight=false;}
+  prefetchData=null; prefetchPage=-1;
+  ST.tags=tags; ST.page=0; ST.posts=[]; ST.done=false; ST.loading=false;
   resetGrid(); loadMoreR34();
 }
 
 function resetGrid() {
-  ST.savedView = false; revealedIds.clear(); imgCache.clear();
+  ST.savedView=false; revealedIds.clear(); imgCache.clear();
   clearVidCache(); _vObsSeen.clear(); _seenPostIds.clear();
-  document.getElementById('grid').innerHTML = '';
-  document.getElementById('tbCount').textContent = '';
-  document.getElementById('sentinel').innerHTML = '<div class="spin"></div>';
+  document.getElementById('grid').innerHTML='';
+  document.getElementById('tbCount').textContent='';
+  document.getElementById('sentinel').innerHTML='<div class="spin"></div>';
   showSkeletons(PAGE_SIZE);
 }
 
-const _seenPostIds = new Set();
+const _seenPostIds=new Set();
 
-async function fetchR34(url, signal, maxAttempts = 3) {
+async function fetchR34(url,signal,maxAttempts=3) {
   let lastErr;
-  for (let attempt = 0; attempt < maxAttempts; attempt++) {
-    if (signal?.aborted) throw new DOMException('Aborted', 'AbortError');
+  for(let attempt=0;attempt<maxAttempts;attempt++){
+    if(signal?.aborted) throw new DOMException('Aborted','AbortError');
     try {
-      const res = await fetch(url, {
-        signal,
-        cache: 'default',
-        headers: { 'Accept': 'application/json' }
-      });
-      if (res.status === 429) {
-        await new Promise(r => setTimeout(r, 1200 * (attempt + 1)));
-        continue;
-      }
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const text = await res.text();
-      // Handle both array and object responses
+      const res=await fetch(url,{signal,cache:'default',headers:{'Accept':'application/json'}});
+      if(res.status===429){await new Promise(r=>setTimeout(r,1400*(attempt+1)));continue;}
+      if(!res.ok) throw new Error(`HTTP ${res.status}`);
+      const text=await res.text();
       let data;
-      try { data = JSON.parse(text); } catch(e) { throw new Error('Invalid JSON response'); }
-      if (data === null || data === undefined) return [];
-      if (Array.isArray(data)) return data;
-      // Sometimes R34 wraps in {post:[...]} for XML-converted responses
-      if (data.post) return Array.isArray(data.post) ? data.post : [data.post];
+      try{data=JSON.parse(text);}catch(e){throw new Error('Invalid JSON');}
+      if(data===null||data===undefined) return [];
+      if(Array.isArray(data)) return data;
+      if(data.post) return Array.isArray(data.post)?data.post:[data.post];
       return [];
     } catch(err) {
-      if (err.name === 'AbortError') throw err;
-      lastErr = err;
-      if (attempt < maxAttempts - 1) await new Promise(r => setTimeout(r, 700 * (attempt + 1)));
+      if(err.name==='AbortError') throw err;
+      lastErr=err;
+      if(attempt<maxAttempts-1) await new Promise(r=>setTimeout(r,800*(attempt+1)));
     }
   }
-  throw lastErr || new Error('Failed to fetch');
+  throw lastErr||new Error('Failed to fetch');
 }
 
 async function loadMoreR34() {
-  if (ST.loading || ST.done || ST.savedView) return;
-  ST.loading = true;
-  const ctrl = new AbortController(); currentCtrl = ctrl;
-  const sentinel = document.getElementById('sentinel');
-  if (ST.page > 0) sentinel.innerHTML = '<div class="spin"></div><span>Loading…</span>';
+  if(ST.loading||ST.done||ST.savedView) return;
+  ST.loading=true;
+  const ctrl=new AbortController(); currentCtrl=ctrl;
+  const sentinel=document.getElementById('sentinel');
+  if(ST.page>0) sentinel.innerHTML='<div class="spin"></div><span>Loading…</span>';
   try {
     let posts;
-    if (prefetchData && prefetchPage === ST.page && !prefetchInFlight) {
-      posts = prefetchData;
-      prefetchData = null; prefetchPage = -1;
+    if(prefetchData&&prefetchPage===ST.page&&!prefetchInFlight){
+      posts=prefetchData; prefetchData=null; prefetchPage=-1;
     } else {
-      const url = buildApiUrl(buildTagQuery(), ST.page);
-      posts = await fetchR34(url, ctrl.signal);
+      posts=await fetchR34(buildApiUrl(buildTagQuery(),ST.page),ctrl.signal);
     }
-    // Deduplicate
-    posts = posts.filter(p => { if (!p?.id || _seenPostIds.has(p.id)) return false; _seenPostIds.add(p.id); return true; });
-    if (!posts.length && ST.page === 0) {
-      ST.done = true;
-      sentinel.innerHTML = '<span>— end of results —</span>';
-      showErr('No results', 'Try different tags.');
+    posts=posts.filter(p=>{if(!p?.id||_seenPostIds.has(p.id)) return false;_seenPostIds.add(p.id);return true;});
+    if(!posts.length&&ST.page===0){
+      ST.done=true; sentinel.innerHTML='<span>— end of results —</span>';
+      showErr('No results','Try different tags.');
       return;
     }
-    if (!posts.length) { ST.done = true; sentinel.innerHTML = '<span>— end of results —</span>'; return; }
-    const prevLen = getFiltered().length;
+    if(!posts.length){ST.done=true;sentinel.innerHTML='<span>— end of results —</span>';return;}
+    const prevLen=getFiltered().length;
     ST.posts.push(...posts);
     ST.page++;
-    if (ST.page === 1) document.getElementById('grid').innerHTML = '';
+    if(ST.page===1) document.getElementById('grid').innerHTML='';
     appendNewCards(prevLen);
-    document.getElementById('tbCount').textContent = `${ST.posts.length.toLocaleString()} posts`;
-    sentinel.innerHTML = '<div class="spin"></div>';
-    setTimeout(() => prefetchNext(), 400);
+    document.getElementById('tbCount').textContent=`${ST.posts.length.toLocaleString()} posts`;
+    sentinel.innerHTML='<div class="spin"></div>';
+    setTimeout(()=>prefetchNext(),300);
   } catch(err) {
-    if (err.name === 'AbortError') return;
-    console.error('R34 load error:', err);
-    sentinel.innerHTML = `<span style="color:var(--red);cursor:pointer" onclick="ST.loading=false;loadMoreR34()">Error — tap to retry</span>`;
-    if (!ST.posts.length) showErr('Could not load', err.message, true);
-    else toast('Failed to load — tap sentinel to retry', 'red');
+    if(err.name==='AbortError') return;
+    console.error('[phX] Load error:',err);
+    sentinel.innerHTML=`<span style="color:var(--red);cursor:pointer" onclick="ST.loading=false;loadMoreR34()">Error — tap to retry</span>`;
+    if(!ST.posts.length) showErr('Could not load',err.message,true);
+    else toast('Load failed — tap sentinel to retry','red');
     return;
   } finally {
-    ST.loading = false;
-    if (currentCtrl === ctrl) currentCtrl = null;
+    ST.loading=false;
+    if(currentCtrl===ctrl) currentCtrl=null;
   }
 }
 
 async function prefetchNext() {
-  if (ST.done || prefetchPage === ST.page || prefetchInFlight) return;
-  prefetchInFlight = true;
-  const pageAtStart = ST.page;
-  if (prefetchCtrl) { try { prefetchCtrl.abort(); } catch(e){} }
-  prefetchCtrl = new AbortController();
+  if(ST.done||prefetchPage===ST.page||prefetchInFlight) return;
+  prefetchInFlight=true;
+  const pageAtStart=ST.page;
+  if(prefetchCtrl){try{prefetchCtrl.abort();}catch(e){}}
+  prefetchCtrl=new AbortController();
   try {
-    const data = await fetchR34(buildApiUrl(buildTagQuery(), pageAtStart), prefetchCtrl.signal, 1);
-    if (ST.page !== pageAtStart) { prefetchData = null; prefetchPage = -1; return; }
-    prefetchData = data;
-    prefetchPage = pageAtStart;
+    const data=await fetchR34(buildApiUrl(buildTagQuery(),pageAtStart),prefetchCtrl.signal,1);
+    if(ST.page!==pageAtStart){prefetchData=null;prefetchPage=-1;return;}
+    prefetchData=data; prefetchPage=pageAtStart;
   } catch(e) {
-    if (e.name !== 'AbortError') { prefetchData = null; prefetchPage = -1; }
-  } finally { prefetchInFlight = false; prefetchCtrl = null; }
+    if(e.name!=='AbortError'){prefetchData=null;prefetchPage=-1;}
+  } finally{prefetchInFlight=false;prefetchCtrl=null;}
 }
 
 function appendNewCards(prevLen) {
-  const newFiltered = getFiltered();
-  if (newFiltered.length > prevLen) {
-    const frag = document.createDocumentFragment();
-    for (let i = prevLen; i < newFiltered.length; i++) frag.appendChild(buildCard(newFiltered[i], i - prevLen));
+  const newFiltered=getFiltered();
+  if(newFiltered.length>prevLen){
+    const frag=document.createDocumentFragment();
+    for(let i=prevLen;i<newFiltered.length;i++) frag.appendChild(buildCard(newFiltered[i],i-prevLen));
     document.getElementById('grid').appendChild(frag);
   }
 }
 
-function showErr(title, sub, retry = false) {
-  document.getElementById('grid').innerHTML = `<div class="err-state">
+function showErr(title,sub,retry=false) {
+  document.getElementById('grid').innerHTML=`<div class="err-state">
     <div class="err-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div>
     <div class="err-title">${esc(title)}</div><div class="err-sub">${esc(sub)}</div>
-    ${retry ? `<button class="err-retry" onclick="setTagsR34(ST.tags)">Retry</button>` : ''}
+    ${retry?`<button class="err-retry" onclick="setTagsR34(ST.tags)">Retry</button>`:''}
   </div>`;
 }
 
 // ── VIEWER ──
 let vZoomed=false,vZoomScale=1,vPanX=0,vPanY=0,vPanSX=0,vPanSY=0,vPanning=false;
 function openViewer(idx) {
-  const f = getFiltered();
-  if (idx < 0 || idx >= f.length) return;
-  ST.vIdx = idx; renderViewer();
+  const f=getFiltered();
+  if(idx<0||idx>=f.length) return;
+  ST.vIdx=idx; renderViewer();
   document.getElementById('viewer').classList.add('open');
-  document.addEventListener('keydown', vKey);
-  setTimeout(() => document.getElementById('vZoomHint')?.classList.add('show'), 800);
-  setTimeout(() => document.getElementById('vZoomHint')?.classList.remove('show'), 3000);
+  document.addEventListener('keydown',vKey);
+  setTimeout(()=>document.getElementById('vZoomHint')?.classList.add('show'),800);
+  setTimeout(()=>document.getElementById('vZoomHint')?.classList.remove('show'),3000);
 }
 function closeViewer() {
   document.getElementById('viewer').classList.remove('open');
-  document.removeEventListener('keydown', vKey);
-  const vm = document.getElementById('vMedia');
-  vm.querySelectorAll('video').forEach(v => { try { v.pause(); v.src=''; v.load(); v.remove(); } catch(e) {} });
-  vm.querySelectorAll('img,.media-err').forEach(el => el.remove());
+  document.removeEventListener('keydown',vKey);
+  const vm=document.getElementById('vMedia');
+  if(vm){
+    vm.querySelectorAll('video').forEach(v=>{try{v.pause();v.src='';v.load();v.remove();}catch(e){}});
+    vm.querySelectorAll('img,.media-err').forEach(el=>el.remove());
+  }
   _unsubRating(); _unsubComment(); resetZoom();
 }
-function _unsubRating() { if (typeof ratingUnsub === 'function') { ratingUnsub(); ratingUnsub = null; } }
-function _unsubComment() { if (typeof commentUnsub === 'function') { commentUnsub(); commentUnsub = null; } }
+function _unsubRating()  { if(typeof ratingUnsub==='function'){ratingUnsub();ratingUnsub=null;} }
+function _unsubComment() { if(typeof commentUnsub==='function'){commentUnsub();commentUnsub=null;} }
 function vKey(e) {
-  if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
-  if (e.key === 'ArrowRight' || e.key === 'd') viewerNav(1);
-  else if (e.key === 'ArrowLeft' || e.key === 'a') viewerNav(-1);
-  else if (e.key === 'Escape') { if (vZoomed) resetZoom(); else closeViewer(); }
-  else if (e.key === 'f' || e.key === 'F') toggleViewerFav();
+  if(e.target.tagName==='INPUT'||e.target.tagName==='TEXTAREA') return;
+  if(e.key==='ArrowRight'||e.key==='d')  viewerNav(1);
+  else if(e.key==='ArrowLeft'||e.key==='a') viewerNav(-1);
+  else if(e.key==='Escape'){if(vZoomed) resetZoom(); else closeViewer();}
+  else if(e.key==='f'||e.key==='F') toggleViewerFav();
 }
 function viewerNav(dir) {
-  const f = getFiltered(), n = ST.vIdx + dir;
-  if (n < 0 || n >= f.length) return;
+  const f=getFiltered(), n=ST.vIdx+dir;
+  if(n<0||n>=f.length) return;
   _unsubRating(); _unsubComment();
-  const vm = document.getElementById('vMedia');
-  vm.querySelectorAll('video').forEach(v => { try { v.pause(); v.src=''; v.load(); v.remove(); } catch(e) {} });
-  vm.querySelectorAll('img,.media-err').forEach(el => el.remove());
-  resetZoom(); ST.vIdx = n; renderViewer();
-  if (n > f.length - PRELOAD_THRESHOLD) loadMoreR34();
+  const vm=document.getElementById('vMedia');
+  if(vm){
+    vm.querySelectorAll('video').forEach(v=>{try{v.pause();v.src='';v.load();v.remove();}catch(e){}});
+    vm.querySelectorAll('img,.media-err').forEach(el=>el.remove());
+  }
+  resetZoom(); ST.vIdx=n; renderViewer();
+  if(n>f.length-PRELOAD_THRESHOLD) loadMoreR34();
 }
 function resetZoom() {
-  vZoomed=false; vZoomScale=1; vPanX=0; vPanY=0;
-  const img = document.getElementById('vMedia')?.querySelector('img');
-  if (img) { img.classList.remove('zoomed'); img.style.transform=''; }
+  vZoomed=false;vZoomScale=1;vPanX=0;vPanY=0;
+  const img=document.getElementById('vMedia')?.querySelector('img');
+  if(img){img.classList.remove('zoomed');img.style.transform='';}
 }
 function setupZoom(img) {
-  img.addEventListener('dblclick', e => {
-    if (!vZoomed) {
-      vZoomed=true; vZoomScale=2.5;
-      const r = img.getBoundingClientRect();
-      vPanX = (r.width/2 - (e.clientX-r.left)) * (vZoomScale-1);
-      vPanY = (r.height/2 - (e.clientY-r.top)) * (vZoomScale-1);
-      img.style.transform = `scale(${vZoomScale}) translate(${vPanX/vZoomScale}px,${vPanY/vZoomScale}px)`;
+  img.addEventListener('dblclick',e=>{
+    if(!vZoomed){
+      vZoomed=true;vZoomScale=2.5;
+      const r=img.getBoundingClientRect();
+      vPanX=(r.width/2-(e.clientX-r.left))*(vZoomScale-1);
+      vPanY=(r.height/2-(e.clientY-r.top))*(vZoomScale-1);
+      img.style.transform=`scale(${vZoomScale}) translate(${vPanX/vZoomScale}px,${vPanY/vZoomScale}px)`;
       img.classList.add('zoomed');
     } else resetZoom();
   });
-  img.addEventListener('mousedown', e => { if (!vZoomed) return; vPanning=true; vPanSX=e.clientX-vPanX; vPanSY=e.clientY-vPanY; });
-  document.addEventListener('mousemove', e => { if (!vPanning) return; vPanX=e.clientX-vPanSX; vPanY=e.clientY-vPanSY; img.style.transform=`scale(${vZoomScale}) translate(${vPanX/vZoomScale}px,${vPanY/vZoomScale}px)`; });
-  document.addEventListener('mouseup', () => { vPanning=false; });
+  img.addEventListener('mousedown',e=>{if(!vZoomed) return;vPanning=true;vPanSX=e.clientX-vPanX;vPanSY=e.clientY-vPanY;});
+  document.addEventListener('mousemove',e=>{if(!vPanning) return;vPanX=e.clientX-vPanSX;vPanY=e.clientY-vPanSY;img.style.transform=`scale(${vZoomScale}) translate(${vPanX/vZoomScale}px,${vPanY/vZoomScale}px)`;});
+  document.addEventListener('mouseup',()=>{vPanning=false;});
 }
 async function renderViewer() {
-  const f = getFiltered(), post = f[ST.vIdx];
-  if (!post) return;
-  currentVTab = 'tags';
-  const vm = document.getElementById('vMedia');
-  const loader = document.getElementById('vLoader');
-  loader.classList.add('show');
-  const isVid = /\.(webm|mp4)$/i.test(post.file_url||'');
-  if (isVid) {
-    let v = vidCacheGet(post.id);
-    if (!v) { v = document.createElement('video'); v.src = post.file_url; v.preload = 'auto'; }
-    else { if (v.src !== post.file_url) v.src = post.file_url; v.preload = 'auto'; }
-    v.controls = true; v.loop = true; v.autoplay = true; v.playsInline = true; v.muted = false;
-    v.style.cssText = 'max-width:100%;max-height:100%;object-fit:contain';
-    v.onloadeddata = () => loader.classList.remove('show');
-    v.onerror = () => loader.classList.remove('show');
-    v.addEventListener('waiting', () => loader.classList.add('show'));
-    v.addEventListener('playing', () => loader.classList.remove('show'));
-    vm.prepend(v);
-    v.play().catch(() => {});
-    scheduleVidPreload(f, ST.vIdx);
+  const f=getFiltered(), post=f[ST.vIdx];
+  if(!post) return;
+  currentVTab='tags';
+  const vm=document.getElementById('vMedia');
+  const loader=document.getElementById('vLoader');
+  if(loader) loader.classList.add('show');
+  const isVid=/\.(webm|mp4)$/i.test(post.file_url||'');
+  if(isVid){
+    let v=vidCacheGet(post.id);
+    if(!v){v=document.createElement('video');v.src=post.file_url;v.preload='auto';}
+    else{if(v.src!==post.file_url)v.src=post.file_url;v.preload='auto';}
+    v.controls=true;v.loop=true;v.autoplay=true;v.playsInline=true;v.muted=false;
+    v.style.cssText='max-width:100%;max-height:100%;object-fit:contain';
+    v.onloadeddata=()=>{if(loader)loader.classList.remove('show');};
+    v.onerror=()=>{if(loader)loader.classList.remove('show');};
+    v.addEventListener('waiting',()=>{if(loader)loader.classList.add('show');});
+    v.addEventListener('playing',()=>{if(loader)loader.classList.remove('show');});
+    if(vm) vm.prepend(v);
+    v.play().catch(()=>{});
+    scheduleVidPreload(f,ST.vIdx);
   } else {
-    const img = document.createElement('img');
-    img.alt = ''; img.decoding = 'async'; img.fetchPriority = 'high';
-    img.onload = () => { loader.classList.remove('show'); setupZoom(img); };
-    img.onerror = () => {
-      if (img.src !== post.sample_url && post.sample_url) { img.src = post.sample_url; return; }
-      loader.classList.remove('show');
+    const img=document.createElement('img');
+    img.alt='';img.decoding='async';img.fetchPriority='high';
+    img.onload=()=>{if(loader)loader.classList.remove('show');setupZoom(img);};
+    img.onerror=()=>{
+      if(img.src!==post.sample_url&&post.sample_url){img.src=post.sample_url;return;}
+      if(loader)loader.classList.remove('show');
     };
-    const src = settings.hq ? (post.file_url||post.sample_url) : (post.sample_url||post.file_url);
-    img.src = src;
-    img.style.cssText = 'max-width:100%;max-height:100%;object-fit:contain';
-    vm.prepend(img);
-    [f[ST.vIdx+1], f[ST.vIdx-1]].forEach(np => {
-      if (!np || imgCache.has(np.id) || /\.(webm|mp4)$/i.test(np.file_url||'')) return;
-      const pre = new Image(); pre.fetchPriority = 'low';
-      pre.src = settings.hq ? (np.file_url||np.sample_url) : (np.sample_url||np.file_url);
-      imgCache.set(np.id, pre);
+    const src=settings.hq?(post.file_url||post.sample_url):(post.sample_url||post.file_url);
+    img.src=src;
+    img.style.cssText='max-width:100%;max-height:100%;object-fit:contain';
+    if(vm) vm.prepend(img);
+    [f[ST.vIdx+1],f[ST.vIdx-1]].forEach(np=>{
+      if(!np||imgCache.has(np.id)||/\.(webm|mp4)$/i.test(np.file_url||'')) return;
+      const pre=new Image();pre.fetchPriority='low';
+      pre.src=settings.hq?(np.file_url||np.sample_url):(np.sample_url||np.file_url);
+      imgCache.set(np.id,pre);
     });
   }
-  document.getElementById('vPostId').textContent = `POST #${post.id}`;
-  document.getElementById('vStats').innerHTML =
+  document.getElementById('vPostId').textContent=`POST #${post.id}`;
+  document.getElementById('vStats').innerHTML=
     `<div class="v-stat"><div class="v-stat-num">${post.score||0}</div><div class="v-stat-lbl">Score</div></div>
      <div class="v-stat"><div class="v-stat-num">${fmtSize(post.file_size)}</div><div class="v-stat-lbl">Size</div></div>
      <div class="v-stat"><div class="v-stat-num">${post.width||'?'}×${post.height||'?'}</div><div class="v-stat-lbl">Res</div></div>`;
   _unsubRating();
   loadRatings(post.id);
-  const pos = ST.vIdx+1, tot = f.length;
-  document.getElementById('vPos').textContent = pos;
-  document.getElementById('vPosR').textContent = tot;
-  document.getElementById('vProgFill').style.width = `${(pos/tot)*100}%`;
-  document.getElementById('vFavBtn').className = 'v-act' + (favs.includes(post.id)?' on':'');
+  const pos=ST.vIdx+1,tot=f.length;
+  document.getElementById('vPos').textContent=pos;
+  document.getElementById('vPosR').textContent=tot;
+  document.getElementById('vProgFill').style.width=`${(pos/tot)*100}%`;
+  document.getElementById('vFavBtn').className='v-act'+(favs.includes(post.id)?' on':'');
   renderVBody(post);
-  document.querySelectorAll('.v-tab').forEach((t,i) => t.classList.toggle('active', i===0));
+  document.querySelectorAll('.v-tab').forEach((t,i)=>t.classList.toggle('active',i===0));
 }
-function scheduleVidPreload(posts, idx) {
-  const sched = window.requestIdleCallback || (fn => setTimeout(fn, 150));
-  sched(() => {
-    [idx+1, idx+2, idx-1].forEach(i => {
-      const np = posts[i];
-      if (!np || vidCache.has(np.id)) return;
-      if (!/\.(webm|mp4)$/i.test(np.file_url||'')) return;
-      const pv = document.createElement('video');
-      pv.src = np.file_url; pv.preload = 'auto'; pv.muted = true;
-      vidCacheSet(np.id, pv);
+function scheduleVidPreload(posts,idx) {
+  const sched=window.requestIdleCallback||(fn=>setTimeout(fn,150));
+  sched(()=>{
+    [idx+1,idx+2,idx-1].forEach(i=>{
+      const np=posts[i];
+      if(!np||vidCache.has(np.id)) return;
+      if(!/\.(webm|mp4)$/i.test(np.file_url||'')) return;
+      const pv=document.createElement('video');
+      pv.src=np.file_url;pv.preload='auto';pv.muted=true;
+      vidCacheSet(np.id,pv);
     });
   });
 }
 
-// ── RATINGS (Firebase — public read, public write) ──
+// ── RATINGS ──
+// Works with Firebase Anonymous Auth (auth != null → write allowed)
 function loadRatings(postId) {
-  if (FB?.ok) {
-    const { ref, onValue, db } = FB;
-    ratingUnsub = onValue(ref(db, `ratings/${postId}`), snap => {
-      renderRating(postId, snap.exists() ? snap.val() : {});
+  if(FB?.ok){
+    const{ref,onValue,db}=FB;
+    ratingUnsub=onValue(ref(db,`ratings/${postId}`),snap=>{
+      renderRating(postId,snap.exists()?snap.val():{});
     });
   } else {
-    // Fallback to localStorage
-    const lr = JSON.parse(localStorage.getItem('phx_ratings') || '{}');
-    renderRating(postId, lr[postId] || {});
+    const lr=JSON.parse(localStorage.getItem('phx_ratings')||'{}');
+    renderRating(postId,lr[postId]||{});
   }
 }
-async function doSetRating(postId, username, stars) {
-  // Always save to localStorage as fallback
-  let lr = JSON.parse(localStorage.getItem('phx_ratings') || '{}');
-  if (!lr[postId]) lr[postId] = {};
-  lr[postId][username] = stars;
-  localStorage.setItem('phx_ratings', JSON.stringify(lr));
-  // Try Firebase
-  if (FB?.ok) {
-    const { ref, set, db } = FB;
-    try { await set(ref(db, `ratings/${postId}/${username}`), stars); return true; }
-    catch(e) { console.warn('Firebase rating write failed:', e); return false; }
+async function doSetRating(postId,username,stars) {
+  // Fallback localStorage
+  let lr=JSON.parse(localStorage.getItem('phx_ratings')||'{}');
+  if(!lr[postId]) lr[postId]={};
+  lr[postId][username]=stars;
+  localStorage.setItem('phx_ratings',JSON.stringify(lr));
+  // Firebase (anonymous auth ensures auth != null)
+  if(FB?.ok){
+    const{ref,set,db}=FB;
+    try{await set(ref(db,`ratings/${postId}/${username}`),stars);return true;}
+    catch(e){console.warn('[phX] rating write:',e.message);return false;}
   }
   return true;
 }
-function renderRating(postId, ratObj) {
-  const vals = Object.values(ratObj||{}).map(Number).filter(v => v>=1&&v<=5);
-  const myR = user?.username && ratObj[user.username] ? Number(ratObj[user.username]) : 0;
-  const avg = vals.length ? (vals.reduce((a,b)=>a+b,0)/vals.length).toFixed(1) : '—';
-  const pct = vals.length ? (parseFloat(avg)/5)*100 : 0;
-  const starsEl = document.getElementById('vStars');
-  if (!starsEl) return;
-  starsEl.innerHTML = '';
-  for (let i = 1; i <= 5; i++) {
-    const btn = document.createElement('div');
-    btn.className = 'star' + (i <= myR ? ' lit' : '');
-    btn.innerHTML = '<svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>';
-    btn.addEventListener('mouseenter', () => starsEl.querySelectorAll('.star').forEach((b,j) => b.classList.toggle('hlite', j<i)));
-    btn.addEventListener('mouseleave', () => starsEl.querySelectorAll('.star').forEach(b => b.classList.remove('hlite')));
-    btn.addEventListener('click', () => ratePost(postId, i));
+function renderRating(postId,ratObj) {
+  const vals=Object.values(ratObj||{}).map(Number).filter(v=>v>=1&&v<=5);
+  const myR=user?.username&&ratObj[user.username]?Number(ratObj[user.username]):0;
+  const avg=vals.length?(vals.reduce((a,b)=>a+b,0)/vals.length).toFixed(1):'—';
+  const pct=vals.length?(parseFloat(avg)/5)*100:0;
+  const starsEl=document.getElementById('vStars');
+  if(!starsEl) return;
+  starsEl.innerHTML='';
+  for(let i=1;i<=5;i++){
+    const btn=document.createElement('div');
+    btn.className='star'+(i<=myR?' lit':'');
+    btn.innerHTML='<svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>';
+    btn.addEventListener('mouseenter',()=>starsEl.querySelectorAll('.star').forEach((b,j)=>b.classList.toggle('hlite',j<i)));
+    btn.addEventListener('mouseleave',()=>starsEl.querySelectorAll('.star').forEach(b=>b.classList.remove('hlite')));
+    btn.addEventListener('click',()=>ratePost(postId,i));
     starsEl.appendChild(btn);
   }
-  document.getElementById('vAvg').textContent = avg;
-  document.getElementById('vBarFill').style.width = pct + '%';
-  document.getElementById('vRatCt').textContent = vals.length + ' ratings';
-  const myEl = document.getElementById('vMyRat');
-  if (myR) { myEl.style.display='block'; document.getElementById('vMyRatVal').textContent=myR; }
-  else myEl.style.display='none';
-}
-async function ratePost(postId, stars) {
-  if (!user) { toast('Sign in to rate','red'); openAuth('login'); return; }
-  const ok = await doSetRating(postId, user.username, stars);
-  if (ok && !FB?.ok) {
-    const lr = JSON.parse(localStorage.getItem('phx_ratings')||'{}');
-    renderRating(postId, lr[postId]||{});
+  document.getElementById('vAvg').textContent=avg;
+  document.getElementById('vBarFill').style.width=pct+'%';
+  document.getElementById('vRatCt').textContent=vals.length+' ratings';
+  const myEl=document.getElementById('vMyRat');
+  if(myEl){
+    if(myR){myEl.style.display='block';document.getElementById('vMyRatVal').textContent=myR;}
+    else myEl.style.display='none';
   }
-  toast(`Rated ${stars}★`, 'green');
+}
+async function ratePost(postId,stars) {
+  if(!user){toast('Sign in to rate','red');openAuth('login');return;}
+  const ok=await doSetRating(postId,user.username,stars);
+  if(ok&&!FB?.ok){
+    const lr=JSON.parse(localStorage.getItem('phx_ratings')||'{}');
+    renderRating(postId,lr[postId]||{});
+  }
+  toast(`Rated ${stars}★`,'green');
 }
 
-// ── COMMENTS (Firebase — public read/write + R34 comments) ──
-async function fbPostComment(postId, username, text) {
-  if (!FB?.ok) return false;
-  const { ref, push, db } = FB;
+// ── COMMENTS ──
+// Firebase anonymous auth means auth != null → push() succeeds
+async function fbPostComment(postId,username,text) {
+  if(!FB?.ok) return false;
+  const{ref,push,db}=FB;
   try {
-    await push(ref(db, `comments/${postId}`), {
-      username, text, ts: Date.now(),
-      isOwner: username.toLowerCase() === OWNER_USERNAME
+    await push(ref(db,`comments/${postId}`),{
+      username,text,ts:Date.now(),
+      isOwner:username.toLowerCase()===OWNER_USERNAME
     });
     return true;
-  } catch(e) { console.warn('Comment write failed:', e); return false; }
+  } catch(e){console.warn('[phX] comment write:',e.message);return false;}
 }
-async function fbDeleteComment(postId, key) {
-  if (!FB?.ok) return false;
-  const { ref, remove, db } = FB;
-  try { await remove(ref(db, `comments/${postId}/${key}`)); return true; }
-  catch(e) { return false; }
+async function fbDeleteComment(postId,key) {
+  if(!FB?.ok) return false;
+  const{ref,remove,db}=FB;
+  try{await remove(ref(db,`comments/${postId}/${key}`));return true;}
+  catch(e){return false;}
 }
-function fbListenComments(postId, cb) {
-  if (!FB?.ok) return () => {};
-  const { ref, onValue, db } = FB;
-  return onValue(ref(db, `comments/${postId}`), snap => cb(snap.exists() ? snap.val() : {}));
+function fbListenComments(postId,cb) {
+  if(!FB?.ok) return()=>{};
+  const{ref,onValue,db}=FB;
+  return onValue(ref(db,`comments/${postId}`),snap=>cb(snap.exists()?snap.val():{}));
 }
 
-// Fetch R34 native comments via API
 async function fetchR34Comments(postId) {
   try {
-    const url = `${R34_COMMENT_URL}${postId}`;
-    const res = await fetch(url, { cache: 'default' });
-    if (!res.ok) return [];
-    const text = await res.text();
-    // R34 comments come as XML: parse it
-    const parser = new DOMParser();
-    const doc = parser.parseFromString(text, 'application/xml');
-    const items = doc.querySelectorAll('comment');
-    const result = [];
-    items.forEach(el => {
+    const res=await fetch(`${R34_COMMENT_URL}${postId}`,{cache:'default'});
+    if(!res.ok) return [];
+    const text=await res.text();
+    const parser=new DOMParser();
+    const doc=parser.parseFromString(text,'application/xml');
+    const items=doc.querySelectorAll('comment');
+    const result=[];
+    items.forEach(el=>{
       result.push({
-        id: el.getAttribute('id'),
-        author: el.getAttribute('creator') || 'Anonymous',
-        body: el.getAttribute('body') || '',
-        created_at: el.getAttribute('created_at') || ''
+        id:el.getAttribute('id'),
+        author:el.getAttribute('creator')||'Anonymous',
+        body:el.getAttribute('body')||'',
+        created_at:el.getAttribute('created_at')||''
       });
     });
     return result;
-  } catch(e) { return []; }
+  } catch(e){return [];}
 }
 
 async function renderCommentsTab(postId) {
-  const body = document.getElementById('vBody');
-  body.innerHTML = '<div class="comments-loading"><div class="spin" style="width:12px;height:12px"></div> Loading…</div>';
+  const body=document.getElementById('vBody');
+  if(!body) return;
+  body.innerHTML='<div class="comments-loading"><div class="spin" style="width:12px;height:12px"></div> Loading…</div>';
   _unsubComment();
 
-  // Fetch R34 native comments in parallel with FB comments
-  const [r34Comments] = await Promise.all([
-    fetchR34Comments(postId)
-  ]);
+  const[r34Comments]=await Promise.all([fetchR34Comments(postId)]);
 
-  const doRender = commentsObj => {
-    const entries = Object.entries(commentsObj||{}).sort((a,b) => a[1].ts - b[1].ts);
-    document.getElementById('vCommentCt').textContent = entries.length + r34Comments.length;
-    const wrap = document.createElement('div');
-    wrap.className = 'comments-wrap';
-    const isOwner = user?.username?.toLowerCase() === OWNER_USERNAME;
-    if (user) {
-      const form = document.createElement('div');
-      form.className = 'comment-form';
-      form.innerHTML = `<textarea id="commentInput" placeholder="Write a comment…" rows="2"></textarea>
+  const doRender=commentsObj=>{
+    const entries=Object.entries(commentsObj||{}).sort((a,b)=>a[1].ts-b[1].ts);
+    document.getElementById('vCommentCt').textContent=entries.length+r34Comments.length;
+    const wrap=document.createElement('div'); wrap.className='comments-wrap';
+    const isOwner=user?.username?.toLowerCase()===OWNER_USERNAME;
+
+    if(user){
+      const form=document.createElement('div'); form.className='comment-form';
+      form.innerHTML=`<textarea id="commentInput" placeholder="Write a comment…" rows="2"></textarea>
         <div class="comment-form-row">
           <span class="comment-form-hint">${esc(user.username)}${isOwner?' 👑':''}</span>
           <button class="comment-submit" id="commentSubmitBtn" onclick="submitComment('${postId}')">Post</button>
         </div>`;
       wrap.appendChild(form);
     } else {
-      const p = document.createElement('div');
-      p.style.cssText = 'text-align:center;padding:9px;font-size:11px;color:var(--t4);margin-bottom:5px';
-      p.innerHTML = '<span style="color:var(--acc);cursor:pointer;font-weight:600" onclick="openAuth(\'login\')">Sign in</span> to comment';
+      const p=document.createElement('div');
+      p.style.cssText='text-align:center;padding:9px;font-size:11px;color:var(--t4);margin-bottom:5px';
+      p.innerHTML='<span style="color:var(--acc);cursor:pointer;font-weight:600" onclick="openAuth(\'login\')">Sign in</span> to comment';
       wrap.appendChild(p);
     }
 
-    // phX (Firebase) comments
-    if (entries.length > 0) {
-      const lbl = document.createElement('div');
-      lbl.className = 'comments-divider';
-      lbl.textContent = `phX Comments (${entries.length})`;
+    if(entries.length>0){
+      const lbl=document.createElement('div'); lbl.className='comments-divider';
+      lbl.textContent=`phX Comments (${entries.length})`;
       wrap.appendChild(lbl);
-      entries.forEach(([key, c]) => {
-        const div = document.createElement('div'); div.className = 'comment';
-        const cIsOwner = c.isOwner || c.username?.toLowerCase() === OWNER_USERNAME;
-        const canDel = user && (user.username === c.username || user.username?.toLowerCase() === OWNER_USERNAME);
-        div.innerHTML = `<div class="comment-head">
+      entries.forEach(([key,c])=>{
+        const div=document.createElement('div'); div.className='comment';
+        const cIsOwner=c.isOwner||c.username?.toLowerCase()===OWNER_USERNAME;
+        const canDel=user&&(user.username===c.username||user.username?.toLowerCase()===OWNER_USERNAME);
+        div.innerHTML=`<div class="comment-head">
           <div class="comment-av${cIsOwner?' owner-av':''}">${esc((c.username||'?')[0].toUpperCase())}</div>
           <span class="comment-uname${cIsOwner?' owner':''}">${esc(c.username||'?')}${cIsOwner?' 👑':''}</span>
           <span class="comment-time">${timeAgo(c.ts)}</span>
@@ -2243,75 +2275,70 @@ async function renderCommentsTab(postId) {
       });
     }
 
-    // R34 native comments
-    if (r34Comments.length > 0) {
-      const lbl = document.createElement('div');
-      lbl.className = 'comments-divider';
-      lbl.textContent = `Rule34 Comments (${r34Comments.length})`;
+    if(r34Comments.length>0){
+      const lbl=document.createElement('div'); lbl.className='comments-divider';
+      lbl.textContent=`Rule34 Comments (${r34Comments.length})`;
       wrap.appendChild(lbl);
-      r34Comments.forEach(c => {
-        const div = document.createElement('div'); div.className = 'r34-comment';
-        div.innerHTML = `<div class="r34-comment-head">
+      r34Comments.forEach(c=>{
+        const div=document.createElement('div'); div.className='r34-comment';
+        div.innerHTML=`<div class="r34-comment-head">
           <div class="r34-comment-av">${esc((c.author||'?')[0].toUpperCase())}</div>
           <span class="r34-comment-uname">${esc(c.author||'Anonymous')}</span>
-          <span class="r34-comment-time">${c.created_at ? new Date(c.created_at).toLocaleDateString() : ''}</span>
+          <span class="r34-comment-time">${c.created_at?new Date(c.created_at).toLocaleDateString():''}</span>
         </div>
         <div class="r34-comment-text">${esc(c.body||'')}</div>`;
         wrap.appendChild(div);
       });
     }
 
-    if (!entries.length && !r34Comments.length) {
-      const empty = document.createElement('div'); empty.className = 'comments-empty';
-      empty.textContent = 'No comments yet. Be first!';
+    if(!entries.length&&!r34Comments.length){
+      const empty=document.createElement('div'); empty.className='comments-empty';
+      empty.textContent='No comments yet. Be first!';
       wrap.appendChild(empty);
     }
 
-    body.innerHTML = ''; body.appendChild(wrap);
-    setTimeout(() => body.scrollTop = body.scrollHeight, 50);
+    if(body.parentNode){body.innerHTML='';body.appendChild(wrap);}
+    setTimeout(()=>{if(body.parentNode)body.scrollTop=body.scrollHeight;},50);
   };
 
-  if (FB?.ok) {
-    commentUnsub = fbListenComments(postId, doRender);
-  } else {
-    doRender({});
-  }
+  if(FB?.ok) commentUnsub=fbListenComments(postId,doRender);
+  else doRender({});
 }
 
 async function submitComment(postId) {
-  if (!user) { openAuth('login'); return; }
-  const input = document.getElementById('commentInput');
-  const btn = document.getElementById('commentSubmitBtn');
-  const text = input?.value?.trim();
-  if (!text) return;
-  btn.disabled = true; btn.textContent = '…';
-  const ok = await fbPostComment(postId, user.username, text);
-  if (ok) { if (input) input.value = ''; }
-  else toast('Failed to post — check your login','red');
-  btn.disabled = false; btn.textContent = 'Post';
+  if(!user){openAuth('login');return;}
+  const input=document.getElementById('commentInput');
+  const btn=document.getElementById('commentSubmitBtn');
+  const text=input?.value?.trim();
+  if(!text) return;
+  btn.disabled=true; btn.textContent='…';
+  const ok=await fbPostComment(postId,user.username,text);
+  if(ok){if(input)input.value='';}
+  else toast('Failed to post comment','red');
+  btn.disabled=false; btn.textContent='Post';
 }
-async function deleteComment(postId, key) {
-  const ok = await fbDeleteComment(postId, key);
-  if (!ok) toast('Could not delete','red');
+async function deleteComment(postId,key) {
+  const ok=await fbDeleteComment(postId,key);
+  if(!ok) toast('Could not delete','red');
 }
 
 function timeAgo(ts) {
-  if (!ts) return '?';
-  const s = Math.floor((Date.now()-ts)/1000);
-  if (s<60) return s+'s ago'; if (s<3600) return Math.floor(s/60)+'m ago';
-  if (s<86400) return Math.floor(s/3600)+'h ago'; return Math.floor(s/86400)+'d ago';
+  if(!ts) return '?';
+  const s=Math.floor((Date.now()-ts)/1000);
+  if(s<60) return s+'s ago';if(s<3600) return Math.floor(s/60)+'m ago';
+  if(s<86400) return Math.floor(s/3600)+'h ago';return Math.floor(s/86400)+'d ago';
 }
 
 function renderVBody(post) {
-  const body = document.getElementById('vBody');
-  if (!body) return;
+  const body=document.getElementById('vBody');
+  if(!body) return;
   _unsubComment();
-  const tags = (post.tags||'').split(' ').filter(Boolean);
-  document.getElementById('vTagCt').textContent = tags.length;
-  if (currentVTab === 'comments') {
+  const tags=(post.tags||'').split(' ').filter(Boolean);
+  document.getElementById('vTagCt').textContent=tags.length;
+  if(currentVTab==='comments'){
     renderCommentsTab(post.id);
-  } else if (currentVTab === 'info') {
-    body.innerHTML = `<div style="padding-top:4px;display:flex;flex-direction:column;gap:5px">
+  } else if(currentVTab==='info'){
+    body.innerHTML=`<div style="padding-top:4px;display:flex;flex-direction:column;gap:5px">
       <div class="v-stat" style="grid-column:span 3"><div class="v-stat-lbl">Source</div><div style="font-size:9.5px;color:var(--t2);margin-top:2px;word-break:break-all">${esc(post.source||'—')}</div></div>
       <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px">
         <div class="v-stat"><div class="v-stat-lbl">Rating</div><div class="v-stat-num">${esc((post.rating||'?').toUpperCase())}</div></div>
@@ -2320,155 +2347,151 @@ function renderVBody(post) {
       </div>
     </div>`;
   } else {
-    body.innerHTML = `<div class="v-tags-list">${tags.map(t=>`<div class="v-tag" onclick="closeViewer();setTimeout(()=>doSearchQuery('${esc(t)}'),60)">${esc(t)}</div>`).join('')}</div>`;
-    if (!tags.length) body.innerHTML = '<div style="padding:10px;font-size:11px;color:var(--t4);font-family:var(--mono)">No tags available</div>';
+    body.innerHTML=`<div class="v-tags-list">${tags.map(t=>`<div class="v-tag" onclick="closeViewer();setTimeout(()=>doSearchQuery('${esc(t)}'),60)">${esc(t)}</div>`).join('')}</div>`;
+    if(!tags.length) body.innerHTML='<div style="padding:10px;font-size:11px;color:var(--t4);font-family:var(--mono)">No tags available</div>';
   }
 }
 
-function vTab(tab, el) {
-  if (currentVTab === 'comments' && tab !== 'comments') _unsubComment();
-  currentVTab = tab;
-  document.querySelectorAll('.v-tab').forEach(b => b.classList.remove('active'));
+function vTab(tab,el) {
+  if(currentVTab==='comments'&&tab!=='comments') _unsubComment();
+  currentVTab=tab;
+  document.querySelectorAll('.v-tab').forEach(b=>b.classList.remove('active'));
   el.classList.add('active');
-  const post = getFiltered()[ST.vIdx];
-  if (post) renderVBody(post);
+  const post=getFiltered()[ST.vIdx];
+  if(post) renderVBody(post);
 }
 
 // ── UTILITIES ──
-function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
-function openOriginal() { const p=getFiltered()[ST.vIdx]; if(!p) return; window.open(p.file_url,'_blank'); }
-function downloadCurrent() { const p=getFiltered()[ST.vIdx]; if(!p) return; const a=document.createElement('a'); a.href=p.file_url; a.download=`phx_${p.id}`; a.target='_blank'; a.click(); }
-function copyPostLink() { const p=getFiltered()[ST.vIdx]; if(!p) return; const url=`https://rule34.xxx/index.php?page=post&s=view&id=${p.id}`; navigator.clipboard.writeText(url).then(()=>toast('Link copied!','green')).catch(()=>toast('Copy failed','red')); }
-function toggleViewerFav() { const p=getFiltered()[ST.vIdx]; if(!p) return; toggleFav(p.id,null); document.getElementById('vFavBtn').className='v-act'+(favs.includes(p.id)?' on':''); }
-function toggleFav(id, btn) {
-  const i = favs.indexOf(id);
-  if (i > -1) { favs.splice(i,1); if(btn) btn.classList.remove('faved'); toast('Removed from saved'); }
-  else { favs.push(id); if(btn) btn.classList.add('faved'); toast('Saved ❤️','green'); }
-  localStorage.setItem('phx_favs', JSON.stringify(favs));
+function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
+function openOriginal()     { const p=getFiltered()[ST.vIdx];if(!p) return;window.open(p.file_url,'_blank'); }
+function downloadCurrent()  { const p=getFiltered()[ST.vIdx];if(!p) return;const a=document.createElement('a');a.href=p.file_url;a.download=`phx_${p.id}`;a.target='_blank';a.click(); }
+function copyPostLink()     { const p=getFiltered()[ST.vIdx];if(!p) return;const url=`https://rule34.xxx/index.php?page=post&s=view&id=${p.id}`;navigator.clipboard.writeText(url).then(()=>toast('Link copied!','green')).catch(()=>toast('Copy failed','red')); }
+function toggleViewerFav()  { const p=getFiltered()[ST.vIdx];if(!p) return;toggleFav(p.id,null);document.getElementById('vFavBtn').className='v-act'+(favs.includes(p.id)?' on':''); }
+function toggleFav(id,btn) {
+  const i=favs.indexOf(id);
+  if(i>-1){favs.splice(i,1);if(btn)btn.classList.remove('faved');toast('Removed from saved');}
+  else{favs.push(id);if(btn)btn.classList.add('faved');toast('Saved ❤️','green');}
+  localStorage.setItem('phx_favs',JSON.stringify(favs));
   updateFavCount();
 }
-function fmtSize(b) { if(!b) return '?'; if(b>1048576) return (b/1048576).toFixed(1)+'MB'; return (b/1024).toFixed(0)+'KB'; }
-function scrollToTop() { document.getElementById('content').scrollTo({top:0,behavior:'smooth'}); }
-function toast(msg, type='', dur=2800) {
-  const c=document.getElementById('toasts'), el=document.createElement('div');
-  el.className='toast'+(type?` ${type}`:''); el.textContent=msg; c.appendChild(el);
-  setTimeout(()=>{ el.classList.add('out'); setTimeout(()=>el.remove(),200); }, dur);
+function fmtSize(b){ if(!b) return '?';if(b>1048576) return (b/1048576).toFixed(1)+'MB';return (b/1024).toFixed(0)+'KB'; }
+function scrollToTop()      { document.getElementById('content').scrollTo({top:0,behavior:'smooth'}); }
+function toast(msg,type='',dur=2800) {
+  const c=document.getElementById('toasts'),el=document.createElement('div');
+  el.className='toast'+(type?` ${type}`:'');el.textContent=msg;c.appendChild(el);
+  setTimeout(()=>{el.classList.add('out');setTimeout(()=>el.remove(),200);},dur);
 }
 
 // ── INVINCIBLE MODE ──
 function handleInvincibleToggle(el) {
-  settings.invincible = el.checked;
-  saveSettings();
-  applyInvincible();
-  if (el.checked) toast('💥 INVINCIBLE MODE ACTIVATED', 'green', 2500);
+  settings.invincible=el.checked; saveSettings(); applyInvincible();
+  if(el.checked) toast('💥 INVINCIBLE MODE ON','green',2200);
   else toast('Invincible mode off');
 }
 function applyInvincible() {
-  const on = !!settings.invincible;
-  document.body.classList.toggle('invincible-mode', on);
-  const tog = document.getElementById('invincibleToggle');
-  if (tog) {
-    tog.checked = on;
-    const track = tog.nextElementSibling;
-    if (track) {
-      track.style.background = on ? 'linear-gradient(135deg,#ff1a45,#ff6b00)' : '';
-      track.style.borderColor = on ? 'transparent' : '';
-      track.style.boxShadow = on ? '0 0 8px rgba(255,26,69,.45)' : '';
+  const on=!!settings.invincible;
+  document.body.classList.toggle('invincible-mode',on);
+  const tog=document.getElementById('invincibleToggle');
+  if(tog){
+    tog.checked=on;
+    const track=tog.nextElementSibling;
+    if(track){
+      track.style.background =on?'linear-gradient(135deg,#ff1a45,#ff6b00)':'';
+      track.style.borderColor=on?'transparent':'';
+      track.style.boxShadow  =on?'0 0 10px rgba(255,26,69,.5)':'';
     }
   }
-  const row = document.getElementById('invincibleRow');
-  if (row) row.classList.toggle('active-row', on);
+  const row=document.getElementById('invincibleRow');
+  if(row) row.classList.toggle('active-row',on);
 }
 
 // ── AUTH ──
-let authMode = 'login';
+let authMode='login';
 function openAuth(mode) {
-  authMode = mode; const isL = mode === 'login';
-  document.getElementById('mTitle').textContent = isL ? 'Sign in' : 'Create account';
-  document.getElementById('mSub').textContent = isL ? 'Welcome back' : 'Free & takes seconds';
-  document.getElementById('mSubmit').textContent = isL ? 'Sign in' : 'Create account';
-  document.getElementById('mSwitch').innerHTML = isL ? 'No account? <span>Join free</span>' : 'Have an account? <span>Sign in</span>';
+  authMode=mode;const isL=mode==='login';
+  document.getElementById('mTitle').textContent   =isL?'Sign in':'Create account';
+  document.getElementById('mSub').textContent     =isL?'Welcome back':'Free & takes seconds';
+  document.getElementById('mSubmit').textContent  =isL?'Sign in':'Create account';
+  document.getElementById('mSwitch').innerHTML    =isL?'No account? <span>Join free</span>':'Have an account? <span>Sign in</span>';
   document.getElementById('mErr').classList.remove('show');
-  document.getElementById('mUser').value = ''; document.getElementById('mPass').value = '';
+  document.getElementById('mUser').value='';document.getElementById('mPass').value='';
   document.getElementById('authModal').classList.add('open');
-  setTimeout(() => document.getElementById('mUser').focus(), 50);
+  setTimeout(()=>document.getElementById('mUser').focus(),50);
 }
-function closeAuth() { document.getElementById('authModal').classList.remove('open'); }
-function toggleAuthMode() { openAuth(authMode === 'login' ? 'signup' : 'login'); }
-function guestMode() { user = null; closeAuth(); toast('Browsing as guest'); }
+function closeAuth()      { document.getElementById('authModal').classList.remove('open'); }
+function toggleAuthMode() { openAuth(authMode==='login'?'signup':'login'); }
+function guestMode()      { user=null;closeAuth();toast('Browsing as guest'); }
 async function submitAuth() {
-  const u = document.getElementById('mUser').value.trim();
-  const p = document.getElementById('mPass').value;
-  const errEl = document.getElementById('mErr'), btn = document.getElementById('mSubmit');
-  if (!u || !p) { errEl.textContent='Fill in all fields.'; errEl.classList.add('show'); return; }
-  if (authMode === 'signup' && p.length < 6) { errEl.textContent='Password must be 6+ chars.'; errEl.classList.add('show'); return; }
-  btn.disabled = true; btn.textContent = '…';
-  const isOwner = u.toLowerCase() === OWNER_USERNAME;
-  // Owner bypass: if owner logs in, lift any existing ban
-  if (isOwner && FB?.ok) {
+  const u=document.getElementById('mUser').value.trim();
+  const p=document.getElementById('mPass').value;
+  const errEl=document.getElementById('mErr'),btn=document.getElementById('mSubmit');
+  if(!u||!p){errEl.textContent='Fill in all fields.';errEl.classList.add('show');return;}
+  if(authMode==='signup'&&p.length<6){errEl.textContent='Password must be 6+ chars.';errEl.classList.add('show');return;}
+  btn.disabled=true;btn.textContent='…';
+  const isOwner=u.toLowerCase()===OWNER_USERNAME;
+  if(isOwner&&FB?.ok){
     try {
-      const { ref, set, db } = FB;
-      await set(ref(db,`bans/${DEVICE_ID}/active`), false);
-      await set(ref(db,`bans/${DEVICE_ID}/until`), Date.now()-1000);
-    } catch(e) {}
+      const{ref,set,db}=FB;
+      await set(ref(db,`bans/${DEVICE_ID}/active`),false);
+      await set(ref(db,`bans/${DEVICE_ID}/until`),Date.now()-1000);
+    } catch(e){}
     localStorage.removeItem('phx_ban');
-    if (document.getElementById('banScreen').classList.contains('active')) {
+    if(document.getElementById('banScreen').classList.contains('active')){
       document.getElementById('banScreen').classList.remove('active');
       toast('Ban lifted','green');
     }
   }
-  await new Promise(r => setTimeout(r, 160));
-  user = { username: u };
-  localStorage.setItem('phx_user', JSON.stringify(user));
-  btn.disabled = false; btn.textContent = authMode === 'login' ? 'Sign in' : 'Create account';
-  closeAuth(); updateUserUI();
-  toast(`Welcome${isOwner?' back, boss':''}, ${u}! ${isOwner?'👑':'🎉'}`, 'green');
+  await new Promise(r=>setTimeout(r,140));
+  user={username:u};
+  localStorage.setItem('phx_user',JSON.stringify(user));
+  btn.disabled=false;btn.textContent=authMode==='login'?'Sign in':'Create account';
+  closeAuth();updateUserUI();
+  toast(`Welcome${isOwner?' back, boss':''}, ${u}! ${isOwner?'👑':'🎉'}`,'green');
 }
-function signOut() { user = null; localStorage.removeItem('phx_user'); updateUserUI(); toast('Signed out'); }
+function signOut()    { user=null;localStorage.removeItem('phx_user');updateUserUI();toast('Signed out'); }
 function updateUserUI() {
-  const av=document.getElementById('sbAvatar'), un=document.getElementById('sbUname');
-  const on=document.getElementById('sbOnline'), fl=document.getElementById('footL');
-  const fr=document.getElementById('footR'), tb=document.getElementById('tbAcctBtn');
-  const crown=document.getElementById('sbCrown'), ownerBtn=document.getElementById('tbOwnerBtn');
-  const isOwner = user?.username?.toLowerCase() === OWNER_USERNAME;
-  if (user?.username) {
-    av.textContent = user.username[0].toUpperCase();
-    av.style.background = isOwner ? 'linear-gradient(135deg,var(--gold),#ff8800)' : '';
-    un.textContent = user.username; on.style.display = 'block';
-    crown.style.display = isOwner ? '' : 'none';
-    fl.textContent = 'Settings'; fl.onclick = openSettings; fr.style.display = 'none';
+  const av=document.getElementById('sbAvatar'),un=document.getElementById('sbUname');
+  const on=document.getElementById('sbOnline'),fl=document.getElementById('footL');
+  const fr=document.getElementById('footR'),tb=document.getElementById('tbAcctBtn');
+  const crown=document.getElementById('sbCrown'),ownerBtn=document.getElementById('tbOwnerBtn');
+  const isOwner=user?.username?.toLowerCase()===OWNER_USERNAME;
+  if(user?.username){
+    av.textContent=user.username[0].toUpperCase();
+    av.style.background=isOwner?'linear-gradient(135deg,var(--gold),#ff8800)':'';
+    un.textContent=user.username;on.style.display='block';
+    crown.style.display=isOwner?'':'none';
+    fl.textContent='Settings';fl.onclick=openSettings;fr.style.display='none';
     tb.classList.add('authed');
-    if (isOwner) { tb.classList.add('owner-btn'); ownerBtn.style.display = 'flex'; }
-    else { tb.classList.remove('owner-btn'); ownerBtn.style.display = 'none'; }
+    if(isOwner){tb.classList.add('owner-btn');ownerBtn.style.display='flex';}
+    else{tb.classList.remove('owner-btn');ownerBtn.style.display='none';}
   } else {
-    av.textContent = '?'; av.style.background = ''; un.textContent = 'Sign in';
-    on.style.display = 'none'; crown.style.display = 'none';
-    fl.textContent = 'Sign in'; fl.onclick = () => openAuth('login'); fr.style.display = '';
-    tb.classList.remove('authed','owner-btn'); ownerBtn.style.display = 'none';
+    av.textContent='?';av.style.background='';un.textContent='Sign in';
+    on.style.display='none';crown.style.display='none';
+    fl.textContent='Sign in';fl.onclick=()=>openAuth('login');fr.style.display='';
+    tb.classList.remove('authed','owner-btn');ownerBtn.style.display='none';
   }
 }
-function handleTopbarAcct() { if(user) openSettings(); else openAuth('login'); }
-function handleUserCard() { if(user) openSettings(); else openAuth('login'); }
-function handleFootL() { if(user) openSettings(); else openAuth('login'); }
+function handleTopbarAcct() { if(user) openSettings();else openAuth('login'); }
+function handleUserCard()   { if(user) openSettings();else openAuth('login'); }
+function handleFootL()      { if(user) openSettings();else openAuth('login'); }
 
-// Restore user session
-try { const s=localStorage.getItem('phx_user'); if(s){ user=JSON.parse(s); updateUserUI(); } } catch(e) {}
+// Restore session
+try{const s=localStorage.getItem('phx_user');if(s){user=JSON.parse(s);updateUserUI();}}catch(e){}
 
 // ── STARTUP ──
 async function startup() {
   buildTrendingBar();
 
-  const tagsEl = document.getElementById('sbTags');
-  POPULAR_TAGS.forEach(tag => {
-    const el = document.createElement('div');
-    el.className = 'sb-tag';
-    el.innerHTML = `<div class="sb-tag-dot"></div>${esc(tag)}`;
-    el.onclick = () => {
-      document.querySelectorAll('.sb-nav-item,.sb-tag').forEach(i => i.classList.remove('active'));
+  const tagsEl=document.getElementById('sbTags');
+  POPULAR_TAGS.forEach(tag=>{
+    const el=document.createElement('div'); el.className='sb-tag';
+    el.innerHTML=`<div class="sb-tag-dot"></div>${esc(tag)}`;
+    el.onclick=()=>{
+      document.querySelectorAll('.sb-nav-item,.sb-tag').forEach(i=>i.classList.remove('active'));
       el.classList.add('active');
-      document.getElementById('tbHeading').textContent = tag;
-      ST.savedView = false;
-      setTagsR34(tag + ' rating:explicit');
+      document.getElementById('tbHeading').textContent=tag;
+      ST.savedView=false;
+      setTagsR34(tag+' rating:explicit');
       closeSidebar();
     };
     tagsEl.appendChild(el);
@@ -2477,82 +2500,84 @@ async function startup() {
   updateFavCount();
   updateNotifBadge();
 
-  // Check local ban
-  const localBan = JSON.parse(localStorage.getItem('phx_ban') || 'null');
-  if (localBan?.active !== false && localBan?.until > Date.now()) { showBanScreen(localBan); return; }
+  // Check local ban immediately
+  const localBan=JSON.parse(localStorage.getItem('phx_ban')||'null');
+  if(localBan?.active!==false&&localBan?.until>Date.now()){showBanScreen(localBan);return;}
 
-  if (ageOk) {
+  if(ageOk){
     document.getElementById('ageGate').classList.add('gone');
     applySettings();
     loadMoreR34();
   }
 
-  // Init Firebase in background
-  const fbReady = new Promise(resolve => {
-    if (window.__FB_READY) { FB = window.__FB; resolve(); }
-    else window.addEventListener('fb-ready', () => { FB = window.__FB; resolve(); }, { once: true });
+  // Firebase in background
+  const fbReady=new Promise(resolve=>{
+    if(window.__FB_READY){FB=window.__FB;resolve();}
+    else window.addEventListener('fb-ready',()=>{FB=window.__FB;resolve();},{once:true});
   });
-  Promise.race([fbReady, new Promise(r => setTimeout(r, 3000))]).then(onFBReady);
+  Promise.race([fbReady,new Promise(r=>setTimeout(r,4000))]).then(()=>{
+    if(FB?.ok) onFBReady();
+  });
 }
 
 function ageConfirm() {
-  localStorage.setItem('phx_age','1'); ageOk = true;
+  localStorage.setItem('phx_age','1');ageOk=true;
   document.getElementById('ageGate').classList.add('gone');
   _seenPostIds.clear();
-  applySettings(); loadMoreR34();
+  applySettings();loadMoreR34();
 }
 
 startup();
 
 // ── INFINITE SCROLL ──
-new IntersectionObserver(entries => {
-  if (entries[0].isIntersecting && ageOk && !ST.savedView) loadMoreR34();
-}, { rootMargin: '1500px' }).observe(document.getElementById('sentinel'));
+new IntersectionObserver(entries=>{
+  if(entries[0].isIntersecting&&ageOk&&!ST.savedView) loadMoreR34();
+},{rootMargin:'1800px'}).observe(document.getElementById('sentinel'));
 
 // ── SCROLL ──
-document.getElementById('content').addEventListener('scroll', function() {
-  document.getElementById('backTop').classList.toggle('show', this.scrollTop > 500);
-}, { passive: true });
+document.getElementById('content').addEventListener('scroll',function(){
+  document.getElementById('backTop').classList.toggle('show',this.scrollTop>500);
+},{passive:true});
 
 // ── CLICK OUTSIDE ──
-document.getElementById('viewer').addEventListener('click', e => { if (e.target === document.getElementById('viewer')) closeViewer(); });
-document.getElementById('authModal').addEventListener('click', e => { if (e.target === document.getElementById('authModal')) closeAuth(); });
-document.getElementById('ownerPanel').addEventListener('click', e => { if (e.target === document.getElementById('ownerPanel')) closeOwnerPanel(); });
-document.addEventListener('click', e => {
-  const hp=document.getElementById('histPanel'), hb=document.getElementById('tbHistBtn');
-  if (histOpen && !hp.contains(e.target) && !hb.contains(e.target)) closeHistPanel();
-  const np=document.getElementById('notifPanel'), nb=document.getElementById('tbNotifBtn');
-  if (notifPanelOpen && !np.contains(e.target) && !nb.contains(e.target)) closeNotifPanel();
+document.getElementById('viewer').addEventListener('click',e=>{if(e.target===document.getElementById('viewer'))closeViewer();});
+document.getElementById('authModal').addEventListener('click',e=>{if(e.target===document.getElementById('authModal'))closeAuth();});
+document.getElementById('ownerPanel').addEventListener('click',e=>{if(e.target===document.getElementById('ownerPanel'))closeOwnerPanel();});
+document.addEventListener('click',e=>{
+  const hp=document.getElementById('histPanel'),hb=document.getElementById('tbHistBtn');
+  if(histOpen&&!hp.contains(e.target)&&!hb.contains(e.target)) closeHistPanel();
+  const np=document.getElementById('notifPanel'),nb=document.getElementById('tbNotifBtn');
+  if(notifPanelOpen&&!np.contains(e.target)&&!nb.contains(e.target)) closeNotifPanel();
 });
 
 // ── KEYBOARD ──
-document.addEventListener('keydown', e => {
-  if (e.key==='Escape') {
-    if (document.getElementById('authModal').classList.contains('open')) closeAuth();
-    if (document.getElementById('settingsOverlay').classList.contains('open')) closeSettings();
-    if (document.getElementById('arModal').classList.contains('open')) cancelAR();
-    if (document.getElementById('ownerPanel').classList.contains('open')) closeOwnerPanel();
-    if (histOpen) closeHistPanel();
-    if (notifPanelOpen) closeNotifPanel();
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape'){
+    if(document.getElementById('authModal').classList.contains('open'))        closeAuth();
+    if(document.getElementById('settingsOverlay').classList.contains('open'))  closeSettings();
+    if(document.getElementById('arModal').classList.contains('open'))          cancelAR();
+    if(document.getElementById('ownerPanel').classList.contains('open'))       closeOwnerPanel();
+    if(histOpen)        closeHistPanel();
+    if(notifPanelOpen)  closeNotifPanel();
   }
-  if (e.key==='/' && !e.target.matches('input,textarea,select') && !document.getElementById('viewer').classList.contains('open')) {
-    e.preventDefault(); document.getElementById('searchInput').focus();
+  if(e.key==='/'&&!e.target.matches('input,textarea,select')&&!document.getElementById('viewer').classList.contains('open')){
+    e.preventDefault();document.getElementById('searchInput').focus();
   }
 });
 
 // ── TOUCH SWIPE ──
-let _tx=0, _ty=0, _locked=false;
-document.getElementById('viewer').addEventListener('touchstart', e => { _tx=e.touches[0].clientX; _ty=e.touches[0].clientY; _locked=false; }, { passive:true });
-document.getElementById('viewer').addEventListener('touchmove', e => {
-  if (_locked||vZoomed) return;
-  const dx=Math.abs(e.touches[0].clientX-_tx), dy=Math.abs(e.touches[0].clientY-_ty);
-  if (dx>dy&&dx>12) _locked=true;
-}, { passive:true });
-document.getElementById('viewer').addEventListener('touchend', e => {
-  if (!_locked||vZoomed) return;
+let _tx=0,_ty=0,_locked=false;
+document.getElementById('viewer').addEventListener('touchstart',e=>{_tx=e.touches[0].clientX;_ty=e.touches[0].clientY;_locked=false;},{passive:true});
+document.getElementById('viewer').addEventListener('touchmove',e=>{
+  if(_locked||vZoomed) return;
+  const dx=Math.abs(e.touches[0].clientX-_tx),dy=Math.abs(e.touches[0].clientY-_ty);
+  if(dx>dy&&dx>12) _locked=true;
+},{passive:true});
+document.getElementById('viewer').addEventListener('touchend',e=>{
+  if(!_locked||vZoomed) return;
   const dx=e.changedTouches[0].clientX-_tx;
-  if (Math.abs(dx)>60) viewerNav(dx<0?1:-1);
-}, { passive:true });
+  if(Math.abs(dx)>60) viewerNav(dx<0?1:-1);
+},{passive:true});
 </script>
 </body>
 </html>
