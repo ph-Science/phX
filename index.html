@@ -2037,12 +2037,16 @@ async function startup() {
   Promise.race([fbReady,new Promise(r=>setTimeout(r,4000))]).then(()=>{ if(FB?.ok) onFBReady(); });
 }
 function ageConfirm() { 
-  localStorage.setItem('ph34_age','1'); 
-  ageOk=true; 
-  document.getElementById('ageGate').classList.add('gone'); 
-  _seenPostIds.clear(); 
-  applySettings(); 
-  loadMoreR34(); 
+  try {
+    localStorage.setItem('ph34_age','1'); 
+    ageOk=true; 
+    document.getElementById('ageGate').classList.add('gone'); 
+    _seenPostIds.clear(); 
+    applySettings(); 
+    loadMoreR34(); 
+  } catch(e) {
+    console.error('Age confirm error:', e);
+  }
 }
 startup();
 
