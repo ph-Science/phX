@@ -32,6 +32,7 @@
     await setPersistence(auth, browserLocalPersistence);
   } catch(e) {
     console.warn('[ph34] Firebase init failed:', e);
+    ok = false;
   }
   const googleProvider = new GoogleAuthProvider();
   window.__FB = {
@@ -2023,21 +2024,37 @@ async function startup() {
   Promise.race([fbReady,new Promise(r=>setTimeout(r,4000))]).then(()=>{ if(FB?.ok) onFBReady(); });
 }
 
-// AGE CONFIRM - FIXED
+// AGE CONFIRM - FIXED WITH BYPASS
 function ageConfirm() {
   try {
-    console.log('✅ ageConfirm called');
+    console.log('✅ ageConfirm called - bypassing any errors');
     localStorage.setItem('ph34_age', '1');
-    document.getElementById('ageGate').style.display = 'none';
-    loadMoreR34();
+    const ageGate = document.getElementById('ageGate');
+    if (ageGate) ageGate.style.display = 'none';
+    // Force load the main content
+    setTimeout(() => {
+      applySettings();
+      loadMoreR34();
+      toast('Welcome to ph34 🖤 Age gate passed', 'green');
+    }, 50);
   } catch(e) {
-    console.error('ageConfirm error:', e);
+    console.error('ageConfirm error caught:', e);
+    // Fallback bypass
+    localStorage.setItem('ph34_age', '1');
+    const ageGate = document.getElementById('ageGate');
+    if (ageGate) ageGate.style.display = 'none';
+    applySettings();
+    loadMoreR34();
+    toast('Welcome to ph34 🖤 (fallback)', 'green');
   }
 }
 
 document.addEventListener('DOMContentLoaded', () => {
   const btn = document.getElementById('ageEnterBtn');
-  if (btn) btn.addEventListener('click', ageConfirm);
+  if (btn) {
+    btn.addEventListener('click', ageConfirm);
+    console.log('✅ ageEnterBtn listener attached safely');
+  }
   
   // Search listeners
   const searchInput = document.getElementById('searchInput');
