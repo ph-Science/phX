@@ -1665,6 +1665,8 @@ function buildTrendingBar() {
 
 let notifications = JSON.parse(localStorage.getItem('ph34_notifs') || '[]');
 let notifPanelOpen = false, notifUnsub = null;
+const NOTIF_PAGE_SIZE = 3;
+let notifShowCount = NOTIF_PAGE_SIZE;
 
 function initNotifListener() {
   if (!FB?.ok) return;
@@ -1693,6 +1695,7 @@ function updateNotifBadge() {
 
 function toggleNotifPanel() {
   notifPanelOpen = !notifPanelOpen;
+  if (notifPanelOpen) notifShowCount = NOTIF_PAGE_SIZE;
   const np = document.getElementById('notifPanel');
   if (np) np.classList.toggle('open', notifPanelOpen);
   if (notifPanelOpen) renderNotifPanel();
@@ -1705,6 +1708,25 @@ function closeNotifPanel() {
 
 const NOTIF_ICONS = { announce: '📢', promo: '🎉', alert: '🚨', update: '✅' };
 
+function parseNotifBody(raw) {
+  if (!raw) return '';
+  const lines = raw.split('\n');
+  let html = '';
+  let inList = false;
+  lines.forEach(line => {
+    const trimmed = line.trim();
+    if (trimmed.startsWith('- ') || trimmed.startsWith('* ')) {
+      if (!inList) { html += '<ul style="margin:6px 0 0 0;padding-left:16px;display:flex;flex-direction:column;gap:3px">'; inList = true; }
+      html += `<li style="font-size:11px;color:var(--t2);line-height:1.55">${esc(trimmed.slice(2))}</li>`;
+    } else {
+      if (inList) { html += '</ul>'; inList = false; }
+      if (trimmed) html += `<div style="font-size:11px;color:var(--t3);line-height:1.55;margin-bottom:2px">${esc(trimmed)}</div>`;
+    }
+  });
+  if (inList) html += '</ul>';
+  return html;
+}
+
 function renderNotifPanel() {
   const body = document.getElementById('notifBody');
   if (!body) return;
@@ -1713,14 +1735,32 @@ function renderNotifPanel() {
     return;
   }
   body.innerHTML = '';
-  notifications.forEach(n => {
+  const visible = notifications.slice(0, notifShowCount);
+  visible.forEach(n => {
     const item = document.createElement('div');
     item.className = 'notif-item' + (!n.read ? ' unread' : '');
-    const bodyHtml = esc(n.body || '').replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener" style="color:var(--np2);text-decoration:none">$1</a>');
-    item.innerHTML = `<div class="notif-icon-wrap">${NOTIF_ICONS[n.type] || '📢'}</div><div class="notif-content"><div class="notif-title">${esc(n.title || 'Notification')}</div><div class="notif-text">${bodyHtml}</div><div class="notif-time">${timeAgo(n.ts)}</div></div>`;
+    item.innerHTML = `
+      <div class="notif-icon-wrap">${NOTIF_ICONS[n.type] || '📢'}</div>
+      <div class="notif-content">
+        <div class="notif-title">${esc(n.title || 'Notification')}</div>
+        <div class="notif-text">${parseNotifBody(n.body || '')}</div>
+        <div class="notif-time">${timeAgo(n.ts)}</div>
+      </div>`;
     item.onclick = () => markNotifRead(n.id);
     body.appendChild(item);
   });
+  if (notifications.length > notifShowCount) {
+    const remaining = notifications.length - notifShowCount;
+    const more = document.createElement('div');
+    more.style.cssText = 'text-align:center;padding:10px 0 4px';
+    more.innerHTML = `<span style="font-family:var(--mono);font-size:9px;color:var(--np2);cursor:pointer;padding:4px 12px;border-radius:6px;border:1px solid var(--npborder);background:var(--npbg)" onclick="notifShowMore()">Show ${remaining} more</span>`;
+    body.appendChild(more);
+  }
+}
+
+function notifShowMore() {
+  notifShowCount += NOTIF_PAGE_SIZE;
+  renderNotifPanel();
 }
 
 function markNotifRead(id) {
@@ -2750,7 +2790,7 @@ function handleUserCard() { if (user && !user.isAnon) openSettings(); else openA
 function handleFootL() { if (user && !user.isAnon) openSettings(); else openAuth('login'); }
 
 // ========================
-// AGE GATE - FIXED
+// AGE GATE
 // ========================
 
 function ageConfirm() {
@@ -2789,11 +2829,9 @@ async function startup() {
   updateFavCount();
   updateNotifBadge();
 
-  // Check ban first (synchronous localStorage check — safe, no DOM access)
   const localBan = JSON.parse(localStorage.getItem('ph34_ban') || 'null');
   if (localBan?.active !== false && localBan?.until > Date.now()) { showBanScreen(localBan); return; }
 
-  // Handle age gate or proceed
   if (ageOk) {
     const ageGate = document.getElementById('ageGate');
     if (ageGate) ageGate.classList.add('gone');
@@ -2801,7 +2839,6 @@ async function startup() {
     loadMoreR34();
   }
 
-  // Firebase init (race with 4s timeout)
   const fbReady = new Promise(resolve => {
     if (window.__FB_READY) { FB = window.__FB; resolve(); }
     else window.addEventListener('fb-ready', () => { FB = window.__FB; resolve(); }, { once: true });
@@ -2810,23 +2847,20 @@ async function startup() {
 }
 
 // ========================
-// DOM READY — ATTACH ALL LISTENERS
+// DOM READY
 // ========================
 
 document.addEventListener('DOMContentLoaded', () => {
 
-  // Age gate button
   const ageEnterBtn = document.getElementById('ageEnterBtn');
   if (ageEnterBtn) ageEnterBtn.addEventListener('click', ageConfirm);
 
-  // Search input
   const searchInput = document.getElementById('searchInput');
   if (searchInput) {
     searchInput.oninput = onSearchInput;
     searchInput.onkeydown = onSearchKey;
   }
 
-  // Infinite scroll sentinel
   const sentinel = document.getElementById('sentinel');
   if (sentinel) {
     new IntersectionObserver(entries => {
@@ -2834,7 +2868,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }, { rootMargin: '2000px' }).observe(sentinel);
   }
 
-  // Scroll-to-top button visibility
   const content = document.getElementById('content');
   if (content) {
     content.addEventListener('scroll', function() {
@@ -2843,27 +2876,22 @@ document.addEventListener('DOMContentLoaded', () => {
     }, { passive: true });
   }
 
-  // Viewer close on backdrop click
   const viewer = document.getElementById('viewer');
   if (viewer) {
     viewer.addEventListener('click', e => { if (e.target === viewer) closeViewer(); });
 
-    // Touch swipe in viewer
     let _tx = 0, _ty = 0, _locked = false;
     viewer.addEventListener('touchstart', e => { _tx = e.touches[0].clientX; _ty = e.touches[0].clientY; _locked = false; }, { passive: true });
     viewer.addEventListener('touchmove', e => { if (_locked || vZoomed) return; const dx = Math.abs(e.touches[0].clientX - _tx), dy = Math.abs(e.touches[0].clientY - _ty); if (dx > dy && dx > 12) _locked = true; }, { passive: true });
     viewer.addEventListener('touchend', e => { if (!_locked || vZoomed) return; const dx = e.changedTouches[0].clientX - _tx; if (Math.abs(dx) > 60) viewerNav(dx < 0 ? 1 : -1); }, { passive: true });
   }
 
-  // Auth modal close on backdrop
   const authModal = document.getElementById('authModal');
   if (authModal) authModal.addEventListener('click', e => { if (e.target === authModal) closeAuth(); });
 
-  // Owner panel close on backdrop
   const ownerPanel = document.getElementById('ownerPanel');
   if (ownerPanel) ownerPanel.addEventListener('click', e => { if (e.target === ownerPanel) closeOwnerPanel(); });
 
-  // Global click — close floating panels when clicking outside
   document.addEventListener('click', e => {
     const hp = document.getElementById('histPanel'), hb = document.getElementById('tbHistBtn');
     if (histOpen && hp && hb && !hp.contains(e.target) && !hb.contains(e.target)) closeHistPanel();
@@ -2873,7 +2901,6 @@ document.addEventListener('DOMContentLoaded', () => {
     if (ac && si && ac.classList.contains('show') && !ac.contains(e.target) && e.target !== si) hideAC();
   }, { capture: false });
 
-  // Global keydown shortcuts
   document.addEventListener('keydown', e => {
     if (e.key === 'Escape') {
       const am = document.getElementById('authModal');
@@ -2894,7 +2921,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // Run startup
   startup();
 });
 </script>
