@@ -964,7 +964,7 @@ body.invincible-mode .card:hover{animation:invWobbleCard 1.6s cubic-bezier(.36,.
       <div class="modal-uid-box" id="mUidBox" style="display:none">
         <div class="modal-uid-label">👑 Your Firebase UID</div>
         <div class="modal-uid-val" id="mUidVal" onclick="copyUID()" title="Click to copy">—</div>
-        <div class="modal-uid-hint">Copy this → replace OWNER_UID_PLACEHOLDER in the code</div>
+        <div class="modal-uid-hint">Copy this → replace XXyCUbZFpuWQXhVkK35qOfZnrLQ2 in the code</div>
       </div>
     </div>
   </div>
@@ -1125,7 +1125,7 @@ let FB = null;
 if (window.__FB_READY) FB = window.__FB;
 window.addEventListener('fb-ready', () => { FB = window.__FB; onFBReady(); });
 let _fbUser = null;
-function isOwner() { return _fbUser && _fbUser.uid === OWNER_UID && OWNER_UID !== 'OWNER_UID_PLACEHOLDER'; }
+function isOwner() { return _fbUser && _fbUser.uid === OWNER_UID && OWNER_UID !== 'XXyCUbZFpuWQXhVkK35qOfZnrLQ2'; }
 function onFBReady() {
   if (!FB?.ok) return;
   FB.onAuthStateChanged(fbUser => {
@@ -1910,7 +1910,7 @@ async function submitAuth() {
   } catch(e) { showAuthErr(friendlyAuthErr(e.code||e.message)); }
   btn.disabled=false; btn.textContent=authMode==='login'?'Sign in':'Create account';
 }
-function showUidIfNeeded(fbUser) { if(OWNER_UID==='OWNER_UID_PLACEHOLDER'){const box=document.getElementById('mUidBox'),val=document.getElementById('mUidVal');if(box&&val){val.textContent=fbUser.uid;box.style.display='block';document.getElementById('authModal').classList.add('open');}} }
+function showUidIfNeeded(fbUser) { if(OWNER_UID==='XXyCUbZFpuWQXhVkK35qOfZnrLQ2'){const box=document.getElementById('mUidBox'),val=document.getElementById('mUidVal');if(box&&val){val.textContent=fbUser.uid;box.style.display='block';document.getElementById('authModal').classList.add('open');}} }
 function friendlyAuthErr(code) { const m={'auth/user-not-found':'No account with that email.','auth/wrong-password':'Wrong password.','auth/email-already-in-use':'Email already registered.','auth/invalid-email':'Invalid email.','auth/weak-password':'Password too weak.','auth/too-many-requests':'Too many attempts.','auth/network-request-failed':'Network error.','auth/invalid-credential':'Invalid email or password.'};return m[code]||code||'Something went wrong.'; }
 function showAuthErr(msg) { const el=document.getElementById('mErr');el.textContent=msg;el.classList.add('show'); }
 async function doSignOut() { if(FB?.ok) await FB.signOut().catch(()=>{}); user=null;_fbUser=null; updateUserUI(); toast('Signed out'); }
