@@ -1694,17 +1694,26 @@ function updateNotifBadge() {
 
 function toggleNotifPanel() {
   notifPanelOpen = !notifPanelOpen;
+  if (notifPanelOpen) notifShowCount = NOTIF_PAGE_SIZE; // reset on open
   const np = document.getElementById('notifPanel');
   if (np) np.classList.toggle('open', notifPanelOpen);
   if (notifPanelOpen) renderNotifPanel();
 }
 
+  function notifShowMore() {
+  notifShowCount += NOTIF_PAGE_SIZE;
+  renderNotifPanel();
+}
+  
 function closeNotifPanel() {
   notifPanelOpen = false;
   const np = document.getElementById('notifPanel'); if (np) np.classList.remove('open');
 }
 
 const NOTIF_ICONS = { announce: '📢', promo: '🎉', alert: '🚨', update: '✅' };
+const NOTIF_PAGE_SIZE = 3;
+let notifShowCount = NOTIF_PAGE_SIZE;
+
 
 function renderNotifPanel() {
   const body = document.getElementById('notifBody');
@@ -1714,16 +1723,108 @@ function renderNotifPanel() {
     return;
   }
   body.innerHTML = '';
-  notifications.forEach(n => {
+  const visible = notifications.slice(0, notifShowCount);
+  visible.forEach(n => {
     const item = document.createElement('div');
     item.className = 'notif-item' + (!n.read ? ' unread' : '');
-    const bodyHtml = esc(n.body || '').replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener" style="color:var(--np2);text-decoration:none">$1</a>');
-    item.innerHTML = `<div class="notif-icon-wrap">${NOTIF_ICONS[n.type] || '📢'}</div><div class="notif-content"><div class="notif-title">${esc(n.title || 'Notification')}</div><div class="notif-text">${bodyHtml}</div><div class="notif-time">${timeAgo(n.ts)}</div></div>`;
+    item.innerHTML = `
+      <div class="notif-icon-wrap">${NOTIF_ICONS[n.type] || '📢'}</div>
+      <div class="notif-content">
+        <div class="notif-title">${esc(n.title || 'Notification')}</div>
+        <div class="notif-text">${parseNotifBody(n.body || '')}</div>
+        <div class="notif-time">${timeAgo(n.ts)}</div>
+      </div>`;
     item.onclick = () => markNotifRead(n.id);
     body.appendChild(item);
   });
+  if (notifications.length > notifShowCount) {
+    const remaining = notifications.length - notifShowCount;
+    const more = document.createElement('div');
+    more.style.cssText = 'text-align:center;padding:10px 0 4px';
+    more.innerHTML = `<span style="font-family:var(--mono);font-size:9px;color:var(--np2);cursor:pointer;padding:4px 12px;border-radius:6px;border:1px solid var(--npborder);background:var(--npbg)" onclick="notifShowMore()">Show ${remaining} more</span>`;
+    body.appendChild(more);
+  }
 }
 
+  
+function parseNotifBody(raw) {
+  // Converts "some text\n- item one\n- item two" into HTML with a bullet list
+  if (!raw) return '';
+  const lines = raw.split('\n');
+  let html = '';
+  let inList = false;
+  lines.forEach(line => {
+    const trimmed = line.trim();
+    if (trimmed.startsWith('- ') || trimmed.startsWith('* ')) {
+      if (!inList) { html += '<ul style="margin:6px 0 0 0;padding-left:16px;display:flex;flex-direction:column;gap:3px">'; inList = true; }
+      html += `<li style="font-size:11px;color:var(--t2);line-height:1.55">${esc(trimmed.slice(2))}</li>`;
+    } else {
+      if (inList) { html += '</ul>'; inList = false; }
+      if (trimmed) html += `<div style="font-size:11px;color:var(--t3);line-height:1.55;margin-bottom:2px">${esc(trimmed)}</div>`;
+    }
+  });
+  if (inList) html += '</ul>';
+  return html;
+}
+
+function renderNotifPanel() {
+  const body = document.getElementById('notifBody');
+  if (!body) return;
+  if (!notifications.length) {
+    body.innerHTML = `<div class="notif-empty"><div class="notif-empty-icon">🔔</div><div class="notif-empty-text">No notifications yet</div></div>`;
+    return;
+  }
+  body.innerHTML = '';
+  const visible = notifications.slice(0, notifShowCount);
+  visible.forEach(n => {
+    const item = document.createElement('div');
+    item.className = 'notif-item' + (!n.read ? ' unread' : '');
+    item.innerHTML = `
+      <div class="notif-icon-wrap">${NOTIF_ICONS[n.type] || '📢'}</div>
+      <div class="notif-content">
+        <div class="notif-title">${esc(n.title || 'Notification')}</div>
+        <div class="notif-text">${parseNotifBody(n.body || '')}</div>
+        <div class="notif-time">${timeAgo(n.ts)}</div>
+      </div>`;
+    item.onclick = () => markNotifRead(n.id);
+    body.appendChild(item);
+  });
+  if (notifications.length > notifShowCount) {
+    const remaining = notifications.length - notifShowCount;
+    const more = document.createElement('div');
+    more.style.cssText = 'text-align:center;padding:10px 0 4px';
+    more.innerHTML = `<span style="font-family:var(--mono);font-size:9px;color:var(--np2);cursor:pointer;padding:4px 12px;border-radius:6px;border:1px solid var(--npborder);background:var(--npbg)" onclick="notifShowMore()">Show ${remaining} more</span>`;
+    body.appendChild(more);
+  }
+}
+
+function notifShowMore() {
+  notifShowCount += NOTIF_PAGE_SIZE;
+  renderNotifPanel();
+}
+
+function toggleNotifPanel() {
+  notifPanelOpen = !notifPanelOpen;
+  if (notifPanelOpen) notifShowCount = NOTIF_PAGE_SIZE; // reset on open
+  const np = document.getElementById('notifPanel');
+  if (np) np.classList.toggle('open', notifPanelOpen);
+  if (notifPanelOpen) renderNotifPanel();
+}
+And update your notif-text CSS — the existing rule clips with -webkit-line-clamp which fights the new list layout:
+
+css
+.notif-text { font-size:11px; color:var(--t3); line-height:1.55; }
+(remove the -webkit-box / overflow:hidden / -webkit-line-clamp:2 lines)
+
+What changed:
+
+Bullet parsing — body text is split by line. Lines starting with -  or *  become proper <li> elements. Lines without a prefix render as text. So writing main cause: \n- Age Gate\n- Other thing in the composer will render cleanly as a list.
+Show more — panel opens showing the 3 most recent. If there are more, a "Show N more" button appends the next 3. Resets to 3 every time you open the panel.
+The notifShowMore function is global so the inline onclick in the injected HTML can reach it.
+
+
+You ar
+  
 function markNotifRead(id) {
   const ri = JSON.parse(localStorage.getItem('ph34_notif_read') || '[]');
   if (!ri.includes(id)) { ri.push(id); localStorage.setItem('ph34_notif_read', JSON.stringify(ri)); }
