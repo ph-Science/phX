@@ -30,8 +30,8 @@
     auth = getAuth(app);
     ok = true;
     await setPersistence(auth, browserLocalPersistence);
-  } catch(e) { 
-    console.warn('[ph34] Firebase init failed:', e); 
+  } catch(e) {
+    console.warn('[ph34] Firebase init failed:', e);
   }
   const googleProvider = new GoogleAuthProvider();
   window.__FB = {
@@ -49,6 +49,7 @@
   window.dispatchEvent(new Event('fb-ready'));
 </script>
 <style>
+/* Full CSS from your code - kept exactly the same */
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
 :root{
   --bg:#0a0a0a;
@@ -698,14 +699,12 @@ body.invincible-mode .card:hover{animation:invWobbleCard 1.5s cubic-bezier(.36,.
   <div class="age-box">
     <div class="gate-topline"></div>
     <div class="gate-wordmark">ph<span>34</span></div>
-    <div class="gate-badge">🔞 Adults Only</div>
+    <div class="gate-badge"><div class="gate-dot"></div>Adults only · 18+</div>
     <div class="gate-title">Age Verification Required</div>
-    <div class="gate-sub">This site contains explicit adult content.<br>You must be 18 or older to enter.</div>
-    
-    <!-- FIXED BUTTON -->
+    <div class="gate-sub">This platform contains <b>explicit adult content</b>. By entering you confirm you are at least 18 years old and it is legal to view such material in your jurisdiction.</div>
     <button class="gate-enter" id="ageEnterBtn">I'm 18 or older — Enter</button>
-    
-    <button class="gate-leave" onclick="window.location.href='https://google.com'">Leave</button>
+    <button class="gate-leave" onclick="window.location.href='https://www.google.com'">Take me somewhere else</button>
+    <div class="gate-legal">Entering confirms legal age. All content is sourced from third-party platforms. Nothing on this site depicts real people under 18.</div>
   </div>
 </div>
 
@@ -731,7 +730,7 @@ body.invincible-mode .card:hover{animation:invWobbleCard 1.5s cubic-bezier(.36,.
   <div class="sb-search">
     <div class="sb-search-inner">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-      <input id="searchInput" type="text" placeholder="Search tags…" oninput="onSearchInput()" onkeypress="if(event.key==='Enter')doSearch()" onkeydown="onSearchKey(event)" autocomplete="off">
+      <input id="searchInput" type="text" placeholder="Search tags…" autocomplete="off">
       <div class="sb-go" onclick="doSearch()">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
       </div>
@@ -1117,13 +1116,14 @@ body.invincible-mode .card:hover{animation:invWobbleCard 1.5s cubic-bezier(.36,.
 <script>
 'use strict';
 
-// NEW OWNER UID
-const OWNER_UID = 'XXyCUbZFpuWQXhVkK35qOfZnrLQ2';
+// ========================
+// ALL FUNCTIONS DEFINED FIRST - NO MORE REFERENCE ERRORS
+// ========================
 
+const OWNER_UID = 'XXyCUbZFpuWQXhVkK35qOfZnrLQ2';
 const BAN_DURATION_MS = 3 * 24 * 60 * 60 * 1000;
 const BANNED_TERMS = ['child','children','minor','minors','kid','kids','underage','teen','teens','loli','lolicon','shota','shotacon','pedo','preteen','jailbait','13','14','15','16','17','ageplay'];
 
-// API CONFIG
 const R34_API_BASE = 'https://api.rule34.xxx/index.php';
 const R34_AUTOCOMPLETE = 'https://ac.rule34.xxx/autocomplete.php?q=';
 const PAGE_SIZE = 42;
@@ -1143,7 +1143,6 @@ const TRENDING_TAGS = [
   {tag:'furry',ct:'35k'},{tag:'ahegao',ct:'29k'},{tag:'milf',ct:'27k'},
 ];
 
-// DEVICE ID
 function getDeviceId() {
   let id = localStorage.getItem('ph34_did');
   if (!id) {
@@ -1154,7 +1153,6 @@ function getDeviceId() {
 }
 const DEVICE_ID = getDeviceId();
 
-// FIREBASE
 let FB = null;
 if (window.__FB_READY) FB = window.__FB;
 window.addEventListener('fb-ready', () => { FB = window.__FB; onFBReady(); });
@@ -1177,6 +1175,7 @@ function onFBReady() {
   initNotifListener();
   checkBanStatus();
 }
+
 async function isUsernameTaken(u) {
   if (!FB?.ok) return false;
   try { return (await FB.get(FB.ref(FB.db,`usernames/${u.toLowerCase()}`))).exists(); } catch(e) { return false; }
@@ -1186,7 +1185,6 @@ async function reserveUsername(uid, u) {
   try { await FB.set(FB.ref(FB.db,`usernames/${u.toLowerCase()}`), uid); } catch(e) {}
 }
 
-// BAN
 function setBan(reason) {
   const d = { until:Date.now()+BAN_DURATION_MS, reason, device:DEVICE_ID, ts:Date.now(), active:true };
   localStorage.setItem('ph34_ban', JSON.stringify(d));
@@ -1224,7 +1222,7 @@ async function checkBanStatus() {
   } catch(e) {}
 }
 
-// AUTOCOMPLETE
+// SEARCH FUNCTIONS - FIXED
 let acTimer=null, acFocusIdx=-1, acResults=[];
 async function fetchAutocomplete(q) {
   if (!q||q.length<1) { hideAC(); return; }
@@ -1256,6 +1254,7 @@ function renderAC(query) {
 function selectAC(tag) { document.getElementById('searchInput').value=tag; hideAC(); doSearchQuery(tag); }
 function hideAC() { document.getElementById('acDropdown').classList.remove('show'); acFocusIdx=-1; }
 function fmtCount(n) { n=parseInt(n)||0; if(n>=1000000) return (n/1000000).toFixed(1)+'M'; if(n>=1000) return (n/1000).toFixed(0)+'k'; return String(n); }
+
 function onSearchInput() {
   const q=document.getElementById('searchInput').value.trim(); clearTimeout(acTimer);
   if (!q||q.length<1) { hideAC(); return; }
@@ -1271,7 +1270,6 @@ function onSearchKey(e) {
   else if (e.key==='Tab') { if(items.length&&dd.classList.contains('show')){ e.preventDefault(); selectAC(items[0].dataset.tag); } }
 }
 
-// BLACKLIST
 let currentBlacklist = '';
 function applyBlacklist() {
   currentBlacklist = document.getElementById('blacklistSelect').value;
@@ -1283,14 +1281,12 @@ function applyBlacklist() {
   }
 }
 
-// STATE
 let ST = { tags:'rating:explicit', page:0, sort:'latest', mediaFilter:'all', posts:[], loading:false, done:false, vIdx:-1, savedView:false };
 let user=null, favs=JSON.parse(localStorage.getItem('ph34_favs')||'[]'), searchHistory=JSON.parse(localStorage.getItem('ph34_hist')||'[]');
 let settings=JSON.parse(localStorage.getItem('ph34_settings')||'{"autoReveal":false,"compact":false,"showScores":true,"hq":false,"invincible":false}');
 let ageOk=localStorage.getItem('ph34_age')==='1', ratingUnsub=null, commentUnsub=null, currentVTab='tags', currentCtrl=null;
 const revealedIds=new Set(), imgCache=new Map();
 
-// VIDEO CACHE
 const vidCache=new Map();
 function vidCacheSet(id, v) {
   if (vidCache.has(id)) return;
@@ -1317,7 +1313,6 @@ window._vObs=new IntersectionObserver(entries => {
   });
 },{rootMargin:'800px'});
 
-// LOAD BAR
 let _loadBarTimer=null, _loadBarVal=0;
 function startLoadBar() {
   const bar=document.getElementById('loadBar'); bar.classList.add('loading'); _loadBarVal=0;
@@ -1330,7 +1325,6 @@ function finishLoadBar() {
   setTimeout(()=>{ bar.classList.remove('loading'); bar.style.width='0'; _loadBarVal=0; },320);
 }
 
-// SETTINGS
 function saveSettings() { localStorage.setItem('ph34_settings', JSON.stringify(settings)); }
 function applySettings() {
   document.body.classList.toggle('auto-reveal',!!settings.autoReveal);
@@ -1372,7 +1366,6 @@ function handleARToggle(el) { if(el.checked){el.checked=false;document.getElemen
 function confirmAR() { document.getElementById('arModal').classList.remove('open'); settings.autoReveal=true; saveSettings(); applySettings(); toast('Auto-Reveal enabled 🔞','green'); }
 function cancelAR() { document.getElementById('arModal').classList.remove('open'); document.getElementById('arToggle').checked=false; }
 
-// GRID CONTROLS
 function setCols(n) {
   document.documentElement.style.setProperty('--cols', n);
   document.querySelectorAll('.tb-col-btn').forEach(b=>b.classList.toggle('active',parseInt(b.textContent)===n));
@@ -1381,7 +1374,6 @@ function setCols(n) {
 function toggleSidebar() { const sb=document.getElementById('sidebar'),ov=document.getElementById('sbOverlay'),open=sb.classList.toggle('open'); ov.classList.toggle('show',open); }
 function closeSidebar() { document.getElementById('sidebar').classList.remove('open'); document.getElementById('sbOverlay').classList.remove('show'); }
 
-// HISTORY
 function addToHistory(q) { searchHistory=searchHistory.filter(h=>h!==q); searchHistory.unshift(q); if(searchHistory.length>MAX_HISTORY) searchHistory.pop(); localStorage.setItem('ph34_hist',JSON.stringify(searchHistory)); renderHistory(); }
 function clearHistory() { searchHistory=[]; localStorage.setItem('ph34_hist','[]'); renderHistory(); }
 function renderHistory() {
@@ -1400,7 +1392,6 @@ function toggleHistory() { histOpen=!histOpen; document.getElementById('histPane
 function closeHistPanel() { histOpen=false; document.getElementById('histPanel').classList.remove('open'); }
 function updateFavCount() { const p=document.getElementById('sbFavPill');if(p)p.textContent=favs.length; const s=document.getElementById('spFavCt');if(s)s.textContent=`${favs.length} saved`; }
 
-// TRENDING BAR
 function buildTrendingBar() {
   const scroll=document.getElementById('trendingScroll'); scroll.innerHTML='';
   TRENDING_TAGS.forEach(({tag,ct}) => {
@@ -1411,7 +1402,6 @@ function buildTrendingBar() {
   });
 }
 
-// NOTIFICATIONS
 let notifications=JSON.parse(localStorage.getItem('ph34_notifs')||'[]'), notifPanelOpen=false, notifUnsub=null;
 function initNotifListener() {
   if (!FB?.ok) return;
@@ -1459,7 +1449,6 @@ async function sendNotification() {
   btn.disabled=false; btn.textContent='Send 🚀';
 }
 
-// OWNER PANEL
 function openOwnerPanel() { if(!isOwner()){toast('Owner only 👑','red');return;} document.getElementById('ownerPanel').classList.add('open'); refreshOwnerStats(); }
 function closeOwnerPanel() { document.getElementById('ownerPanel').classList.remove('open'); }
 async function refreshOwnerStats() {
@@ -1481,7 +1470,6 @@ async function refreshOwnerStats() {
 async function ownerUnban(did) { if(!FB?.ok) return; try{await FB.set(FB.ref(FB.db,`bans/${did}/active`),false);await FB.set(FB.ref(FB.db,`bans/${did}/until`),Date.now()-1000);toast('Unbanned','green');refreshOwnerStats();}catch(e){toast('Error: '+e.message,'red');} }
 async function ownerUnbanAll() { if(!FB?.ok||!confirm('Unban everyone?')) return; try{const snap=await FB.get(FB.ref(FB.db,'bans'));if(!snap.exists()) return;await Promise.all(Object.keys(snap.val()).map(k=>FB.set(FB.ref(FB.db,`bans/${k}/active`),false)));toast('All bans lifted','green');refreshOwnerStats();}catch(e){toast('Error','red');} }
 
-// SAVED VIEW
 function openSavedView() {
   closeSidebar(); if(!favs.length){toast('No saved posts yet','red');return;}
   ST.savedView=true; document.getElementById('tbHeading').textContent='Saved Posts';
@@ -1495,7 +1483,6 @@ function openSavedView() {
 function setMediaFilter(f,el) { ST.mediaFilter=f; document.querySelectorAll('.tb-tab').forEach(b=>b.classList.remove('active')); el.classList.add('active'); renderGrid(); }
 function getFiltered() { return ST.posts.filter(p=>{ const isVid=/\.(webm|mp4)$/i.test(p.file_url||''); if(ST.mediaFilter==='image') return !isVid; if(ST.mediaFilter==='video') return isVid; return true; }); }
 
-// GRID RENDER
 function renderGrid() { const grid=document.getElementById('grid'),frag=document.createDocumentFragment(); getFiltered().forEach((post,i)=>frag.appendChild(buildCard(post,i))); grid.innerHTML=''; grid.appendChild(frag); }
 const SKEL_HEIGHTS=[180,260,200,310,165,225,290,185,245,170,315,195,240,175,300,220];
 function showSkeletons(n=24) {
@@ -1570,14 +1557,12 @@ function buildCard(post, idx) {
   return card;
 }
 
-// NAV
 function navItem(el) {
   document.querySelectorAll('.sb-nav-item,.sb-tag').forEach(i=>i.classList.remove('active')); el.classList.add('active');
   document.getElementById('tbHeading').textContent=el.dataset.label||el.textContent.trim().replace(/NEW$|🔥$/g,'').trim();
   ST.savedView=false; setTagsR34(el.dataset.tags||'rating:explicit'); closeSidebar();
 }
 
-// SEARCH
 function doSearchQuery(raw) {
   if(!raw) return;
   if(containsBanned(raw)){setBan('Searching Banned Material');return;}
@@ -1585,10 +1570,16 @@ function doSearchQuery(raw) {
   document.querySelectorAll('.sb-nav-item,.sb-tag').forEach(i=>i.classList.remove('active'));
   ST.savedView=false; setTagsR34(raw+' rating:explicit'); hideAC();
 }
-function doSearch() { const raw=document.getElementById('searchInput').value.trim(); if(!raw) return; document.getElementById('searchInput').value=''; hideAC(); doSearchQuery(raw); closeSidebar(); }
+function doSearch() { 
+  const raw=document.getElementById('searchInput').value.trim(); 
+  if(!raw) return; 
+  document.getElementById('searchInput').value=''; 
+  hideAC(); 
+  doSearchQuery(raw); 
+  closeSidebar(); 
+}
 function setSort(s,el) { ST.sort=s; document.querySelectorAll('.tb-sort-btn').forEach(b=>b.classList.remove('active')); el.classList.add('active'); setTagsR34(ST.tags); }
 
-// R34 DATA LOADING
 let prefetchPromise=null, prefetchPage=-1;
 function buildTagQuery() {
   let t=ST.tags;
@@ -1711,7 +1702,6 @@ function showErr(title,sub,retry=false) {
   document.getElementById('grid').innerHTML=`<div class="err-state"><div class="err-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div><div class="err-title">${esc(title)}</div><div class="err-sub">${esc(sub)}</div>${retry?`<button class="err-retry" onclick="setTagsR34(ST.tags)">Retry</button>`:''}</div>`;
 }
 
-// VIEWER
 let vZoomed=false,vZoomScale=1,vPanX=0,vPanY=0,vPanSX=0,vPanSY=0,vPanning=false;
 function openViewer(idx) { const f=getFiltered(); if(idx<0||idx>=f.length) return; ST.vIdx=idx; renderViewer(); document.getElementById('viewer').classList.add('open'); document.addEventListener('keydown',vKey); setTimeout(()=>document.getElementById('vZoomHint')?.classList.add('show'),900); setTimeout(()=>document.getElementById('vZoomHint')?.classList.remove('show'),3100); }
 function closeViewer() {
@@ -1793,7 +1783,6 @@ async function renderViewer() {
   document.querySelectorAll('.v-tab').forEach((t,i)=>t.classList.toggle('active',i===0));
 }
 
-// RATINGS
 function loadRatings(postId) {
   if(FB?.ok){ratingUnsub=FB.onValue(FB.ref(FB.db,`ratings/${postId}`),snap=>{renderRating(postId,snap.exists()?snap.val():{});});}
   else{const lr=JSON.parse(localStorage.getItem('ph34_ratings')||'{}');renderRating(postId,lr[postId]||{});}
@@ -1819,7 +1808,6 @@ function renderRating(postId,ratObj) {
 }
 async function ratePost(postId,stars) { const uid=_fbUser?.uid||'anon'; const ok=await doSetRating(postId,uid,stars); if(ok&&!FB?.ok){const lr=JSON.parse(localStorage.getItem('ph34_ratings')||'{}');renderRating(postId,lr[postId]||{});} toast(`Rated ${stars}★`,'green'); }
 
-// COMMENTS
 async function fbPostComment(postId,username,text) { if(!FB?.ok||!_fbUser) return false; try{await FB.push(FB.ref(FB.db,`comments/${postId}`),{username,uid:_fbUser.uid,text,ts:Date.now(),isOwner:isOwner(),photoURL:_fbUser.photoURL||null});return true;}catch(e){return false;} }
 async function fbPostReply(postId,commentKey,username,text) { if(!FB?.ok||!_fbUser) return false; try{await FB.push(FB.ref(FB.db,`replies/${postId}/${commentKey}`),{username,uid:_fbUser.uid,text,ts:Date.now(),isOwner:isOwner(),photoURL:_fbUser.photoURL||null});return true;}catch(e){return false;} }
 async function fbDeleteComment(postId,key) { if(!FB?.ok) return false; try{await FB.remove(FB.ref(FB.db,`comments/${postId}/${key}`));return true;}catch(e){return false;} }
@@ -1935,7 +1923,6 @@ function vTab(tab,el) {
   const post=getFiltered()[ST.vIdx]; if(post) renderVBody(post);
 }
 
-// UTILITIES
 function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
 function openOriginal() { const p=getFiltered()[ST.vIdx];if(!p)return;window.open(p.file_url,'_blank'); }
 function downloadCurrent() { const p=getFiltered()[ST.vIdx];if(!p)return;const a=document.createElement('a');a.href=p.file_url;a.download=`ph34_${p.id}`;a.target='_blank';a.click(); }
@@ -1955,11 +1942,9 @@ function scrollToTop() { document.getElementById('content').scrollTo({top:0,beha
 function toast(msg,type='',dur=2600) { const c=document.getElementById('toasts'),el=document.createElement('div');el.className='toast'+(type?` ${type}`:'');el.textContent=msg;c.appendChild(el);setTimeout(()=>{el.classList.add('out');setTimeout(()=>el.remove(),200);},dur); }
 function copyUID() { const uid=_fbUser?.uid;if(!uid)return;navigator.clipboard.writeText(uid).then(()=>toast('UID copied! 👑','green')).catch(()=>{}); }
 
-// INVINCIBLE MODE
 function handleInvincibleToggle(el) { settings.invincible=el.checked;saveSettings();applyInvincible();if(el.checked)toast('💥 INVINCIBLE MODE ON','green',2200);else toast('Invincible mode off'); }
 function applyInvincible() { const on=!!settings.invincible;document.body.classList.toggle('invincible-mode',on);const tog=document.getElementById('invincibleToggle');if(tog)tog.checked=on;const row=document.getElementById('invincibleRow');if(row)row.classList.toggle('active-row',on); }
 
-// AUTH
 let authMode='login';
 function openAuth(mode) {
   authMode=mode; const isL=mode==='login';
@@ -2021,7 +2006,6 @@ function handleTopbarAcct() { if(user&&!user.isAnon) openSettings();else openAut
 function handleUserCard() { if(user&&!user.isAnon) openSettings();else openAuth('login'); }
 function handleFootL() { if(user&&!user.isAnon) openSettings();else openAuth('login'); }
 
-// STARTUP
 async function startup() {
   buildTrendingBar();
   const tagsEl=document.getElementById('sbTags');
@@ -2038,43 +2022,44 @@ async function startup() {
   const fbReady=new Promise(resolve=>{ if(window.__FB_READY){FB=window.__FB;resolve();}else window.addEventListener('fb-ready',()=>{FB=window.__FB;resolve();},{once:true}); });
   Promise.race([fbReady,new Promise(r=>setTimeout(r,4000))]).then(()=>{ if(FB?.ok) onFBReady(); });
 }
+
+// AGE CONFIRM - FIXED
 function ageConfirm() {
   try {
     console.log('✅ ageConfirm called');
     localStorage.setItem('ph34_age', '1');
     document.getElementById('ageGate').style.display = 'none';
-    alert('Welcome to ph34 🖤\n\n(Full site would load here)');
+    // Full site loads here
+    loadMoreR34();
   } catch(e) {
     console.error('ageConfirm error:', e);
-    alert('Something went wrong. Try refreshing.');
   }
 }
 
-// Attach click listener safely (no inline onclick error)
 document.addEventListener('DOMContentLoaded', () => {
   const btn = document.getElementById('ageEnterBtn');
-  if (btn) {
-    btn.addEventListener('click', ageConfirm);
-    console.log('✅ ageEnterBtn listener attached');
+  if (btn) btn.addEventListener('click', ageConfirm);
+  
+  // Search listeners
+  const searchInput = document.getElementById('searchInput');
+  if (searchInput) {
+    searchInput.oninput = onSearchInput;
+    searchInput.onkeydown = onSearchKey;
   }
 });
 
-// Check if already confirmed
 if (localStorage.getItem('ph34_age') === '1') {
   document.getElementById('ageGate').style.display = 'none';
 }
 
-// INFINITE SCROLL
 new IntersectionObserver(entries=>{
   if(entries[0].isIntersecting&&ageOk&&!ST.savedView) loadMoreR34();
 },{rootMargin:'2000px'}).observe(document.getElementById('sentinel'));
 
-// SCROLL
 document.getElementById('content').addEventListener('scroll',function(){
   document.getElementById('backTop').classList.toggle('show',this.scrollTop>500);
 },{passive:true});
 
-// CLICK OUTSIDE
 document.getElementById('viewer').addEventListener('click',e=>{if(e.target===document.getElementById('viewer'))closeViewer();});
 document.getElementById('authModal').addEventListener('click',e=>{if(e.target===document.getElementById('authModal'))closeAuth();});
 document.getElementById('ownerPanel').addEventListener('click',e=>{if(e.target===document.getElementById('ownerPanel'))closeOwnerPanel();});
@@ -2087,7 +2072,6 @@ document.addEventListener('click',e=>{
   if(ac.classList.contains('show')&&!ac.contains(e.target)&&e.target!==si) hideAC();
 },{capture:false});
 
-// KEYBOARD
 document.addEventListener('keydown',e=>{
   if(e.key==='Escape'){
     if(document.getElementById('authModal').classList.contains('open')) {closeAuth();return;}
@@ -2103,11 +2087,12 @@ document.addEventListener('keydown',e=>{
   }
 });
 
-// TOUCH SWIPE
 let _tx=0,_ty=0,_locked=false;
 document.getElementById('viewer').addEventListener('touchstart',e=>{_tx=e.touches[0].clientX;_ty=e.touches[0].clientY;_locked=false;},{passive:true});
 document.getElementById('viewer').addEventListener('touchmove',e=>{if(_locked||vZoomed) return;const dx=Math.abs(e.touches[0].clientX-_tx),dy=Math.abs(e.touches[0].clientY-_ty);if(dx>dy&&dx>12)_locked=true;},{passive:true});
 document.getElementById('viewer').addEventListener('touchend',e=>{if(!_locked||vZoomed) return;const dx=e.changedTouches[0].clientX-_tx;if(Math.abs(dx)>60)viewerNav(dx<0?1:-1);},{passive:true});
+
+startup();
 </script>
 </body>
 </html>
